@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 
+import numpy as np
 
 def spectral_proc(ts_file,sfreq,freq_band,freq_band_name):
 
@@ -84,8 +86,10 @@ def multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band):
 
 def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0):
         
-    import sys
+    import sys,os
     from mne.connectivity import spectral_connectivity
+    
+    import numpy as np
 
     if con_method in ['coh','cohy','imcoh']:
             
@@ -100,8 +104,6 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
         
         conmat_file = os.path.abspath("conmat" + str(index) + "_" + con_method + ".npy")
 
-        np.save(conmat_file,con_matrix)
-
         return conmat_file
     
     else:
@@ -111,8 +113,10 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
         
 def compute_and_save_phase_spectral_connectivity(epoched_data,con_method,sfreq,fmin,fmax,index = 0):
     
-    import sys
+    import sys,os
     from mne.connectivity import spectral_connectivity
+    
+    import numpy as np
 
     if con_method in ['pli','plv','ppc' ,'pli','pli2_unbiased' ,'wpli' ,'wpli2_debiased']:
             
@@ -143,10 +147,9 @@ def compute_and_save_phase_spectral_connectivity(epoched_data,con_method,sfreq,f
 def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name):
 
 	import numpy as np
-	import os
 
 	from params import con_method,epoch_window_length
-	from import_ctf import compute_and_save_coherency_spectral_connectivity,compute_and_save_phase_spectral_connectivity
+	from neuropype_ephy.spectral import compute_and_save_coherency_spectral_connectivity,compute_and_save_phase_spectral_connectivity
 
 	data = np.load(ts_file)
 
