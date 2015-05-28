@@ -45,7 +45,6 @@ def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_fi
 
 	np.save(conmat_file,raw_data)
 
-
         correct_channel_coords = np.loadtxt(orig_channel_coords_file)
         
         print correct_channel_coords
@@ -65,7 +64,7 @@ def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_fi
 
 	return conmat_file,channel_coords_file,channel_names_file
     
-def preprocess_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
+def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
 	import numpy as np
