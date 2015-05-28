@@ -46,12 +46,8 @@ def preprocess_mat_to_conmat(mat_file):
 	np.save(conmat_file,raw_data)
 
 	return conmat_file
-    
-    
 
-
-
-def preprocess_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
+def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
 	import numpy as np
