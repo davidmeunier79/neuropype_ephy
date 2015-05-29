@@ -14,8 +14,8 @@ import numpy as np
 
 ##################### nodes (Function)
 
-#def preprocess_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_file):
-def preprocess_mat_to_conmat(mat_file):
+#def preprocess_mat_to_conmat(mat_file,):
+def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
 	import numpy as np
@@ -45,8 +45,25 @@ def preprocess_mat_to_conmat(mat_file):
 
 	np.save(conmat_file,raw_data)
 
-	return conmat_file
+        correct_channel_coords = np.loadtxt(orig_channel_coords_file)
+        
+        print correct_channel_coords
+        
+        
+        correct_channel_names = np.loadtxt(orig_channel_coords_file)
+        
+        print correct_channel_names
+        
+        ### save channel coords
+	channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+	np.savetxt(channel_coords_file ,correct_channel_coords , fmt = '%s')
 
+	### save channel names
+	channel_names_file = os.path.abspath("correct_channel_names.txt")
+	np.savetxt(channel_names_file,correct_channel_names , fmt = '%s')
+
+	return conmat_file,channel_coords_file,channel_names_file
+    
 def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
