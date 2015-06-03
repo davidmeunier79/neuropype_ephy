@@ -261,7 +261,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 
                 list_epoched_data = np.array_split(data,nb_splits,axis = 1)
                 
-                print len(epoched_data)
+                print len(list_epoched_data)
                 
                 conmat_files = []
                 
