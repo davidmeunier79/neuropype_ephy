@@ -160,9 +160,11 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
 
     if con_method in ['coh','cohy','imcoh']:
             
-        epoched_data = data.reshape(1,data.shape[0],data.shape[1])
+        if len(epoched_data.shape) < 3:
+        	
+        	data = data.reshape(1,data.shape[0],data.shape[1])
             
-        con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(epoched_data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+        con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
         con_matrix = np.array(con_matrix[:,:,0])
 
@@ -264,7 +266,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 
                 print epoched_data.shape
 
-                conmat_file = compute_and_save_phase_spectral_connectivity(epoched_data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+                conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
 
                 return conmat_file
                 
