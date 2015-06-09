@@ -259,19 +259,30 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 
                 print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
                 
-                list_epoched_data = np.array_split(data,nb_splits,axis = 1)
                 
-                print len(list_epoched_data)
+                epoched_data = np.array(np.array_split(data,nb_splits,axis = 1))
                 
-                conmat_files = []
+                print epoched_data.shape
+
+                conmat_file = compute_and_save_phase_spectral_connectivity(epoched_data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+
+                return conmat_file
                 
-                for i,epoched_data in enumerate(list_epoched_data):
+                
+                ### previous version, multiple connectivity matrices after split
+                #list_epoched_data = np.array_split(data,nb_splits,axis = 1)
+                
+                #print len(list_epoched_data)
+                
+                #conmat_files = []
+                
+                #for i,epoched_data in enumerate(list_epoched_data):
                     
-                    conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1],index = i)
+                    #conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1],index = i)
                         
-                    conmat_files.append(conmat_file)
+                    #conmat_files.append(conmat_file)
                     
-                return conmat_files
+                #return conmat_files
             
 ############################## testing (can be removed from package) ###########################################
 
