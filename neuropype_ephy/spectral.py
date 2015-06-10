@@ -218,12 +218,19 @@ def compute_and_save_phase_spectral_connectivity(epoched_data,con_method,sfreq,f
         
         print "warning, only work with coherency-based metrics"
         sys.exit()
-    
+        
+#def same_length_split(np_array,nb_splits,axis= 0):
+	
+	"print np_array.shape[axis] // nb_splits
+	
+	
+	
 def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoch_window_length):
 
 	import numpy as np
 
 	from neuropype_ephy.spectral import compute_and_save_coherency_spectral_connectivity,compute_and_save_phase_spectral_connectivity
+	#,same_length_split
 
 	data = np.load(ts_file)
 
@@ -273,7 +280,19 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 print "nb_splits:"
                 print nb_splits
                 
+                reste = data.shape[1] % (epoch_window_length * sfreq)
+                
+                print "reste:"
+                print reste
+                
+                data = data[:,:-reste]
+                
+                print "shape after reste:"
+                print data.shape
+                
                 print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+                
+                
                 
                 list_epoched_data = np.array_split(data,nb_splits,axis = 1)
                 
@@ -284,7 +303,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 #print epoched_data.shape
 
                 0/0
-                
+                epoched_data = np.array(list_epoched_data)
                 
                 conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
 
