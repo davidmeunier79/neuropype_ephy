@@ -277,7 +277,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 
                 epoched_data = np.array(np.array_split(data,nb_splits,axis = 1))
                 
-                print "Shape after split":
+                print "Shape after split:"
                 print epoched_data.shape
 
                 0/0
