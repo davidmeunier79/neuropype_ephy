@@ -221,7 +221,7 @@ def compute_and_save_phase_spectral_connectivity(epoched_data,con_method,sfreq,f
         
 #def same_length_split(np_array,nb_splits,axis= 0):
 	
-	"print np_array.shape[axis] // nb_splits
+	#print np_array.shape[axis] // nb_splits
 	
 	
 	
