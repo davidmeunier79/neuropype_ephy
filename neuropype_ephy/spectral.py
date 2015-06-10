@@ -172,6 +172,8 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
         print np.min(con_matrix),np.max(con_matrix)
         
         conmat_file = os.path.abspath("conmat" + str(index) + "_" + con_method + ".npy")
+	
+	np.save(conmat_file,con_matrix)
 
         return conmat_file
     
