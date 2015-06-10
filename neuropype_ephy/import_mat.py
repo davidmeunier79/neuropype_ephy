@@ -64,6 +64,54 @@ def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_fi
 
 	return conmat_file,channel_coords_file,channel_names_file
     
+def import_tsmat_to_ts(tsmat_file):
+#,orig_channel_names_file,orig_channel_coords_file):
+
+	import os
+	import numpy as np
+
+	import mne
+
+	from mne.io import RawArray	
+	from nipype.utils.filemanip import split_filename as split_f
+
+	from scipy.io import loadmat
+
+        print tsmat_file
+        
+	subj_path,basename,ext = split_f(tsmat_file)
+
+	mat = loadmat(tsmat_file)
+
+	#field_name = basename.split('_')[0]
+	#field_name = basename.split('_')[1]
+	#print field_name
+	
+	raw_data = np.array(mat['F'],dtype = "f")
+	print raw_data.shape
+	
+	good_channels = np.array(mat['ChannelFlag'])
+	
+	good_channels = good_channels.reshape(good_channels.shape[0])
+	print good_channels.shape
+	
+	
+	good_data = raw_data[good_channels == 1,:]
+	
+	print good_data.shape
+	
+	#### save data 
+	#ts_file = os.path.abspath(basename +".npy")
+	ts_file = os.path.abspath("tsmat.npy")
+
+	np.save(ts_file,good_data)
+
+	return ts_file
+
+
+
+
+
 def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
