@@ -262,13 +262,20 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
             
             else:
                 
+                print "Shape before splits:"
                 print data.shape
                 
-                0/0
+                print  "sfreq:"
+                print sfreq
                 
                 nb_splits = data.shape[1] // (epoch_window_length * sfreq)
                 
+                print "nb_splits:"
+                print nb_splits
+                
                 print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+                
+                0/0
                 
                 
                 epoched_data = np.array(np.array_split(data,nb_splits,axis = 1))
