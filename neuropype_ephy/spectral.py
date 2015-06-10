@@ -162,8 +162,6 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
             
         print data.shape
         
-        0/0
-        
         if len(data.shape) < 3:
         	
         	data = data.reshape(1,data.shape[0],data.shape[1])
@@ -302,7 +300,6 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 #print "Shape after splits:"
                 #print epoched_data.shape
 
-                0/0
                 epoched_data = np.array(list_epoched_data)
                 
                 conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
