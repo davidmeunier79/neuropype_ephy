@@ -59,3 +59,70 @@ def preprocess_fif_to_ts(fif_file):
 	np.save(ts_file,data)
 
 	return ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
+
+def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_sfreq):
+    
+	from mne.io import RawArray	
+	
+	from mne import create_info
+	
+	import os
+	import numpy as np
+
+
+	
+
+
+        
+	#### load electrode names
+	elec_names = [line.strip() for line in open(orig_channel_names_file)]
+	#print elec_names
+
+	### save electrode locations
+	elec_loc = np.loadtxt(orig_channel_coords_file)
+	#print elec_loc
+
+        ### no modification on electrode names and locations
+        correct_elec_loc = elec_loc
+        correct_elec_names = elec_names
+
+        print correct_elec_names
+        
+        ### save electrode locations	
+	channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+	np.savetxt(channel_coords_file ,correct_elec_loc , fmt = '%s')
+
+	#### save electrode names
+	channel_names_file = os.path.abspath("correct_channel_names.txt")
+	np.savetxt(channel_names_file,correct_elec_names , fmt = '%s')
+
+        
+
+        ##### downsampling on data
+        ts = np.load(ts_file)
+        
+        ts.shape
+        
+        raw = RawArray(ts, info = create_info(ch_names = elec_names, sfreq = orig_sfreq))
+        
+        indexes_good_elec = np.arange(len(elec_names))
+        
+        print indexes_good_elec
+        
+	raw.filter(l_freq = None, h_freq = 300, picks = indexes_good_elec)
+
+	raw.resample(sfreq = 300,npad = 100)
+	
+	downsampled_ts,times = raw[:,:]
+
+
+        print downsampled_ts.shape
+        
+        
+	downsampled_ts_file = os.path.abspath("downsampled_ts.npy")
+
+	np.save(downsampled_ts_file,downsampled_ts)
+
+        print raw.info['sfreq']
+        
+	return downsampled_ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
