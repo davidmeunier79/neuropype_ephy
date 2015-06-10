@@ -160,6 +160,10 @@ def compute_and_save_coherency_spectral_connectivity(data,con_method,sfreq,fmin,
 
     if con_method in ['coh','cohy','imcoh']:
             
+        print data.shape
+        
+        0/0
+        
         if len(data.shape) < 3:
         	
         	data = data.reshape(1,data.shape[0],data.shape[1])
