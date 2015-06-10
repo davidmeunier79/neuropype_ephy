@@ -262,6 +262,9 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
             
             else:
                 
+                print data.shape
+                
+                0/0
                 
                 nb_splits = data.shape[1] // (epoch_window_length * sfreq)
                 
