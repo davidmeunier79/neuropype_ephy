@@ -275,10 +275,13 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 
                 print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
                 
-                epoched_data = np.array(np.array_split(data,nb_splits,axis = 1))
+                list_epoched_data = np.array_split(data,nb_splits,axis = 1)
                 
-                print "Shape after split:"
-                print epoched_data.shape
+                for epo in list_epoched_data:
+                	print epo.shape
+                
+                #print "Shape after splits:"
+                #print epoched_data.shape
 
                 0/0
                 
