@@ -60,7 +60,7 @@ def preprocess_fif_to_ts(fif_file):
 
 	return ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
 
-def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_sfreq):
+def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_sfreq, prefiltered = False):
     
 	from mne.io import RawArray	
 	
@@ -109,9 +109,10 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_
         
         print indexes_good_elec
         
-	raw.filter(l_freq = None, h_freq = 300, picks = indexes_good_elec)
+        if prefiltered == False:
+		raw.filter(l_freq = None, h_freq = down_freq, picks = indexes_good_elec)
 
-	raw.resample(sfreq = 300,npad = 100)
+	raw.resample(sfreq = down_freq,npad = 100)
 	
 	downsampled_ts,times = raw[:,:]
 
