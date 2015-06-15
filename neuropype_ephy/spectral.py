@@ -278,12 +278,13 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
                 print "nb_splits:"
                 print nb_splits
                 
-                reste = data.shape[1] % (epoch_window_length * sfreq)
+                reste = data.shape[1] % int(epoch_window_length * sfreq)
                 
                 print "reste:"
                 print reste
                 
-                data = data[:,:-reste]
+                if reste != 0:
+                	data = data[:,:-reste]
                 
                 print "shape after reste:"
                 print data.shape
