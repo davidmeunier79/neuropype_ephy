@@ -147,10 +147,6 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
                 
 	return conmat_files
 
-
-
-
-
 def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0):
         
     import sys,os
