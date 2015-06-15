@@ -149,14 +149,14 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
 
 def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0):
         
-    import sys,os
-    from mne.connectivity import spectral_connectivity
+    	import sys,os
+    	from mne.connectivity import spectral_connectivity
     
-    import numpy as np
+    	import numpy as np
 
-    print data.shape
+    	print data.shape
         
-    if len(data.shape) < 3:
+    	if len(data.shape) < 3:
 		if con_method in ['coh','cohy','imcoh']:
 			data = data.reshape(1,data.shape[0],data.shape[1])
 	
@@ -164,18 +164,18 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 			print "warning, only work with epoched time series"
 			sys.exit()
 			
-    con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+    	con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
-    con_matrix = np.array(con_matrix[:,:,0])
+    	con_matrix = np.array(con_matrix[:,:,0])
 
-    print con_matrix.shape
-    print np.min(con_matrix),np.max(con_matrix)
+    	print con_matrix.shape
+    	print np.min(con_matrix),np.max(con_matrix)
         
-    conmat_file = os.path.abspath("conmat" + str(index) + "_" + con_method + ".npy")
+    	conmat_file = os.path.abspath("conmat" + str(index) + "_" + con_method + ".npy")
 	
 	np.save(conmat_file,con_matrix)
 
-    return conmat_file
+    	return conmat_file
     
 	
 def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoch_window_length):
