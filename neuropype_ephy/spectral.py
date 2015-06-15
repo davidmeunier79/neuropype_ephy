@@ -166,8 +166,8 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 			data = data.reshape(1,data.shape[0],data.shape[1])
 	
 		elif con_method in ['pli','plv','ppc' ,'pli','pli2_unbiased' ,'wpli' ,'wpli2_debiased']:
-        	print "warning, only work with epoched time series"
-        	sys.exit()
+        		print "warning, only work with epoched time series"
+        		sys.exit()
         
 	con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
