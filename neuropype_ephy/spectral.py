@@ -182,8 +182,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
 
 	import numpy as np
 
-	from neuropype_ephy.spectral import compute_and_save_coherency_spectral_connectivity,compute_and_save_phase_spectral_connectivity
-	#,same_length_split
+	from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
 
 	data = np.load(ts_file)
 
