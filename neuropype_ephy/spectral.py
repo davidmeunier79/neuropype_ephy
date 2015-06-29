@@ -191,35 +191,10 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
 	print freq_band
 	print freq_band_name
 
-        if con_method in ['pli','plv','ppc' ,'pli','pli2_unbiased' ,'wpli' ,'wpli2_debiased']:
-            
-            if epoch_window_length == None:
-                
-                print "WARNING, phase-based metric will not work if epoch_window_length is not defined" 
-            
-            else:
-                    
-                nb_splits = data.shape[1] // (epoch_window_length * sfreq)
-                
-                print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
-                
-                epoched_data = np.array(np.array_split(data,nb_splits,axis = 1))
-                
-                print epoched_data.shape
-
-                conmat_file = compute_and_save_spectral_connectivity(epoched_data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
-
-                return conmat_file
-
-        elif con_method in ['coh','cohy','imcoh']:
-                
-            if epoch_window_length == None:
-                
-                
-                conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
-                    
-            
-            else:
+        if epoch_window_length == None:
+        	
+        	conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
+        else:
                 
                 print "Shape before splits:"
                 print data.shape
@@ -261,22 +236,6 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
 
                 return conmat_file
                 
-                
-                ### previous version, multiple connectivity matrices after split
-                #list_epoched_data = np.array_split(data,nb_splits,axis = 1)
-                
-                #print len(list_epoched_data)
-                
-                #conmat_files = []
-                
-                #for i,epoched_data in enumerate(list_epoched_data):
-                    
-                    #conmat_file = compute_and_save_coherency_spectral_connectivity(data=epoched_data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1],index = i)
-                        
-                    #conmat_files.append(conmat_file)
-                    
-                #return conmat_files
-            
 ############################## testing (can be removed from package) ###########################################
 
 def test_spectral_connectivity():
