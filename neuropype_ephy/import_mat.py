@@ -108,6 +108,51 @@ def import_tsmat_to_ts(tsmat_file):
 
 	return ts_file
 
+def import_amplmat_to_ts(tsmat_file):
+#,orig_channel_names_file,orig_channel_coords_file):
+
+	import os
+	import numpy as np
+
+	import mne
+
+	from mne.io import RawArray	
+	from nipype.utils.filemanip import split_filename as split_f
+
+	from scipy.io import loadmat
+
+        print tsmat_file
+        
+	subj_path,basename,ext = split_f(tsmat_file)
+
+	mat = loadmat(tsmat_file)
+
+	#field_name = basename.split('_')[0]
+	#field_name = basename.split('_')[1]
+	#print field_name
+	
+	raw_data = np.array(mat['H_data'],dtype = "f")
+	print raw_data.shape
+	
+	0/0
+	
+	#good_channels = np.array(mat['ChannelFlag'])
+	
+	#good_channels = good_channels.reshape(good_channels.shape[0])
+	#print good_channels.shape
+	
+	
+	#good_data = raw_data[good_channels == 1,:]
+	
+	#print good_data.shape
+	
+	#### save data 
+	ts_file = os.path.abspath("amplmat.npy")
+
+	#np.save(ts_file,good_data)
+	np.save(ts_file,raw_data)
+	
+	return ts_file
 
 
 
