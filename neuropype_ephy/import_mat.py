@@ -141,15 +141,15 @@ def import_amplmat_to_ts(tsmat_file):
 	print "Good channels:"
 	print good_channels.shape
 	
-	#good_data = raw_data[good_channels == 1,:]
+	good_data = raw_data[good_channels == 1,:]
 	
-	#print good_data.shape
+	print good_data.shape
 	
 	#### save data 
 	ts_file = os.path.abspath("amplmat.npy")
 
-	#np.save(ts_file,good_data)
-	np.save(ts_file,raw_data)
+	np.save(ts_file,good_data)
+	#np.save(ts_file,raw_data)
 	
 	return ts_file
 
