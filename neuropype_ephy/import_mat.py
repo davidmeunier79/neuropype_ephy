@@ -131,7 +131,7 @@ def import_amplmat_to_ts(tsmat_file):
 	#field_name = basename.split('_')[1]
 	#print field_name
 	
-	raw_data = np.array(mat['H_data'],dtype = "f")
+	raw_data = np.array(mat['F'],dtype = "f")
 	print raw_data.shape
 	
 	good_channels = np.array(mat['ChannelFlag'])
@@ -140,9 +140,6 @@ def import_amplmat_to_ts(tsmat_file):
 	
 	print "Good channels:"
 	print good_channels.shape
-	
-	0/0
-	
 	
 	#good_data = raw_data[good_channels == 1,:]
 	
