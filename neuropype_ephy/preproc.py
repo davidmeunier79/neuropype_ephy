@@ -86,7 +86,9 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_
         correct_elec_loc = elec_loc
         correct_elec_names = elec_names
 
-        print correct_elec_names
+        print len(correct_elec_names)
+        print len(correct_elec_loc)
+        
         
         ### save electrode locations	
 	channel_coords_file = os.path.abspath("correct_channel_coords.txt")
@@ -101,7 +103,10 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_
         ##### downsampling on data
         ts = np.load(ts_file)
         
-        ts.shape
+        print ts.shape
+        
+        0/0
+        
         
         raw = RawArray(ts, info = create_info(ch_names = elec_names, sfreq = orig_sfreq))
         
