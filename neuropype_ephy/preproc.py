@@ -105,8 +105,6 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file,orig_
         
         print ts.shape
         
-        0/0
-        
         
         raw = RawArray(ts, info = create_info(ch_names = elec_names, sfreq = orig_sfreq))
         
