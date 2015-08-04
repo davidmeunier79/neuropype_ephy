@@ -53,8 +53,8 @@ def spectral_proc(ts_file,sfreq,freq_band,con_method):
 	print data.shape
 	print sfreq
 	print freq_band
-
-        conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+	
+	conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
         
 	return conmat_file
 
