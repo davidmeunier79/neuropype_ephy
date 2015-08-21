@@ -61,7 +61,7 @@ def spectral_proc_label(ts_file,sfreq,freq_band,con_method,label):
 	data = np.load(ts_file)
 
 	conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],index = label)
-        
+	
 	return conmat_file
 
 
