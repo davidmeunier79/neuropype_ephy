@@ -89,7 +89,6 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
 	
 	raw_data = np.array(mat[data_field_name],dtype = "f")
 	print raw_data.shape
-	
 	if good_channels_field_name != None:
         
         good_channels = np.array(mat[good_channels_field_name])
@@ -104,16 +103,13 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
         
         print good_data.shape
         
-	else:
+    else:
         good_data = raw_data
-	
-	#### save data 
-	#ts_file = os.path.abspath(basename +".npy")
-	ts_file = os.path.abspath("tsmat.npy")
-
-	np.save(ts_file,good_data)
-
-	return ts_file
+        
+    #### save data
+    ts_file = os.path.abspath("tsmat.npy")
+    np.save(ts_file,good_data)
+    return ts_file
 
 def import_amplmat_to_ts(tsmat_file):
 #,orig_channel_names_file,orig_channel_coords_file):
