@@ -4,40 +4,36 @@ import numpy as np
 
 
 def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0):
-        
-    	import sys,os
-    	from mne.connectivity import spectral_connectivity
-    
-    	import numpy as np
+	
+	import sys,os
+	from mne.connectivity import spectral_connectivity
 
-	from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+	import numpy as np
 
-
-
-    	print data.shape
-        
-    	if len(data.shape) < 3:
+	print data.shape
+	
+	if len(data.shape) < 3:
 		if con_method in ['coh','cohy','imcoh']:
 			data = data.reshape(1,data.shape[0],data.shape[1])
-	
+
 		elif con_method in ['pli','plv','ppc' ,'pli','pli2_unbiased' ,'wpli' ,'wpli2_debiased']:
 			print "warning, only work with epoched time series"
 			sys.exit()
 			
-    	con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+	con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
-    	con_matrix = np.array(con_matrix[:,:,0])
+	con_matrix = np.array(con_matrix[:,:,0])
 
-    	print con_matrix.shape
-    	print np.min(con_matrix),np.max(con_matrix)
-        
-    	conmat_file = os.path.abspath("conmat" + str(index) + "_" + con_method + ".npy")
+	print con_matrix.shape
+	print np.min(con_matrix),np.max(con_matrix)
 	
+	conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
+
 	np.save(conmat_file,con_matrix)
 
-    	return conmat_file
-    
-    
+	return conmat_file
+
+
 
 #################################################################################################################################################################"
 
@@ -50,12 +46,22 @@ def spectral_proc(ts_file,sfreq,freq_band,con_method):
 
 	data = np.load(ts_file)
 
-	print data.shape
-	print sfreq
-	print freq_band
-	
 	conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
         
+	return conmat_file
+
+
+def spectral_proc_label(ts_file,sfreq,freq_band,con_method,label):
+
+	import numpy as np
+	#import os
+
+	from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+
+	data = np.load(ts_file)
+
+	conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],index = label)
+	
 	return conmat_file
 
 
@@ -74,35 +80,35 @@ def multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_method):
               
 	print freq_band
 	print freq_band_name
-        
-        if len(all_data.shape) != 3:
-            print "Warning, all_data should have several samples"
-            
-            return []
-        
-        conmat_files = []
-        
+	
+	if len(all_data.shape) != 3:
+		print "Warning, all_data should have several samples"
+		
+		return []
+	
+	conmat_files = []
+	
 	for i in range(all_data.shape[0]):
-	
-                cur_data = all_data[i,:,:]
-	
+
+		cur_data = all_data[i,:,:]
+
 		data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])
 
-                print data.shape
-                
-                con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+		print data.shape
+		
+		con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
-                con_matrix = np.array(con_matrix[:,:,0])
+		con_matrix = np.array(con_matrix[:,:,0])
 
-                print con_matrix.shape
-                print np.min(con_matrix),np.max(con_matrix)
-                
-                conmat_file = os.path.abspath("conmat_"+ con_method + "_" + str(i) + ".npy")
+		print con_matrix.shape
+		print np.min(con_matrix),np.max(con_matrix)
+		
+		conmat_file = os.path.abspath("conmat_"+ con_method + "_" + str(i) + ".npy")
 
-                np.save(conmat_file,con_matrix)
+		np.save(conmat_file,con_matrix)
 
-                conmat_files.append(conmat_file)
-                
+		conmat_files.append(conmat_file)
+			
 	return conmat_files
 
 def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_method,epoch_window_length):
@@ -120,55 +126,56 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
               
 	print freq_band
 	print freq_band_name
-        
-        if len(all_data.shape) != 3:
-            print "Warning, all_data should have several samples"
-            
-            return []
-        
-        conmat_files = []
-        
+	
+	if len(all_data.shape) != 3:
+		
+		print "Warning, all_data should have several samples"
+		
+		return []
+	
+	conmat_files = []
+	
 	for i in range(all_data.shape[0]):
-	
-                cur_data = all_data[i,:,:]
-	
-                print cur_data.shape
-                    
+
+		cur_data = all_data[i,:,:]
+
+		print cur_data.shape
+			
 
 
 
-                if epoch_window_length == None :
-                    
-                    data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])
+		if epoch_window_length == None :
+			
+			data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])
 
-                else: 
-                        
-                    nb_splits = cur_data.shape[1] // (epoch_window_length * sfreq)
-                    
-                    print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
-                    
-                    list_epoched_data = np.array_split(cur_data,nb_splits,axis = 1)
-                    
-                    print len(list_epoched_data)
-                    
-                    data = np.array(list_epoched_data)
-                    
-                    print data.shape
+		else: 
+				
+			nb_splits = cur_data.shape[1] // (epoch_window_length * sfreq)
+			
+			print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+			
+			list_epoched_data = np.array_split(cur_data,nb_splits,axis = 1)
+			
+			print len(list_epoched_data)
+			
+			data = np.array(list_epoched_data)
+			
+			print data.shape
 
-                con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+		con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
-                print con_matrix.shape
-                con_matrix = np.array(con_matrix[:,:,0])
+		print con_matrix.shape
+		con_matrix = np.array(con_matrix[:,:,0])
 
-                print con_matrix.shape
-                print np.min(con_matrix),np.max(con_matrix)
-                
-                conmat_file = os.path.abspath("conmat_"+ con_method + "_" + str(i) + ".npy")
+		print con_matrix.shape
+		print np.min(con_matrix),np.max(con_matrix)
+		
+		conmat_file = os.path.abspath("conmat_"+ con_method + "_" + str(i) + ".npy")
 
-                np.save(conmat_file,con_matrix)
+		np.save(conmat_file,con_matrix)
 
-                conmat_files.append(conmat_file)
-                
+		conmat_files.append(conmat_file)
+			
 	return conmat_files
 
 	
@@ -185,51 +192,51 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
 	print freq_band
 	print freq_band_name
 
-        if epoch_window_length == None:
-        	
-        	conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
-        else:
-                
-                print "Shape before splits:"
-                print data.shape
-                
-                print  "sfreq:"
-                print sfreq
-                
-                nb_splits = data.shape[1] // (epoch_window_length * sfreq)
-                
-                print "nb_splits:"
-                print nb_splits
-                
-                reste = data.shape[1] % int(epoch_window_length * sfreq)
-                
-                print "reste:"
-                print reste
-                
-                if reste != 0:
-                	data = data[:,:-reste]
-                
-                print "shape after reste:"
-                print data.shape
-                
-                print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
-                
-                
-                
-                list_epoched_data = np.array_split(data,nb_splits,axis = 1)
-                
-                for epo in list_epoched_data:
-                	print epo.shape
-                
-                #print "Shape after splits:"
-                #print epoched_data.shape
+	if epoch_window_length == None:
+		
+		conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
+	else:
+			
+			print "Shape before splits:"
+			print data.shape
+			
+			print  "sfreq:"
+			print sfreq
+			
+			nb_splits = data.shape[1] // (epoch_window_length * sfreq)
+			
+			print "nb_splits:"
+			print nb_splits
+			
+			reste = data.shape[1] % int(epoch_window_length * sfreq)
+			
+			print "reste:"
+			print reste
+			
+			if reste != 0:
+				data = data[:,:-reste]
+			
+			print "shape after reste:"
+			print data.shape
+			
+			print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+			
+			
+			
+			list_epoched_data = np.array_split(data,nb_splits,axis = 1)
+			
+			for epo in list_epoched_data:
+				print epo.shape
+			
+			#print "Shape after splits:"
+			#print epoched_data.shape
 
-                epoched_data = np.array(list_epoched_data)
-                
-                conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+			epoched_data = np.array(list_epoched_data)
+			
+			conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
 
-                return conmat_file
-                
+			return conmat_file
+			
 ############################## testing (can be removed from package) ###########################################
 
 def test_spectral_connectivity():
