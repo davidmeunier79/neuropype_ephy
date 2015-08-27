@@ -43,6 +43,7 @@ def plot_circular_connectivity(conmat_file,labels_file):
     import matplotlib.pyplot as plt
     
     label_names= [line.strip() for line in open(labels_file)]
+    
     #print label_names
     conmat = np.load(conmat_file)
     #print conmat.shape
