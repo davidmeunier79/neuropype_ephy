@@ -64,7 +64,7 @@ def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_fi
 
 	return conmat_file,channel_coords_file,channel_names_file
     
-def import_tsmat_to_ts(tsmat_file):
+def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_name = 'ChannelFlag'):
 #,orig_channel_names_file,orig_channel_coords_file):
 
 	import os
@@ -87,18 +87,25 @@ def import_tsmat_to_ts(tsmat_file):
 	#field_name = basename.split('_')[1]
 	#print field_name
 	
-	raw_data = np.array(mat['F'],dtype = "f")
+	raw_data = np.array(mat[data_field_name],dtype = "f")
 	print raw_data.shape
 	
-	good_channels = np.array(mat['ChannelFlag'])
-	
-	good_channels = good_channels.reshape(good_channels.shape[0])
-	print good_channels.shape
-	
-	
-	good_data = raw_data[good_channels == 1,:]
-	
-	print good_data.shape
+	if good_channels_field_name != None:
+        
+        good_channels = np.array(mat[good_channels_field_name])
+        print good_channels.shape
+        
+        
+        good_channels = good_channels.reshape(good_channels.shape[0])
+        print good_channels.shape
+        
+        
+        good_data = raw_data[good_channels == 1,:]
+        
+        print good_data.shape
+        
+	else:
+        good_data = raw_data
 	
 	#### save data 
 	#ts_file = os.path.abspath(basename +".npy")
