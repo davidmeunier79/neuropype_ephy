@@ -43,15 +43,11 @@ def plot_circular_connectivity(conmat_file,labels_file):
     import matplotlib.pyplot as plt
     
     label_names= [line.strip() for line in open(labels_file)]
-    
-    print label_names
-    
-    
+    #print label_names
     conmat = np.load(conmat_file)
+    #print conmat.shape
     
-    print conmat.shape
-    
-
+    # Angles
     node_angles = circular_layout(label_names, node_order = label_names, start_pos=90,
                                 group_boundaries=[0, len(label_names) / 2])
 
