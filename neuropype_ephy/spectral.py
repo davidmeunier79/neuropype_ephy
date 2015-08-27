@@ -33,6 +33,38 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 
 	return conmat_file
 
+def plot_circular_connectivity(conmat_file,labels_file):
+
+    import os
+    
+    import numpy as np
+    
+    from mne.viz import circular_layout, plot_connectivity_circle
+    import matplotlib.pyplot as plt
+    
+    label_names= [line.strip() for line in open(labels_file)]
+    
+    print label_names
+    
+    
+    conmat = np.load(conmat_file)
+    
+    print conmat.shape
+    
+
+    node_angles = circular_layout(label_names, node_order = label_names, start_pos=90,
+                                group_boundaries=[0, len(label_names) / 2])
+
+    # Plot the graph using node colors from the FreeSurfer parcellation. We only
+    # show the 300 strongest connections.
+    plot_connectivity_circle(conmat, label_names, n_lines=200,  node_angles=node_angles, fontsize_names = 4, title='All-to-All Connectivity' )
+    
+    
+    #plot_conmat_file = os.path.abspath('circle.png')
+    plot_conmat_file = os.path.abspath('circle.eps')
+    plt.savefig(plot_conmat_file, facecolor='black')
+    
+    return plot_conmat_file
 
 
 #################################################################################################################################################################"
