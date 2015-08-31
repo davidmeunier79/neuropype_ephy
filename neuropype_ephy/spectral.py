@@ -33,7 +33,7 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 
 	return conmat_file
 
-def plot_circular_connectivity(conmat_file,labels_file):
+def plot_circular_connectivity(conmat_file,labels_file,nb_lines = 200):
 
     import os
     
@@ -54,12 +54,17 @@ def plot_circular_connectivity(conmat_file,labels_file):
 
     # Plot the graph using node colors from the FreeSurfer parcellation. We only
     # show the 300 strongest connections.
-    plot_connectivity_circle(conmat, label_names, n_lines=200,  node_angles=node_angles, fontsize_names = 4, title='All-to-All Connectivity' )
+    fig,_ = plot_connectivity_circle(conmat, label_names, n_lines=nb_lines,  node_angles=node_angles, fontsize_names = 12, title='All-to-All Connectivity' , show = False)
     
     
     #plot_conmat_file = os.path.abspath('circle.png')
     plot_conmat_file = os.path.abspath('circle.eps')
-    plt.savefig(plot_conmat_file, facecolor='black')
+    fig.savefig(plot_conmat_file, facecolor='black')
+    
+    
+    plt.close(fig)
+    #fig1.close()
+    del fig
     
     return plot_conmat_file
 
