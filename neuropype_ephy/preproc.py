@@ -121,86 +121,117 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     else:
         has_ICA = True
         ica = read_ica(ica_filename)
-        
+        ica.exclude = [] 
 
     ### 2) identify bad components by analyzing latent sources.
     # generate ECG epochs use detection via phase statistics
     
-    # if we have exclude channels we jump these steps
-    if len(ica.exclude)==0:
-        n_max_ecg = 3
-        n_max_eog = 2
+    # if we just have exclude channels we jump these steps
+#    if len(ica.exclude)==0:
+    n_max_ecg = 3
+    n_max_eog = 2
+    
+    # check if ECG_ch_name is in the raw channels
+    if ECG_ch_name in raw.info['ch_names']:
+        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors, 
+                                       ch_name = ECG_ch_name)
+    # if not  a synthetic ECG channel is created from cross channel average
+    else:
+        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors)
+    
+    ### ICA for ECG artifact 
+    # threshold=0.25 come defualt
+    ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+    if len(ecg_inds) > 0:
+        ecg_evoked = ecg_epochs.average()
         
-        if ECG_ch_name in raw.info['ch_names']:
-            ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors, 
-                                           ch_name = ECG_ch_name)
-        
-            ### ICA for ECG artifact 
-            # threshold=0.25 come defualt
-            ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
-            if len(ecg_inds) > 0:
-                ecg_evoked = ecg_epochs.average()
-                
-                fig1 = ica.plot_scores(scores, exclude=ecg_inds, title=ICA_title % 'ecg', show=is_show)
-        
-                show_picks = np.abs(scores).argsort()[::-1][:5] # Pick the five largest scores and plot them
-        
-                # Plot estimated latent sources given the unmixing matrix.
-                #ica.plot_sources(raw, show_picks, exclude=ecg_inds, title=ICA_title % 'ecg', show=is_show)
-                t_start, t_stop = raw.time_as_index([0, 30]) # take the fist 30s
-                fig2 = ica.plot_sources(raw, show_picks, exclude=ecg_inds, title=ICA_title % 'ecg' + ' in 30s' 
-                                                    ,start = t_start, stop  = t_stop, show=is_show)
-        
-                # topoplot of unmixing matrix columns
-                fig3 = ica.plot_components(show_picks, title=ICA_title % 'ecg', colorbar=True, show=is_show)
-        
-                ecg_inds = ecg_inds[:n_max_ecg]
-                ica.exclude += ecg_inds
-            
-                fig4 = ica.plot_sources(ecg_evoked, exclude=ecg_inds, show=is_show)  # plot ECG sources + selection
-                fig5 = ica.plot_overlay(ecg_evoked, exclude=ecg_inds, show=is_show)  # plot ECG cleaning
-            
-                fig = [fig1, fig2, fig3, fig4, fig5]
-                report.add_figs_to_section(fig, captions=['Scores of ICs related to ECG',
-                                                          'Time Series plots of ICs (ECG)',
-                                                          'TopoMap of ICs (ECG)', 
-                                                          'Time-locked ECG sources', 
-                                                          'ECG overlay'], section = 'ICA - ECG')    
-            
-        if EoG_ch_name in raw.info['ch_names']:        
-            ### ICA for eye blink artifact - detect EOG by correlation
-            eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
-            if len(eog_inds) > 0:  
-                
-                fig6 = ica.plot_scores(scores, exclude=eog_inds, title=ICA_title % 'eog', show=is_show)
-                
-                show_picks = np.abs(scores).argsort()[::-1][:5]
-            
-                fig7 = ica.plot_sources(raw, show_picks, exclude=eog_inds, title=ICA_title % 'eog', show=is_show)
-                                        
-                fig8 = ica.plot_components(show_picks, title=ICA_title % 'eog', colorbar=True, show=is_show) 
-                
-                eog_inds = eog_inds[:n_max_eog]
-                ica.exclude += eog_inds
-                
-                eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors, 
-                                           ch_name=EoG_ch_name).average()
-               
-                fig9 = ica.plot_sources(eog_evoked, exclude=eog_inds, show=is_show)  # plot EOG sources + selection
-                fig10 = ica.plot_overlay(eog_evoked, exclude=eog_inds, show=is_show)  # plot EOG cleaning
-        
-                fig = [fig6, fig7, fig8, fig9, fig10]
-                report.add_figs_to_section(fig, captions=['Scores of ICs related to EOG', 
-                                                          'Time Series plots of ICs (EOG)',
-                                                          'TopoMap of ICs (EOG)', 
-                                                          'Time-locked EOG sources',
-                                                          'EOG overlay'], section = 'ICA - EOG')
+        fig1 = ica.plot_scores(scores, exclude=ecg_inds, title=ICA_title % 'ecg', show=is_show)
 
-        fig11 = ica.plot_overlay(raw, show=is_show)
-        report.add_figs_to_section(fig11, captions=['Signal'], section = 'Signal quality') 
-        report_filename = os.path.join(subj_path,basename + "-report.html")
-        print report_filename
-        report.save(report_filename, open_browser=False, overwrite=True)
+        show_picks = np.abs(scores).argsort()[::-1][:5] # Pick the five largest scores and plot them
+
+        # Plot estimated latent sources given the unmixing matrix.
+        #ica.plot_sources(raw, show_picks, exclude=ecg_inds, title=ICA_title % 'ecg', show=is_show)
+#            t_start, t_stop = raw.time_as_index([0, 30]) # take the fist 30s
+        t_start = 0
+        t_stop = 30 # take the fist 30s
+        fig2 = ica.plot_sources(raw, show_picks, exclude=ecg_inds, title=ICA_title % 'ecg' + ' in 30s' 
+                                            ,start = t_start, stop  = t_stop, show=is_show)
+
+        # topoplot of unmixing matrix columns
+        fig3 = ica.plot_components(show_picks, title=ICA_title % 'ecg', colorbar=True, show=is_show)
+
+        ecg_inds = ecg_inds[:n_max_ecg]
+        ica.exclude += ecg_inds
+    
+        fig4 = ica.plot_sources(ecg_evoked, exclude=ecg_inds, show=is_show)  # plot ECG sources + selection
+        fig5 = ica.plot_overlay(ecg_evoked, exclude=ecg_inds, show=is_show)  # plot ECG cleaning
+    
+        fig = [fig1, fig2, fig3, fig4, fig5]
+        report.add_figs_to_section(fig, captions=['Scores of ICs related to ECG',
+                                                  'Time Series plots of ICs (ECG)',
+                                                  'TopoMap of ICs (ECG)', 
+                                                  'Time-locked ECG sources', 
+                                                  'ECG overlay'], section = 'ICA - ECG')    
+    
+    # check if EoG_ch_name is in the raw channels
+    if EoG_ch_name in raw.info['ch_names']:        
+        ### ICA for eye blink artifact - detect EOG by correlation
+        eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
+    else:
+        eog_inds, scores = ica.find_bads_eog(raw)
+
+    if len(eog_inds) > 0:  
+        
+        fig6 = ica.plot_scores(scores, exclude=eog_inds, title=ICA_title % 'eog', show=is_show)
+        report.add_figs_to_section(fig6, captions=['Scores of ICs related to EOG'], 
+                           section = 'ICA - EOG')
+                           
+        # check how many EoG ch we have
+        rs = np.shape(scores)
+        if len(rs)>1:
+            rr = rs[0]
+            show_picks = [np.abs(scores[i][:]).argsort()[::-1][:5] for i in range(rr)]
+            for i in range(rr):
+                fig7 = ica.plot_sources(raw, show_picks[i][:], exclude=eog_inds, 
+                                    start = raw.times[0], stop  = raw.times[-1], 
+                                    title=ICA_title % 'eog',show=is_show)       
+                                    
+                fig8 = ica.plot_components(show_picks[i][:], title=ICA_title % 'eog', colorbar=True, show=is_show) # ICA nel tempo
+
+                fig = [fig7, fig8]
+                report.add_figs_to_section(fig, captions=['Scores of ICs related to EOG', 
+                                                 'Time Series plots of ICs (EOG)'],
+                                            section = 'ICA - EOG')    
+        else:
+            show_picks = np.abs(scores).argsort()[::-1][:5]
+            fig7 = ica.plot_sources(raw, show_picks, exclude=eog_inds, title=ICA_title % 'eog', show=is_show)                                    
+            fig8 = ica.plot_components(show_picks, title=ICA_title % 'eog', colorbar=True, show=is_show) 
+            fig = [fig7, fig8]            
+            report.add_figs_to_section(fig, captions=['Time Series plots of ICs (EOG)',
+                                                      'TopoMap of ICs (EOG)',],
+                                            section = 'ICA - EOG') 
+        
+        eog_inds = eog_inds[:n_max_eog]
+        ica.exclude += eog_inds
+        
+        if EoG_ch_name in raw.info['ch_names']:
+            eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors, 
+                                   ch_name=EoG_ch_name).average()
+        else:
+            eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors).average()               
+       
+        fig9 = ica.plot_sources(eog_evoked, exclude=eog_inds, show=is_show)  # plot EOG sources + selection
+        fig10 = ica.plot_overlay(eog_evoked, exclude=eog_inds, show=is_show)  # plot EOG cleaning
+
+        fig = [fig9, fig10]
+        report.add_figs_to_section(fig, captions=['Time-locked EOG sources',
+                                                  'EOG overlay'], section = 'ICA - EOG')
+
+    fig11 = ica.plot_overlay(raw, show=is_show)
+    report.add_figs_to_section(fig11, captions=['Signal'], section = 'Signal quality') 
+    report_filename = os.path.join(subj_path,basename + "-report.html")
+    print '******* ' + report_filename
+    report.save(report_filename, open_browser=False, overwrite=True)
         
         
     ### 3) apply ICA to raw data and save solution and report
