@@ -13,7 +13,7 @@ def compute_inv_sol(raw, fwd_filename, snr, method):
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
     from nipype.utils.filemanip import split_filename as split_f
     
-    print '***** READ FWD SOL %s *****' %fwd_filename
+    print '***** READ THE FWD SOL %s *****' %fwd_filename
     forward = mne.read_forward_solution(fwd_filename)
     forward = mne.convert_forward_solution(forward, surf_ori=True)
 
