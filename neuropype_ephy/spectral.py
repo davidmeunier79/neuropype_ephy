@@ -3,6 +3,7 @@
 import numpy as np
 
 
+
 def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0):
 	
 	import sys,os
@@ -39,10 +40,17 @@ def plot_circular_connectivity(conmat_file,labels_file,nb_lines = 200):
     
     import numpy as np
     
+    from nipype.utils.filemanip import split_filename as split_f
+    
     from mne.viz import circular_layout, plot_connectivity_circle
     import matplotlib.pyplot as plt
     
     label_names= [line.strip() for line in open(labels_file)]
+    
+    path,fname,ext = split_f(conmat_file)
+    
+    print fname
+    
     
     #print label_names
     conmat = np.load(conmat_file)
@@ -58,7 +66,7 @@ def plot_circular_connectivity(conmat_file,labels_file,nb_lines = 200):
     
     
     #plot_conmat_file = os.path.abspath('circle.png')
-    plot_conmat_file = os.path.abspath('circle.eps')
+    plot_conmat_file = os.path.abspath('circle_' + fname + '.eps')
     fig.savefig(plot_conmat_file, facecolor='black')
     
     
@@ -99,7 +107,7 @@ def spectral_proc_label(ts_file,sfreq,freq_band,con_method,label):
 	return conmat_file
 
 
-def multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_method):
+def multiple_spectral_proc(ts_file,sfreq,freq_band,con_method):
 
 	import numpy as np
 	import os
@@ -113,7 +121,6 @@ def multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_method):
 	#print sfreq
               
 	print freq_band
-	print freq_band_name
 	
 	if len(all_data.shape) != 3:
 		print "Warning, all_data should have several samples"
