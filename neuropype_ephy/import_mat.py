@@ -109,7 +109,7 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     return ts_file
 
 
-    def import_amplmat_to_ts(tsmat_file):
+def import_amplmat_to_ts(tsmat_file):
     #,orig_channel_names_file,orig_channel_coords_file):
 
     import os
@@ -157,7 +157,7 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
 
 
 
-    def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
+def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
     import os
     import numpy as np
@@ -185,8 +185,6 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     #### load electrode names
     elec_names = [line.strip() for line in open(orig_channel_names_file)]
 
-
-
     print elec_names
     #0/0
 
@@ -202,7 +200,7 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     correct_elec_loc = np.roll(elec_loc[select_sensors,:],shift = 2,axis = 1)
 
     print correct_elec_loc[0,:]
-        print correct_elec_loc[7,:]
+    print correct_elec_loc[7,:]
         
         #0/0
         
@@ -226,36 +224,36 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
 
     return ts_file,channel_coords_file,channel_names_file
 
-    def concat_ts(all_ts_files):
-        
-        import numpy as np
-        import os
-        
-        print all_ts_files
+def concat_ts(all_ts_files):
+    
+    import numpy as np
+    import os
+    
+    print all_ts_files
 
     for i,ts_file in enumerate(all_ts_files):
+    
+        ## loading ROI coordinates
+        ts = np.load(ts_file)
         
-            ## loading ROI coordinates
-            ts = np.load(ts_file)
+        #print "all_ts: " 
+        print ts.shape
         
-            #print "all_ts: " 
-            print ts.shape
-            
-                if i == 0:
-                        concat_ts = ts.copy()
-                        #print concat_ts.shape
-                else:
-                        concat_ts = np.concatenate((concat_ts,ts),axis = 0)
-                        #print concat_ts.shape
+            if i == 0:
+                concat_ts = ts.copy()
+                #print concat_ts.shape
+            else:
+                concat_ts = np.concatenate((concat_ts,ts),axis = 0)
+                #print concat_ts.shape
 
     print concat_ts.shape
 
     ### saving time series
-        concat_ts_file = os.path.abspath("concat_ts.npy")
-        np.save(concat_ts_file,concat_ts)
+    concat_ts_file = os.path.abspath("concat_ts.npy")
+    np.save(concat_ts_file,concat_ts)
+    
         
-            
-        return concat_ts_file
+    return concat_ts_file
 
 if __name__ == '__main__':
     

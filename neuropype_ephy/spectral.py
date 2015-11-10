@@ -297,11 +297,13 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
             
 ############################## testing (can be removed from package) ###########################################
 
-def test_spectral_connectivity():
+def test_spectral_connectivity(main_path = "/mnt/Data/Projet-Karim", con_method = 'coh',  freq_bands = [[15.,40.]], freq_band_names = ['beta']):
 
-    from params import freq_bands,freq_band_names,con_method
+    import os 
     from mne.connectivity import spectral_connectivity
 
+    from mne.io import RawFIF
+    
     subj_path = os.path.join(main_path ,'balai')
 
     print subj_path
@@ -345,6 +347,7 @@ def test_spectral_connectivity():
         print np.max(data,axis = 0)
 
         for i,freq_band in enumerate(freq_band_names):
+            
             con_matrix, freqs, times, n_epochs, n_tapers = spectral_connectivity(data.reshape(1,data.shape[0],data.shape[1]), method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_bands[i][0], fmax=freq_bands[i][1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
 
             #print con
