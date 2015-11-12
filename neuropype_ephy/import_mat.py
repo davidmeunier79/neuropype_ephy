@@ -87,6 +87,7 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
 
     if good_channels_field_name != None:
         
+        print "Using good channels to sort channels"
         good_channels = np.array(mat[good_channels_field_name])
         print good_channels.shape
         
@@ -100,10 +101,12 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
         print good_data.shape
         
     else:
-        
+        print "No channel sorting" 
         good_data = raw_data
         
     #### save data
+    print good_data.shape
+    
     ts_file = os.path.abspath("tsmat.npy")
     np.save(ts_file,good_data)
     return ts_file
