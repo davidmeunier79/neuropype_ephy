@@ -205,7 +205,6 @@ def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
     print correct_elec_loc[0,:]
     print correct_elec_loc[7,:]
         
-        #0/0
         
     channel_coords_file = os.path.abspath("correct_channel_coords.txt")
     np.savetxt(channel_coords_file ,correct_elec_loc , fmt = '%s')
@@ -242,12 +241,12 @@ def concat_ts(all_ts_files):
         #print "all_ts: " 
         print ts.shape
         
-            if i == 0:
-                concat_ts = ts.copy()
-                #print concat_ts.shape
-            else:
-                concat_ts = np.concatenate((concat_ts,ts),axis = 0)
-                #print concat_ts.shape
+        if i == 0:
+            concat_ts = ts.copy()
+            #print concat_ts.shape
+        else:
+            concat_ts = np.concatenate((concat_ts,ts),axis = 0)
+            #print concat_ts.shape
 
     print concat_ts.shape
 
