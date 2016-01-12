@@ -255,7 +255,7 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
         
 ########################################################### plot spectral connectivity #################################################################
 
-def plot_circular_connectivity(conmat_file,labels_file,nb_lines = 200):
+def plot_circular_connectivity(conmat_file,labels_file,nb_lines, vmin = None, vmax = None):
 
     import os
     
@@ -283,7 +283,7 @@ def plot_circular_connectivity(conmat_file,labels_file,nb_lines = 200):
 
     # Plot the graph using node colors from the FreeSurfer parcellation. We only
     # show the 300 strongest connections.
-    fig,_ = plot_connectivity_circle(conmat, label_names, n_lines=nb_lines,  node_angles=node_angles, fontsize_names = 12, title='All-to-All Connectivity' , show = False)
+    fig,_ = plot_connectivity_circle(conmat, label_names, n_lines=nb_lines,  node_angles=node_angles, fontsize_names = 12, title='All-to-All Connectivity' , show = False, vmin = vmin, vmax = vmax)
     
     
     #plot_conmat_file = os.path.abspath('circle.png')
