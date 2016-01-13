@@ -348,7 +348,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq, 
     else:
         return raw_ica, ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
 
-def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_freq, orig_sfreq, down_sfreq,prefiltered = False):
+def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_freq, orig_sfreq, down_sfreq ,prefiltered = False):
     
     from mne.io import RawArray	
 	
@@ -384,35 +384,42 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_fr
         
 
         ##### downsampling on data
-    ts = np.load(ts_file)
+    if orig_sfreq != down_sfreq:
+    	
+        ts = np.load(ts_file)
         
-    print ts.shape
+        print ts.shape
         
         
-    raw = RawArray(ts, info = create_info(ch_names = elec_names, sfreq = orig_sfreq))
+        raw = RawArray(ts, info = create_info(ch_names = elec_names, sfreq = orig_sfreq))
         
-    indexes_good_elec = np.arange(len(elec_names))
+        indexes_good_elec = np.arange(len(elec_names))
         
-    print indexes_good_elec
+        print indexes_good_elec
         
-    if prefiltered == False:
-        raw.filter(l_freq = None, h_freq = down_sfreq, picks = indexes_good_elec)
+        if prefiltered == False:
+            raw.filter(l_freq = None, h_freq = down_sfreq, picks = indexes_good_elec)
 
-    raw.resample(sfreq = down_sfreq,npad = 100)
+        raw.resample(sfreq = down_sfreq,npad = 100)
 	
-    downsampled_ts,times = raw[:,:]
+        downsampled_ts,times = raw[:,:]
 
 
-    print downsampled_ts.shape
+        print downsampled_ts.shape
         
         
-    downsampled_ts_file = os.path.abspath("downsampled_ts.npy")
+        downsampled_ts_file = os.path.abspath("downsampled_ts.npy")
 
-    np.save(downsampled_ts_file,downsampled_ts)
+        np.save(downsampled_ts_file,downsampled_ts)
 
-    print raw.info['sfreq']
+        print raw.info['sfreq']
        
-    return downsampled_ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
+        return downsampled_ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
+    
+    else:
+        print "No downsampling was applied as orig_sfreq and down_sfreq are identical"
+        return ts_file,channel_coords_file,channel_names_file,orig_sfreq
+        
 
 
 

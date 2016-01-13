@@ -3,6 +3,7 @@
 import numpy as np
 
 
+################################################### compute spectral connectivity #############################################################################"
 
 def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0,mode = 'multitaper'):
 
@@ -50,7 +51,6 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
     np.save(conmat_file,con_matrix)
 
     return conmat_file
-
 
 def plot_circular_connectivity(conmat_file, labels_file, is_sensor_space, nb_lines = 200):
 
@@ -327,6 +327,112 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
             conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
 
             return conmat_file
+        
+        
+        
+########################################################### plot spectral connectivity #################################################################
+
+def plot_circular_connectivity(conmat_file,labels_file,nb_lines, vmin = None, vmax = None):
+
+    import os
+    
+    import numpy as np
+    
+    from nipype.utils.filemanip import split_filename as split_f
+    
+    from mne.viz import circular_layout, plot_connectivity_circle
+    import matplotlib.pyplot as plt
+    
+    label_names= [line.strip() for line in open(labels_file)]
+    
+    path,fname,ext = split_f(conmat_file)
+    
+    print fname
+    
+    
+    #print label_names
+    conmat = np.load(conmat_file)
+    #print conmat.shape
+    
+    # Angles
+    node_angles = circular_layout(label_names, node_order = label_names, start_pos=90,
+                                group_boundaries=[0, len(label_names) / 2])
+
+    # Plot the graph using node colors from the FreeSurfer parcellation. We only
+    # show the 300 strongest connections.
+    fig,_ = plot_connectivity_circle(conmat, label_names, n_lines=nb_lines,  node_angles=node_angles, fontsize_names = 12, title='All-to-All Connectivity' , show = False, vmin = vmin, vmax = vmax)
+    
+    
+    #plot_conmat_file = os.path.abspath('circle.png')
+    plot_conmat_file = os.path.abspath('circle_' + fname + '.eps')
+    fig.savefig(plot_conmat_file, facecolor='black')
+    
+    
+    plt.close(fig)
+    #fig1.close()
+    del fig
+    
+    return plot_conmat_file
+
+     
+def filter_adj_plot_mat(conmat_file,labels_file,sep_label_name,k_neigh):
+
+    import numpy as np
+    import os
+    
+    from itertools import combinations
+    
+    labels = [line.strip().split(sep_label_name) for line in open(labels_file)]
+    
+    print labels
+    
+    triu_indices = np.triu_indices(len(labels),1)
+    
+    print triu_indices
+            
+    adj_mat = np.zeros(shape = (len(labels),len(labels)),dtype = bool)
+                   
+    for i in range(k_neigh):               
+                    
+        adj_plots = [(a[0] == b[0]) and ((int(a[1]) + i + 1 )== int(b[1])) for a,b in combinations(labels,2)]
+        
+        print len(adj_plots)
+        
+        adj_mat[triu_indices] =  adj_mat[triu_indices] + adj_plots
+        
+        print np.sum(adj_mat == True)
+        
+    print adj_mat
+    
+    ### loading ad filtering conmat_file
+    conmat = np.load(conmat_file)
+    
+    print conmat
+    
+    assert conmat.shape[0] == len(labels), "warning, wrong dimensions between labels and conmat"
+    
+    filtered_conmat = np.transpose(conmat).copy()
+    
+    #print np.transpose(adj_mat) == True
+    
+    x,y = np.where(adj_mat == True)
+    
+    filtered_conmat[x,y] = 0.0
+    
+    print filtered_conmat
+    
+    filtered_conmat_file = os.path.abspath("filtered_conmat.npy")
+    
+    np.save(filtered_conmat_file,np.transpose(filtered_conmat))
+    
+    return filtered_conmat_file
+  
+            
+            
+            
+            
+            
+            
             
 ############################## testing (can be removed from package) ###########################################
 
