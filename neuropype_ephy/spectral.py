@@ -52,6 +52,83 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 
     return conmat_file
 
+def plot_circular_connectivity(conmat_file, labels_file, is_sensor_space, nb_lines = 200):
+
+    import os
+    
+    import numpy as np
+    
+    from nipype.utils.filemanip import split_filename as split_f
+    
+    from mne.viz import circular_layout, plot_connectivity_circle
+    import matplotlib.pyplot as plt
+    
+    if is_sensor_space:
+        label_names = [line.strip() for line in open(labels_file)]
+        node_order  = label_names
+        node_colors = None
+        
+    else:
+        node_colors = [label.color for label in labels_file]    
+        # reorder the labels based on their location in the left hemi
+        label_names = [label.name for label in labels_file]
+
+        lh_labels = [name for name in label_names if name.endswith('lh')]
+
+        # Get the y-location of the label
+        label_ypos = list()
+        for name in lh_labels:
+            idx = label_names.index(name)
+            ypos = np.mean(labels_file[idx].pos[:, 1])
+            label_ypos.append(ypos)
+
+        # Reorder the labels based on their location
+        lh_labels = [label for (yp, label) in sorted(zip(label_ypos, lh_labels))]
+        
+        # For the right hemi
+        rh_labels = [label[:-2] + 'rh' for label in lh_labels]
+
+        # Save the plot order 
+        node_order = list()
+        node_order.extend(lh_labels[::-1])  # reverse the order
+        node_order.extend(rh_labels)
+
+    
+    path,fname,ext = split_f(conmat_file)    
+    print fname
+    
+    
+    #print label_names
+
+    conmat = np.load(conmat_file)
+    print conmat.shape
+    
+    
+    # Angles
+    node_angles = circular_layout(label_names, node_order, start_pos=90,
+                                group_boundaries=[0, len(label_names) / 2])
+
+    # Plot the graph using node colors from the FreeSurfer parcellation. We only
+    # show the 300 strongest connections.
+    fig,_ = plot_connectivity_circle(conmat, label_names, n_lines=nb_lines,  
+                                     node_angles=node_angles, node_colors = node_colors,
+                                     fontsize_names = 12, 
+                                     title='All-to-All Connectivity' , show = False)
+    
+    
+    #plot_conmat_file = os.path.abspath('circle.png')
+    plot_conmat_file = os.path.abspath('circle_' + fname + '.eps')
+    fig.savefig(plot_conmat_file, facecolor='black')
+    
+    
+    plt.close(fig)
+    #fig1.close()
+    del fig
+    
+    return plot_conmat_file
+    
+#################################################################################################################################################################"
+
 def spectral_proc(ts_file,sfreq,freq_band,con_method):
 
     import numpy as np
