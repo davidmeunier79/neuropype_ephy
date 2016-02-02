@@ -68,15 +68,20 @@ def split_txt(sample_size,txt_file,sep_label_name):
     return splitted_ts_file,elec_names_file
 
 
-def split_txt_multiwin(sample_size,txt_file,t_windows,sep_label_name):
+def split_txt_multiwin(sample_size,txt_file,n_windows,sep_label_name):
 
+    #, mode = 'multiplexed'
     import os
 
     import numpy as np
     import pandas as pd
 
+    #if mode == 'multiplexed':
+        #df = pd.read_table(txt_file,sep = ";",decimal = ",", header = 0, index_col = None)
+    #else:
+        #df = pd.read_table(txt_file,sep = ";",decimal = ",", header = None, index_col = 0)
+        
     df = pd.read_table(txt_file,sep = ";",decimal = ",", header = None, index_col = 0)
-    #df = pd.read_table(txt_file,sep = ";",decimal = ",", header = None, index_col = None)
     print df.values.shape
     
     ## electrode names:
@@ -87,8 +92,7 @@ def split_txt_multiwin(sample_size,txt_file,t_windows,sep_label_name):
     print list_indexes
 
     if sep_label_name != "" :
-        keep = np.array([len(index.split(sep_label_name)) == 2 for index in list_indexes],dtype = "int")
-        
+        keep = np.array([len(index.split(sep_label_name)) == 2 for index in list_indexes],dtype = "int")        
     else:
         keep = np.ones(shape = np_indexes.shape)
                         
@@ -129,11 +133,23 @@ def split_txt_multiwin(sample_size,txt_file,t_windows,sep_label_name):
 
     print np_splitted_ts.shape
 
-    print t_windows
-    0/0
+    print len(n_windows)
     
-    splitted_ts_file = os.path.abspath("splitted_ts.npy")
+    win_splitted_ts = np.array([np_splitted_ts[:,:,n_win[0]:n_win[1]] for n_win in n_windows])
+    
+    #win_splitted_ts = []
+    
+    #for n_win in n_windows:
+        
+        #win_splitted_ts.append(np_splitted_ts[:,:,n_win[0]:n_win[1]])
+        
+    #np_win_splitted_ts = np.array(win_splitted_ts)
+    
+    
+    print win_splitted_ts.shape
+    
+    win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
 
-    np.save(splitted_ts_file,np_splitted_ts)
+    np.save(win_splitted_ts_file,win_splitted_ts)
 
-    return splitted_ts_file,elec_names_file
+    return win_splitted_ts_file,elec_names_file
