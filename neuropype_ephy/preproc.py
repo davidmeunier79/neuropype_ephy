@@ -120,6 +120,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
         has_ICA = False
     else:
         has_ICA = True
+        print ica_filename + '   exists!!!'
         ica = read_ica(ica_filename)
         ica.exclude = [] 
 

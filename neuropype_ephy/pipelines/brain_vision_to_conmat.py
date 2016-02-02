@@ -29,12 +29,14 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,con_me
     pipeline.connect(split_ascii, 'splitted_ts_file', spectral, 'ts_file')
 
     #### plot spectral
-    plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file"],
+    plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
                                                  output_names = "plot_conmat_file",
                                                  function = plot_circular_connectivity), name = "plot_spectral")
     
     # plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
     plot_spectral.inputs.nb_lines = 200
+    plot_spectral.inputs.vmin = 0.3
+    plot_spectral.inputs.vmax = 1.0
     
     pipeline.connect(split_ascii,  'elec_names_file',plot_spectral,'labels_file')
     pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
@@ -55,13 +57,17 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,con_me
         
         
         #### plot filter_spectral
-        plot_filter_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file"],
+        plot_filter_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
                                                     output_names = "plot_conmat_file",
                                                     function = plot_circular_connectivity), name = "plot_filter_spectral_" + str(k_neigh))
         
         # plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
         plot_filter_spectral.inputs.nb_lines = 50
         
+        plot_filter_spectral.inputs.vmin = 0.3
+        plot_filter_spectral.inputs.vmax = 1.0
+    
+    
         pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
         pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
         

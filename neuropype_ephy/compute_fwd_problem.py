@@ -10,7 +10,7 @@ Compute leadfield matrix by BEM
 
 # compute LF matrix using mne_setup_forward_model (C MNE)
 def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
-    import os
+    import numpy as np
     import os.path as op
     import mne
     from nipype.utils.filemanip import split_filename as split_f
@@ -28,26 +28,39 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
     # check if we have just created the fwd matrix    
     if not op.isfile(fwd_filename):            
         ### check if bem-sol was created, if not it creates the bem sol using C MNE
-        bem = op.join(bem_dir, '%s-5120-bem-sol.fif' % sbj_id)
-        if not op.isfile(bem):
+        bem_fname   = op.join(bem_dir, '%s-5120-bem-sol.fif' % sbj_id)
+        model_fname = op.join(bem_dir, '%s-5120-bem.fif' % sbj_id)   
+        if not op.isfile(bem_fname):
             ### chek if inner_skull surf exists, if not raise an runtime error
             if not (op.isfile(sbj_inner_skull_fname) or op.isfile(inner_skull_fname)):
                 print sbj_inner_skull_fname + '---> FILE NOT FOUND!!!'
+                 ###TODO add BEM computation by MNE python functions
+       #                                               mne.bem.make_watershed_bem                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
                 raise RuntimeError('!!! you have to run the WATERSHED algorithm !!!')
+               
             else:
                 print '*** inner skull surface exists!!!'
 
-            os.system('$MNE_ROOT/bin/mne_setup_forward_model --subject ' + sbj_id + ' --homog --surf --ico 4')
+#            os.system('$MNE_ROOT/bin/mne_setup_forward_model --subject ' + sbj_id + ' --homog --surf --ico 4')
+            
+            surfaces = mne.make_bem_model(sbj_id, ico=4, conductivity=[0.3], 
+                                          subjects_dir=sbj_dir )     
+            mne.write_bem_surfaces(model_fname, surfaces)
+            
+            bem = mne.make_bem_solution(surfaces)
+            mne.write_bem_solution(bem_fname, bem)
         else:
-            print '*** BEM solution file exists!!!'
+            bem = bem_fname
+            print '*** BEM solution file %s exists!!!' % bem_fname
         
-        ### check if source space exists, if not it creates using mne-python func
+            ## check if source space exists, if not it creates using mne-python func
         src_fname = op.join(bem_dir, '%s-ico-5-src.fif' % sbj_id)
         if not op.isfile(src_fname):
-            src = mne.setup_source_space(sbj_id, fname=True, spacing='ico5', subjects_dir=sbj_dir, overwrite=True, n_jobs=2)
+            src = mne.setup_source_space(sbj_id, fname=True, spacing='ico5', subjects_dir=sbj_dir, 
+                                         add_dist=False, overwrite=True, n_jobs=2)
         else:
-                print '*** source space file exists!!!'
-                src = mne.read_source_spaces(src_fname)
+            print '*** source space file exists!!!'
+            src = mne.read_source_spaces(src_fname)
         
         ### check if the co-registration filw was created, if not raise an runtime error    
         trans_fname = op.join(data_path, '%s-trans.fif' % sbj_id)
@@ -57,12 +70,13 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
         ### if all is ok creates the fwd matrix
     
 #        forward = mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, overwrite=True)    
-        mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, overwrite=True)    
+        mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, 
+                                  meg=True, eeg=False, n_jobs=2, overwrite=True)    
 #    else:
 #        forward=mne.read_forward_solution(fwd_filename)
 
-#    forward = mne.convert_forward_solution(forward, surf_ori=True)    
-#    return forward
+    ### TODO convert_forward_solution ???
+#    forward = mne.convert_forward_solution(forward, surf_ori=True)
 
     return fwd_filename
 
