@@ -328,6 +328,86 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
 
             return conmat_file
         
+def multiple_windowed_spectral_proc(ts_file,sfreq,freq_band,con_method):
+
+    import numpy as np
+    import os
+
+    from mne.connectivity import spectral_connectivity
+
+    all_data = np.load(ts_file)
+
+    print all_data.shape
+
+    #print sfreq
+                
+    print freq_band
+
+    if len(all_data.shape) != 4:
+        
+        print "Warning, all_data should have 4 dimensions: nb_trials * nb_wondows * nb_nodes * nb_timepoints"
+        
+        return []
+
+    all_con_matrices = []
+
+    for i in range(all_data.shape[0]):
+
+        trial_con_matrices = []
+        
+        for j in range(all_data.shape[1]):
+                        
+            cur_data = all_data[i,j,:,:]
+
+            print cur_data.shape
+                
+            data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])
+
+            con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+
+            print con_matrix.shape
+            
+            con_matrix = np.array(con_matrix[:,:,0])
+            print con_matrix.shape
+
+            print np.min(con_matrix),np.max(con_matrix)
+    
+            trial_con_matrices.append(con_matrix)
+            
+        all_con_matrices.append(trial_con_matrices)
+        
+    np_all_con_matrices = np.array(all_con_matrices)
+    
+    print np_all_con_matrices.shape
+    
+    conmat_file = os.path.abspath("multiple_windowed_conmat_"+ con_method + ".npy")
+
+    np.save(conmat_file,np_all_con_matrices)
+
+    return conmat_file
+
+########################################################### splitting ts with temporal windows
+
+def split_win_ts(splitted_ts_file,n_windows):
+    
+    import numpy as np
+    import os
+    np_splitted_ts = np.load(splitted_ts_file)
+    
+    print np_splitted_ts.shape
+
+    print len(n_windows)
+    
+    all_win_splitted_ts = np.array([[np_splitted_ts[trial_index,:,n_win[0]:n_win[1]] for n_win in n_windows if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]] for trial_index in range(np_splitted_ts.shape[0])])
+    
+    print all_win_splitted_ts.shape
+    
+    win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
+
+    np.save(win_splitted_ts_file,all_win_splitted_ts)
+
+    return win_splitted_ts_file
+
         
         
 ########################################################### plot spectral connectivity #################################################################
