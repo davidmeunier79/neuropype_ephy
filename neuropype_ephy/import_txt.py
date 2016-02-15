@@ -1,14 +1,50 @@
 # -*- coding: utf-8 -*-
 
 
-def split_txt(sample_size,txt_file,sep_label_name):
+def split_txt(sample_size,txt_file,sep_label_name, repair = True, sep = ";"):
 
     import os
 
     import numpy as np
     import pandas as pd
 
-    df = pd.read_table(txt_file,sep = ";",decimal = ",", header = None, index_col = 0)
+    if repair == True:
+        
+        df_data = []
+        elec_names = []
+        
+        with open(txt_file) as f:
+            
+            lines = f.readlines()
+            
+            for line in lines:
+                
+                print line
+                
+                splitted_line = line.strip().split(sep,1)
+                
+                name = splitted_line[0]
+                
+                elec_names.append(name)
+                
+                
+                #elec_names.append("".join(name.split(" ")))
+                
+                data = splitted_line[1]
+                
+                print len(data.split(sep))
+                
+                new_data = data.replace(" ",sep)
+                
+                df_data.append([float(data.replace(",",".")) for data in new_data.split(sep)])
+                
+        print df_data
+        print np.array(df_data).shape
+        
+        df = pd.DataFrame(np.array(df_data),index = elec_names)
+                     
+    else:
+        df = pd.read_table(txt_file,sep = sep,decimal = ",", header = None, index_col = 0)
 
 
     ## electrode names:
