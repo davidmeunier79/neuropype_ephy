@@ -270,7 +270,7 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
     return conmat_files
 
 
-def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoch_window_length):
+def epoched_spectral_proc(ts_file,sfreq,freq_band,con_method,epoch_window_length):
 
     import numpy as np
 
@@ -281,53 +281,52 @@ def epoched_spectral_proc(ts_file,sfreq,freq_band,freq_band_name,con_method,epoc
     print data.shape
     print sfreq
     print freq_band
-    print freq_band_name
 
     if epoch_window_length == None:
         
         conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
     else:
-            
-            print "Shape before splits:"
-            print data.shape
-            
-            print  "sfreq:"
-            print sfreq
-            
-            nb_splits = data.shape[1] // (epoch_window_length * sfreq)
-            
-            print "nb_splits:"
-            print nb_splits
-            
-            reste = data.shape[1] % int(epoch_window_length * sfreq)
-            
-            print "reste:"
-            print reste
-            
-            if reste != 0:
-                data = data[:,:-reste]
-            
-            print "shape after reste:"
-            print data.shape
-            
-            print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
-            
-            
-            
-            list_epoched_data = np.array_split(data,nb_splits,axis = 1)
-            
-            for epo in list_epoched_data:
-                print epo.shape
-            
-            #print "Shape after splits:"
-            #print epoched_data.shape
-
-            epoched_data = np.array(list_epoched_data)
-            
-            conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
-
-            return conmat_file
         
+        print "Shape before splits:"
+        print data.shape
+        
+        print  "sfreq:"
+        print sfreq
+        
+        nb_splits = data.shape[1] // (epoch_window_length * sfreq)
+        
+        print "nb_splits:"
+        print nb_splits
+        
+        reste = data.shape[1] % int(epoch_window_length * sfreq)
+        
+        print "reste:"
+        print reste
+        
+        if reste != 0:
+            data = data[:,:-reste]
+        
+        print "shape after reste:"
+        print data.shape
+        
+        print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+        
+        
+        
+        list_epoched_data = np.array_split(data,nb_splits,axis = 1)
+        
+        for epo in list_epoched_data:
+            print epo.shape
+        
+        #print "Shape after splits:"
+        #print epoched_data.shape
+
+        epoched_data = np.array(list_epoched_data)
+        
+        conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+
+        return conmat_file
+    
 def multiple_windowed_spectral_proc(ts_file,sfreq,freq_band,con_method):
 
     import numpy as np
@@ -588,6 +587,11 @@ def test_spectral_connectivity(main_path = "/mnt/Data/Projet-Karim", con_method 
 
             #0/0
             
+def test_epoched_spectral_proc():
+    
+    
+    epoched_spectral_proc(ts_file = "/mnt/Data/Projet-Karim/Test-Medit-Daphne/downsampled_ts.npy",sfreq = 300, freq_band = [30,59], con_method = 'imcoh', epoch_window_length = 3.0)
 
 if __name__ == '__main__':
-    test_spectral_connectivity()
+    #test_spectral_connectivity()
+    test_epoched_spectral_proc()
