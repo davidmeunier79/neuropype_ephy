@@ -13,6 +13,8 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
     import numpy as np
     import os.path as op
     import mne
+    
+    from mne.bem import make_watershed_bem    
     from nipype.utils.filemanip import split_filename as split_f
     
     bem_dir = op.join(sbj_dir, sbj_id, 'bem')
@@ -31,12 +33,13 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
         bem_fname   = op.join(bem_dir, '%s-5120-bem-sol.fif' % sbj_id)
         model_fname = op.join(bem_dir, '%s-5120-bem.fif' % sbj_id)   
         if not op.isfile(bem_fname):
-            ### chek if inner_skull surf exists, if not raise an runtime error
+            ### chek if inner_skull surf exists, if not raise a runtime error
             if not (op.isfile(sbj_inner_skull_fname) or op.isfile(inner_skull_fname)):
                 print sbj_inner_skull_fname + '---> FILE NOT FOUND!!!'
                  ###TODO add BEM computation by MNE python functions
        #                                               mne.bem.make_watershed_bem                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                raise RuntimeError('!!! you have to run the WATERSHED algorithm !!!')
+#                raise RuntimeError('!!! you have to run the WATERSHED algorithm !!!')
+                make_watershed_bem(sbj_id, sbj_dir, overwrite=True)
                
             else:
                 print '*** inner skull surface exists!!!'
@@ -53,7 +56,7 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
             bem = bem_fname
             print '*** BEM solution file %s exists!!!' % bem_fname
         
-            ## check if source space exists, if not it creates using mne-python func
+        ### check if source space exists, if not it creates using mne-python func
         src_fname = op.join(bem_dir, '%s-ico-5-src.fif' % sbj_id)
         if not op.isfile(src_fname):
             src = mne.setup_source_space(sbj_id, fname=True, spacing='ico5', subjects_dir=sbj_dir, 
@@ -62,7 +65,7 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
             print '*** source space file exists!!!'
             src = mne.read_source_spaces(src_fname)
         
-        ### check if the co-registration filw was created, if not raise an runtime error    
+        ### check if the co-registration file was created, if not raise an runtime error    
         trans_fname = op.join(data_path, '%s-trans.fif' % sbj_id)
         if not op.isfile(trans_fname):
             raise RuntimeError('coregistration file %s NOT found!!!' % trans_fname)
@@ -74,9 +77,6 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
                                   meg=True, eeg=False, n_jobs=2, overwrite=True)    
 #    else:
 #        forward=mne.read_forward_solution(fwd_filename)
-
-    ### TODO convert_forward_solution ???
-#    forward = mne.convert_forward_solution(forward, surf_ori=True)
 
     return fwd_filename
 
