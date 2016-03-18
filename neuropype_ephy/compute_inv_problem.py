@@ -6,7 +6,7 @@ Created on Thu Oct  8 17:53:07 2015
 @author: pasca
 """
 # compute inverse solution on raw data
-def compute_inv_sol(raw, fwd_filename, snr, method):
+def compute_inv_sol(raw, fwd_filename, snr, inv_method):
     import os.path as op
     import numpy as np
     import mne
@@ -37,7 +37,7 @@ def compute_inv_sol(raw, fwd_filename, snr, method):
     t_stop  = 3 # sec
     start, stop = raw.time_as_index([t_start, t_stop])
     print '***** APPLY INV OP ***** [%d %d]sec' %(t_start, t_stop)
-    stc = apply_inverse_raw(raw, inverse_operator, lambda2, method, label=None, 
+    stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method, label=None, 
                             start=start, stop=stop, pick_ori=None)
     
     print '***'
@@ -58,7 +58,7 @@ def compute_inv_sol(raw, fwd_filename, snr, method):
     
 # compute the inverse solution on raw data considering N_r regions in source space 
 # based on a FreeSurfer cortical parcellation
-def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, snr, method, parc):
+def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, snr, inv_method, parc):
     import os.path as op
     import numpy as np
     import mne
@@ -84,7 +84,7 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, snr, method, parc):
     
     # apply inverse operator to the time windows [t_start, t_stop]s
     print '***** APPLY INV OP *****' 
-    stc = apply_inverse_raw(raw, inverse_operator, lambda2, method, label=None, 
+    stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method, label=None, 
                             start=None, stop=None, buffer_size = 1000, 
                             pick_ori=None) #None 'normal'
     
