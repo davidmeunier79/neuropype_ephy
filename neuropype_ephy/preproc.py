@@ -60,7 +60,7 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq):
 
 	return ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
 
-def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq, down_sfreq, is_sensor_space):
+def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq, down_sfreq, variance, is_sensor_space, data_type):
     import os
     import numpy as np
 
@@ -114,7 +114,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     # check if we have an ICA, if yes, we load it
     ica_filename = os.path.join(subj_path,basename + "-ica.fif")  
     if os.path.exists(ica_filename) == False:
-        ica = ICA(n_components=0.95, method='fastica') # , max_iter=500
+        ica = ICA(n_components=variance, method='fastica', max_iter=500) # , max_iter=500
         ica.fit(raw, picks=select_sensors, reject=reject) # decim = 3, 
         
         has_ICA = False
@@ -141,8 +141,9 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
         ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors)
     
     ### ICA for ECG artifact 
-    # threshold=0.25 come defualt
+    # threshold=0.25 come default
     ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+    print '*************************** ' + str(len(ecg_inds)) + '*********************************'
     if len(ecg_inds) > 0:
         ecg_evoked = ecg_epochs.average()
         
@@ -175,11 +176,16 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
                                                   'ECG overlay'], section = 'ICA - ECG')    
     
     # check if EoG_ch_name is in the raw channels
-    if EoG_ch_name in raw.info['ch_names']:        
-        ### ICA for eye blink artifact - detect EOG by correlation
-        eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
+    # if EoG_ch_name is empty if data_type is fif, ICA routine automatically looks for EEG61, EEG62
+    # otherwise if data_type is ds we jump this step
+    if not EoG_ch_name and data_type=='ds':
+        eog_inds = []
     else:
-        eog_inds, scores = ica.find_bads_eog(raw)
+        if EoG_ch_name in raw.info['ch_names']:        
+            ### ICA for eye blink artifact - detect EOG by correlation
+            eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
+        else:
+            eog_inds, scores = ica.find_bads_eog(raw)
 
     if len(eog_inds) > 0:  
         
@@ -230,6 +236,35 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
 
     fig11 = ica.plot_overlay(raw, show=is_show)
     report.add_figs_to_section(fig11, captions=['Signal'], section = 'Signal quality') 
+   
+    ### plot all topographies and time seris of the ICA components
+    n_ica_components = ica.mixing_matrix_.shape[1];
+    
+    n_topo = 5;
+    n_fig  = n_ica_components/n_topo;
+    n_plot = n_ica_components%n_topo;
+
+    print '*************** n_fig = ' + str(n_fig) + ' n_plot = ' + str(n_plot) + '********************'
+    fig = []
+    for n in range(0,n_fig):
+        fig_tmp = ica.plot_components(range(n_topo*n,n_topo*(n+1)),title='ICA components')    
+        fig.append(fig_tmp)
+        fig_tmp = ica.plot_sources(raw, range(n_topo*n,n_topo*(n+1)), 
+                                    start = raw.times[0], stop  = raw.times[-1], 
+                                    title='ICA components')     
+        fig.append(fig_tmp)
+    
+    if n_plot > 0:
+        fig_tmp = ica.plot_components(range(n_fig*n_topo,n_ica_components), title='ICA components')    
+        fig.append(fig_tmp)
+        fig_tmp = ica.plot_sources(raw, range(n_fig*n_topo,n_ica_components), 
+                                        start = raw.times[0], stop  = raw.times[-1], 
+                                        title='ICA components')     
+        fig.append(fig_tmp)   
+   
+    for n in range(0, len(fig)):
+        report.add_figs_to_section(fig[n], captions=['TOPO'], section = 'ICA Topo Maps') 
+    
     report_filename = os.path.join(subj_path,basename + "-report.html")
     print '******* ' + report_filename
     report.save(report_filename, open_browser=False, overwrite=True)
