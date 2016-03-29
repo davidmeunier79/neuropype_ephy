@@ -253,7 +253,11 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
             
             print data.shape
 
-        con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+        con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, 
+                                                                              mode='multitaper', sfreq=sfreq, 
+                                                                              fmin= freq_band[0], fmax=freq_band[1], 
+                                                                              faverage=True, tmin=None,    
+                                                                              mt_adaptive=False, n_jobs=1)
 
         print con_matrix.shape
         con_matrix = np.array(con_matrix[:,:,0])
