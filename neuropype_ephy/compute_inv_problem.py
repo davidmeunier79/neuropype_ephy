@@ -22,7 +22,9 @@ def compute_inv_sol(raw, fwd_filename, snr, inv_method):
 
     picks = mne.pick_types(raw.info, meg=True, ref_meg=False, exclude='bads')
 
-    # compute noise covariance data
+    # compute noise covariance data from a continuous segment of raw data.
+    # Employ empty room data (collected without the subject) to calculate the full noise covariance matrix. 
+    # This is recommended for analyzing ongoing spontaneous activity. 
     print '***** COMPUTE RAW COV *****'
     noise_cov = mne.compute_raw_covariance(raw, picks=picks, reject=reject)
     
