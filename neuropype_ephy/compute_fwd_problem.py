@@ -14,8 +14,12 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
     import os.path as op
     import mne
     
-    from mne.bem import make_watershed_bem    
+    from mne.bem import make_watershed_bem  
+    from mne.report import Report
+    
     from nipype.utils.filemanip import split_filename as split_f
+    
+    report = Report()
     
     bem_dir = op.join(sbj_dir, sbj_id, 'bem')
 
@@ -27,7 +31,7 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
 
     fwd_filename = op.join(data_path, '%s-fwd.fif' % basename)
     
-    # check if we have just created the fwd matrix    
+    ### check if we have just created the fwd matrix    
     if not op.isfile(fwd_filename):            
         ### check if bem-sol was created, if not it creates the bem sol using C MNE
         bem_fname   = op.join(bem_dir, '%s-5120-bem-sol.fif' % sbj_id)
@@ -52,6 +56,11 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
             
             bem = mne.make_bem_solution(surfaces)
             mne.write_bem_solution(bem_fname, bem)
+            
+            report.add_bem_to_section(subject=sbj_id, subjects_dir=sbj_dir) 
+            report_filename = op.join(bem_dir, "BEM_report.html")
+            print report_filename
+            report.save(report_filename, open_browser=False, overwrite=True)
         else:
             bem = bem_fname
             print '*** BEM solution file %s exists!!!' % bem_fname
