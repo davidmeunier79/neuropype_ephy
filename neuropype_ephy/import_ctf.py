@@ -15,24 +15,36 @@ from params import main_path
 ##################### nodes (Function)
 
 def convert_ds_to_raw_fif(ds_file):
+    import os
+    from nipype.utils.filemanip import split_filename as split_f
+    from mne.io import read_raw_ctf
+    subj_path,basename,ext = split_f(ds_file)
+    print subj_path,basename,ext
+    raw = read_raw_ctf(ds_file)
+    raw_fif_file = os.path.abspath(basename + "_raw.fif")
+    raw.save(raw_fif_file)
+    return raw_fif_file
 
-	import os
 
-	from nipype.utils.filemanip import split_filename as split_f
+#def convert_ds_to_raw_fif(ds_file):
 
-	subj_path,basename,ext = split_f(ds_file)
+	#import os
+
+	#from nipype.utils.filemanip import split_filename as split_f
+
+	#subj_path,basename,ext = split_f(ds_file)
 
 	
-	#basename = os.path.splitext(ds_file)[0]
+	##basename = os.path.splitext(ds_file)[0]
 
-	print subj_path,basename,ext
-	#0/0
+	#print subj_path,basename,ext
+	##0/0
 
-	raw_fif_file = os.path.join(subj_path,basename + "_raw.fif")
+	#raw_fif_file = os.path.join(subj_path,basename + "_raw.fif")
 
-	os.system("$MNE_ROOT/bin/mne_ctf2fiff --ds " + os.path.join(subj_path,ds_file) + " --fif " + raw_fif_file)
+	#os.system("$MNE_ROOT/bin/mne_ctf2fiff --ds " + os.path.join(subj_path,ds_file) + " --fif " + raw_fif_file)
 
-	return raw_fif_file
+	#return raw_fif_file
 
 
 def compute_ROI_coordinates():
