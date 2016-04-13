@@ -40,23 +40,22 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
             ### chek if inner_skull surf exists, if not raise a runtime error
             if not (op.isfile(sbj_inner_skull_fname) or op.isfile(inner_skull_fname)):
                 print sbj_inner_skull_fname + '---> FILE NOT FOUND!!!'
-                 ###TODO add BEM computation by MNE python functions
-       #                                               mne.bem.make_watershed_bem                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-#                raise RuntimeError('!!! you have to run the WATERSHED algorithm !!!')
+                 ### BEM computation by MNE python functions mne.bem.make_watershed_bem                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
                 make_watershed_bem(sbj_id, sbj_dir, overwrite=True)
-               
             else:
                 print '*** inner skull surface exists!!!'
-
-#            os.system('$MNE_ROOT/bin/mne_setup_forward_model --subject ' + sbj_id + ' --homog --surf --ico 4')
             
+            ### Create a BEM model for a subject
             surfaces = mne.make_bem_model(sbj_id, ico=4, conductivity=[0.3], 
-                                          subjects_dir=sbj_dir )     
+                                          subjects_dir=sbj_dir )  
+            ### Write BEM surfaces to a fiff file
             mne.write_bem_surfaces(model_fname, surfaces)
             
+            ### Create a BEM solution using the linear collocation approach
             bem = mne.make_bem_solution(surfaces)
             mne.write_bem_solution(bem_fname, bem)
             
+            # add BEM figures to a Report
             report.add_bem_to_section(subject=sbj_id, subjects_dir=sbj_dir) 
             report_filename = op.join(bem_dir, "BEM_report.html")
             print report_filename
@@ -64,28 +63,36 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
         else:
             bem = bem_fname
             print '*** BEM solution file %s exists!!!' % bem_fname
-        
+
         ### check if source space exists, if not it creates using mne-python func
-        src_fname = op.join(bem_dir, '%s-ico-5-src.fif' % sbj_id)
+        spacing_str = 'ico-5'
+        src_fname = op.join(bem_dir, '%s-%s-src.fif' % (sbj_id, spacing_str))
         if not op.isfile(src_fname):
-            src = mne.setup_source_space(sbj_id, fname=True, spacing='ico5', subjects_dir=sbj_dir, 
+            src = mne.setup_source_space(sbj_id, fname=True, spacing=spacing_str.replace('-',''), subjects_dir=sbj_dir, 
                                          add_dist=False, overwrite=True, n_jobs=2)
         else:
-            print '*** source space file exists!!!'
+            print '*** source space file %s exists!!!' % src_fname
             src = mne.read_source_spaces(src_fname)
         
         ### check if the co-registration file was created, if not raise an runtime error    
         trans_fname = op.join(data_path, '%s-trans.fif' % sbj_id)
         if not op.isfile(trans_fname):
             raise RuntimeError('coregistration file %s NOT found!!!' % trans_fname)
+            
+        ### TODOOO -> add fig of coregistration, something as:
+        '''
+        info = mne.io.read_info(raw_fname)
+        fig = mne.viz.plot_trans(info, trans, subject='sample', dig=True, meg_sensors=True,
+                         subjects_dir=subjects_dir);
+        mlab.savefig('coreg.jpg')
+        Image(filename='coreg.jpg', width=500)
+        '''
+        
         
         ### if all is ok creates the fwd matrix
-    
-#        forward = mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, overwrite=True)    
         mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, 
+                                  mindist=5.0, # ignore sources <= 0mm from inner skull
                                   meg=True, eeg=False, n_jobs=2, overwrite=True)    
-#    else:
-#        forward=mne.read_forward_solution(fwd_filename)
 
     return fwd_filename
 
@@ -198,7 +205,7 @@ def plot_forward(fwd, sbj_id, sbj_dir):
     
     grad_map.plot(subject=sbj_id, time_label='Gradiometer sensitivity', subjects_dir=sbj_dir, clim='auto')
 
-# plot bel on MRI
+# plot bem on MRI
 def check_bem(sbj_id, sbj_dir, raw_info, trans_fname, report):
     import os.path as op
     import mne
