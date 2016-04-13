@@ -15,6 +15,8 @@ def compute_inv_sol(raw, fwd_filename, snr, inv_method):
     
     print '***** READ FWD SOL %s *****' %fwd_filename
     forward = mne.read_forward_solution(fwd_filename)
+    
+    # Convert to surface orientation for cortically constrained inverse modeling
     forward = mne.convert_forward_solution(forward, surf_ori=True)
 
     lambda2 = 1.0 / snr ** 2
