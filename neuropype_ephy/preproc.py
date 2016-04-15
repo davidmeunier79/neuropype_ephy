@@ -63,7 +63,7 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
     if is_sensor_space:
         return ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
     else:
-        return raw, ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
+        return raw, channel_coords_file,channel_names_file,raw.info['sfreq']
 
 def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq, down_sfreq, variance, is_sensor_space, data_type):
     import os
@@ -331,7 +331,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     if is_sensor_space:
         return ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
     else:
-        return raw_ica, ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
+        return raw_ica, channel_coords_file,channel_names_file,raw.info['sfreq']
 
         
         
