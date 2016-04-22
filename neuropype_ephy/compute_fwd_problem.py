@@ -18,6 +18,8 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info, aseg, spacing, labels):
 
     from nipype.utils.filemanip import split_filename as split_f
     
+    from neuropype_ephy.compute_fwd_problem import create_mixed_source_space
+    
     report = Report()
     
     bem_dir = op.join(sbj_dir, sbj_id, 'bem')
@@ -82,31 +84,32 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info, aseg, spacing, labels):
             src = mne.read_source_spaces(src_fname)
         
         if aseg:
-            src_aseg_fname = op.join(bem_dir, '%s-%s-aseg-src.fif' % (sbj_id, spacing))            
-            aseg_fname = op.join(sbj_dir,sbj_id, 'mri/aseg.mgz')
-            
-            if spacing == 'oct-6':
-                pos = 5.0
-            elif spacing == 'ico-5':
-                pos = 3.0  
-                
-            for l in labels:
-                print l
-                vol_label = mne.setup_volume_source_space(sbj_id, mri=aseg_fname, 
-                                          pos=pos,
-                                          bem=model_fname,
-                                          volume_label=l,
-                                          subjects_dir=sbj_dir)
-                src += vol_label
-
-
-            mne.write_source_spaces(src_aseg_fname, src)
-
-            # Export source positions to nift file
-            nii_fname = op.join(bem_dir, '%s-%s-aseg-src.nii' % (sbj_id, spacing)) 
-        
-            # Combine the source spaces
-            src.export_volume(nii_fname, mri_resolution=True)
+            src = create_mixed_source_space(sbj_dir, sbj_id, spacing, labels, src)
+#            src_aseg_fname = op.join(bem_dir, '%s-%s-aseg-src.fif' % (sbj_id, spacing))            
+#            aseg_fname = op.join(sbj_dir,sbj_id, 'mri/aseg.mgz')
+#            
+#            if spacing == 'oct-6':
+#                pos = 5.0
+#            elif spacing == 'ico-5':
+#                pos = 3.0  
+#                
+#            for l in labels:
+#                print l
+#                vol_label = mne.setup_volume_source_space(sbj_id, mri=aseg_fname, 
+#                                          pos=pos,
+#                                          bem=model_fname,
+#                                          volume_label=l,
+#                                          subjects_dir=sbj_dir)
+#                src += vol_label
+#
+#
+#            mne.write_source_spaces(src_aseg_fname, src)
+#
+#            # Export source positions to nift file
+#            nii_fname = op.join(bem_dir, '%s-%s-aseg-src.nii' % (sbj_id, spacing)) 
+#        
+#            # Combine the source spaces
+#            src.export_volume(nii_fname, mri_resolution=True)
         
         n = sum(src[i]['nuse'] for i in range(len(src)))
         print('il src space contiene %d spaces e %d vertici' % (len(src),n))  
@@ -128,6 +131,42 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info, aseg, spacing, labels):
         print '*** FWD file %s exists!!!' % fwd_filename
         
     return fwd_filename
+
+def create_mixed_source_space(sbj_dir, sbj_id, spacing, labels, src):
+    import os.path as op
+    from mne import setup_volume_source_space,write_source_spaces 
+    
+    bem_dir = op.join(sbj_dir, sbj_id, 'bem')
+    
+    src_aseg_fname = op.join(bem_dir, '%s-%s-aseg-src.fif' % (sbj_id, spacing))            
+    aseg_fname = op.join(sbj_dir, sbj_id, 'mri/aseg.mgz')
+    
+    if spacing == 'oct-6':
+        pos = 5.0
+    elif spacing == 'ico-5':
+        pos = 3.0  
+        
+    model_fname = op.join(bem_dir, '%s-5120-bem.fif' % sbj_id)  
+    for l in labels:
+        print l
+        vol_label = setup_volume_source_space(sbj_id, mri=aseg_fname, 
+                                  pos=pos,
+                                  bem=model_fname,
+                                  volume_label=l,
+                                  subjects_dir=sbj_dir)
+        src += vol_label
+
+
+    write_source_spaces(src_aseg_fname, src)
+
+    # Export source positions to nift file
+    nii_fname = op.join(bem_dir, '%s-%s-aseg-src.nii' % (sbj_id, spacing)) 
+
+    # Combine the source spaces
+    src.export_volume(nii_fname, mri_resolution=True)
+    
+    return src
+
 
 # test function -> TODO eliminare!
 def test_compute_LF_matrix():
