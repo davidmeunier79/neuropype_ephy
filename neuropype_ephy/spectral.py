@@ -82,18 +82,29 @@ def plot_circular_connectivity(conmat_file, labels_file, is_sensor_space, nb_lin
             ypos = np.mean(labels_file[idx].pos[:, 1])
             label_ypos.append(ypos)
 
+        # TODO aggiungere il Brainstem!
+        try:
+            idx = label_names.index('Brain-Stem')
+            ypos = np.mean(labels_file[idx].pos[:, 1])
+            lh_labels.append('Brain-Stem')
+            label_ypos.append(ypos)
+        except ValueError:
+            pass
+
         # Reorder the labels based on their location
         lh_labels = [label for (yp, label) in sorted(zip(label_ypos, lh_labels))]
         
         # For the right hemi
-        rh_labels = [label[:-2] + 'rh' for label in lh_labels]
-
+  #      rh_labels = [label[:-2] + 'rh' for label in lh_labels]
+        # TODO aggiungere il Brainstem!
+        rh_labels = [label[:-2] + 'rh' for label in lh_labels if label.endswith('lh')]
+        
         # Save the plot order 
         node_order = list()
         node_order.extend(lh_labels[::-1])  # reverse the order
         node_order.extend(rh_labels)
 
-    
+   
     path,fname,ext = split_f(conmat_file)    
     print fname
     
@@ -103,7 +114,8 @@ def plot_circular_connectivity(conmat_file, labels_file, is_sensor_space, nb_lin
     conmat = np.load(conmat_file)
     print conmat.shape
     
-    
+    len(node_order)
+    len(label_names)
     # Angles
     node_angles = circular_layout(label_names, node_order, start_pos=90,
                                 group_boundaries=[0, len(label_names) / 2])
