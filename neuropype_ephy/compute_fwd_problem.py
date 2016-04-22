@@ -9,11 +9,16 @@ Compute leadfield matrix by BEM
 """
 
 # compute LF matrix using mne_setup_forward_model (C MNE)
-def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
-    import numpy as np
+def compute_LF_matrix(sbj_id, sbj_dir, raw_info, aseg, spacing, labels):
     import os.path as op
     import mne
+    
+    from mne.bem import make_watershed_bem  
+    from mne.report import Report
+
     from nipype.utils.filemanip import split_filename as split_f
+    
+    report = Report()
     
     bem_dir = op.join(sbj_dir, sbj_id, 'bem')
 
@@ -21,63 +26,107 @@ def compute_LF_matrix(sbj_id, sbj_dir, raw_info):
     sbj_inner_skull_fname = op.join(bem_dir, sbj_id + '-' + surf_name)
     inner_skull_fname = op.join(bem_dir, surf_name)
 
-    data_path, basename, ext = split_f(raw_info['filename'])
+    data_path, raw_fname, ext = split_f(raw_info['filename'])
 
-    fwd_filename = op.join(data_path, '%s-fwd.fif' % basename)
+    if aseg:
+        fwd_filename = op.join(data_path, '%s-%s-aseg-fwd.fif' % (raw_fname, spacing))  
+    else:
+        fwd_filename = op.join(data_path, '%s-%s-fwd.fif' % (raw_fname, spacing))
     
     # check if we have just created the fwd matrix    
     if not op.isfile(fwd_filename):            
-        ### check if bem-sol was created, if not it creates the bem sol using C MNE
+        # check if bem-sol was created, if not it creates the bem sol using C MNE
         bem_fname   = op.join(bem_dir, '%s-5120-bem-sol.fif' % sbj_id)
         model_fname = op.join(bem_dir, '%s-5120-bem.fif' % sbj_id)   
         if not op.isfile(bem_fname):
-            ### chek if inner_skull surf exists, if not raise an runtime error
+            # chek if inner_skull surf exists, if not BEM computation is 
+            # performed by MNE python functions mne.bem.make_watershed_bem  
             if not (op.isfile(sbj_inner_skull_fname) or op.isfile(inner_skull_fname)):
-                print sbj_inner_skull_fname + '---> FILE NOT FOUND!!!'
-                 ###TODO add BEM computation by MNE python functions
-       #                                               mne.bem.make_watershed_bem                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                raise RuntimeError('!!! you have to run the WATERSHED algorithm !!!')
-               
+                print sbj_inner_skull_fname + '---> FILE NOT FOUND!!! ---> BEM is computed'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                make_watershed_bem(sbj_id, sbj_dir, overwrite=True)
             else:
                 print '*** inner skull surface exists!!!'
-
-#            os.system('$MNE_ROOT/bin/mne_setup_forward_model --subject ' + sbj_id + ' --homog --surf --ico 4')
             
-            surfaces = mne.make_bem_model(sbj_id, ico=4, conductivity=[0.3], 
-                                          subjects_dir=sbj_dir )     
+            # Create a BEM model for a subject
+            surfaces = mne.make_bem_model(sbj_id, ico=4, conductivity=[0.3],
+                                          subjects_dir=sbj_dir)
+            # Write BEM surfaces to a fiff file
             mne.write_bem_surfaces(model_fname, surfaces)
-            
+
+            # Create a BEM solution using the linear collocation approach
             bem = mne.make_bem_solution(surfaces)
             mne.write_bem_solution(bem_fname, bem)
+
+            print '*** BEM solution file %s written ***' % bem_fname
+            # add BEM figures to a Report
+            report.add_bem_to_section(subject=sbj_id, subjects_dir=sbj_dir)
+            report_filename = op.join(bem_dir, "BEM_report.html")
+            print report_filename
+            report.save(report_filename, open_browser=False, overwrite=True)
         else:
             bem = bem_fname
             print '*** BEM solution file %s exists!!!' % bem_fname
-        
-            ## check if source space exists, if not it creates using mne-python func
-        src_fname = op.join(bem_dir, '%s-ico-5-src.fif' % sbj_id)
+
+        # check if source space exists, if not it creates using mne-python fun
+        # we have to create the cortical surface source space even when aseg is
+        # True
+        src_fname = op.join(bem_dir, '%s-%s-src.fif' % (sbj_id, spacing))
         if not op.isfile(src_fname):
-            src = mne.setup_source_space(sbj_id, fname=True, spacing='ico5', subjects_dir=sbj_dir, 
+            src = mne.setup_source_space(sbj_id, subjects_dir=sbj_dir,
+                                         fname=True,
+                                         spacing=spacing.replace('-',''),
                                          add_dist=False, overwrite=True, n_jobs=2)
+            print '*** source space file %s written ***' % src_fname                              
         else:
-            print '*** source space file exists!!!'
+            print '*** source space file %s exists!!!' % src_fname
             src = mne.read_source_spaces(src_fname)
         
-        ### check if the co-registration filw was created, if not raise an runtime error    
-        trans_fname = op.join(data_path, '%s-trans.fif' % sbj_id)
+        if aseg:
+            src_aseg_fname = op.join(bem_dir, '%s-%s-aseg-src.fif' % (sbj_id, spacing))            
+            aseg_fname = op.join(sbj_dir,sbj_id, 'mri/aseg.mgz')
+            
+            if spacing == 'oct-6':
+                pos = 5.0
+            elif spacing == 'ico-5':
+                pos = 3.0  
+                
+            for l in labels:
+                print l
+                vol_label = mne.setup_volume_source_space(sbj_id, mri=aseg_fname, 
+                                          pos=pos,
+                                          bem=model_fname,
+                                          volume_label=l,
+                                          subjects_dir=sbj_dir)
+                src += vol_label
+
+
+            mne.write_source_spaces(src_aseg_fname, src)
+
+            # Export source positions to nift file
+            nii_fname = op.join(bem_dir, '%s-%s-aseg-src.nii' % (sbj_id, spacing)) 
+        
+            # Combine the source spaces
+            src.export_volume(nii_fname, mri_resolution=True)
+        
+        n = sum(src[i]['nuse'] for i in range(len(src)))
+        print('il src space contiene %d spaces e %d vertici' % (len(src),n))  
+       
+        # check if the co-registration file was created, if not raise an runtime error    
+        trans_fname = op.join(data_path, '%s-trans.fif' % raw_fname)
         if not op.isfile(trans_fname):
             raise RuntimeError('coregistration file %s NOT found!!!' % trans_fname)
+            
+       
+        # if all is ok creates the fwd matrix
+        mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename,
+                                  mindist=5.0, # ignore sources <= 0mm from inner skull
+                                  meg=True, eeg=False,
+                                  n_jobs=2,
+                                  overwrite=True)
+
+    else:
+        print '*** FWD file %s exists!!!' % fwd_filename
         
-        ### if all is ok creates the fwd matrix
-    
-#        forward = mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, overwrite=True)    
-        mne.make_forward_solution(raw_info, trans_fname, src, bem, fwd_filename, 
-                                  meg=True, eeg=False, n_jobs=2, overwrite=True)    
-#    else:
-#        forward=mne.read_forward_solution(fwd_filename)
-
-    ### TODO convert_forward_solution ???
-#    forward = mne.convert_forward_solution(forward, surf_ori=True)
-
     return fwd_filename
 
 # test function -> TODO eliminare!
@@ -189,7 +238,7 @@ def plot_forward(fwd, sbj_id, sbj_dir):
     
     grad_map.plot(subject=sbj_id, time_label='Gradiometer sensitivity', subjects_dir=sbj_dir, clim='auto')
 
-# plot bel on MRI
+# plot bem on MRI
 def check_bem(sbj_id, sbj_dir, raw_info, trans_fname, report):
     import os.path as op
     import mne

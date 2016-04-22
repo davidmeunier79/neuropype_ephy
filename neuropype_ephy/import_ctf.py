@@ -16,11 +16,12 @@ from params import main_path
 
 def convert_ds_to_raw_fif(ds_file):
     import os
-    
     import os.path as op
     
     from nipype.utils.filemanip import split_filename as split_f
     from mne.io import read_raw_ctf
+    
+    
     subj_path,basename,ext = split_f(ds_file)
     print subj_path,basename,ext
     raw = read_raw_ctf(ds_file)
