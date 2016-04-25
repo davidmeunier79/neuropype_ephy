@@ -111,7 +111,8 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     np.savetxt(channel_names_file,sens_names , fmt = '%s')
  
     ### filtering + downsampling
-    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
+    #raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
+    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir')
     raw.resample(sfreq = down_sfreq, npad = 0)
 
 
@@ -382,7 +383,8 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq, 
     np.savetxt(channel_names_file,sens_names , fmt = '%s')
    
     ### filtering + downsampling
-    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
+    #raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
+    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir')
     raw.resample(sfreq = down_sfreq, npad = 0)
 
     ### load ICA
