@@ -10,7 +10,7 @@ from mne import filter
 
 import numpy as np
 
-from params import main_path
+#from params import main_path
 
 ##################### nodes (Function)
 
