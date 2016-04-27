@@ -49,7 +49,7 @@ class SpectralConn(BaseInterface):
         freq_band = self.inputs.freq_band
         con_method = self.inputs.con_method
         
-        self.conmat_file = spectral_proc(ts_file,sfreq,freq_band,con_method):
+        self.conmat_file = spectral_proc(ts_file,sfreq,freq_band,con_method)
 
         return runtime
         
