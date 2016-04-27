@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import nipype.pipeline.engine as pe
-from nipype.interfaces.utility import Function
+from nipype.interfaces.utility import IdentityInterface,Function
 
 #from neuropype_ephy.import_txt import split_txt
 
@@ -22,7 +22,7 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
     pipeline.base_dir = main_path
     
     
-    inputnode = pe.Node(niu.IdentityInterface(fields=['ts_file','freq_band']), name='inputnode')
+    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq']), name='inputnode')
      
     
     if multicon == False:
@@ -30,9 +30,9 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         #### spectral
         spectral = pe.Node(interface = SpectralConn(), name = "spectral")
         
-        spectral.inputs.con_method = con_method    
-        spectral.inputs.sfreq = sfreq
+        spectral.inputs.con_method = con_method  
         
+        pipeline.connect(inputnode, 'sfreq', spectral, 'sfreq')
         pipeline.connect(inputnode, 'ts_file', spectral, 'ts_file')
         pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
 
