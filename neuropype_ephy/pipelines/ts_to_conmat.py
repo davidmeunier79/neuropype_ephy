@@ -24,7 +24,6 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
     
     inputnode = pe.Node(niu.IdentityInterface(fields=['ts_file','freq_band']), name='inputnode')
      
-    
     if multicon == False:
             
         #### spectral
