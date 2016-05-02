@@ -7,10 +7,10 @@ from nipype.interfaces.utility import IdentityInterface,Function
 
 
 ### TODO
-from neuropype_ephy.interfaces.mne.spectral import  SpectralConn
+from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralConn
 
 ### to modify and add in "interfaces.mne"
-from neuropype_ephy.spectral import  plot_circular_connectivity
+#from neuropype_ephy.spectral import  plot_circular_connectivity
 
 ### to modify and add in "Nodes"
 #from neuropype_ephy.spectral import  filter_adj_plot_mat
@@ -22,7 +22,8 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
     pipeline.base_dir = main_path
     
     
-    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq']), name='inputnode')
+    #inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq']), name='inputnode')
+    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file']), name='inputnode')
      
     if multicon == False:
             
@@ -35,18 +36,11 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         pipeline.connect(inputnode, 'ts_file', spectral, 'ts_file')
         pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
 
-        ##### plot spectral
-        #plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
-                                                    #output_names = "plot_conmat_file",
-                                                    #function = plot_circular_connectivity), name = "plot_spectral")
+        #### plot spectral
+        plot_spectral = pe.Node(interface = PlotSpectralConn(), name = "plot_spectral")
         
-        ## plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
-        #plot_spectral.inputs.nb_lines = 200
-        #plot_spectral.inputs.vmin = 0.3
-        #plot_spectral.inputs.vmax = 1.0
-        
-        #pipeline.connect(split_ascii,  'elec_names_file',plot_spectral,'labels_file')
-        #pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
+        pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
+        pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
         
         
         #if filter_spectral == True:
