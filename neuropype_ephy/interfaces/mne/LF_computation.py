@@ -27,11 +27,11 @@ class LFComputationConnInputSpec(BaseInterfaceInputSpec):
 
     raw_info = traits.Any(desc='raw info', mandatory=True)
 
+    spacing = traits.String('ico-5', desc='spacing to use to setup a source space',
+                            mandatory=False)
+
     aseg = traits.Bool(False, desc='if true sub structures will be considered',
                        mandatory=False)
-
-    spacing = traits.String('ico-5',desc='spacing to use to setup a source space',
-                            mandatory=False)
 
     aseg_labels = traits.List(desc='list of substructures in the src space',
                               mandatory=False)
