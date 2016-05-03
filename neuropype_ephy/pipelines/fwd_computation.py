@@ -6,22 +6,23 @@ import nipype.interfaces.io as nio
 
 from nipype.interfaces.utility import IdentityInterface
 from neuropype_ephy.interfaces.mne.LF_computation import LFComputation
+from neuropype_ephy.interfaces.mne.Inverse_solution import NoiseCovariance
 from neuropype_ephy.pipelines.preproc_meeg import create_pipeline_preproc_meeg
 
 
-def create_pipeline_LF_computation(main_path, sbj_dir,
-                                   pipeline_name='LF_pipeline',
-                                   spacing='ico-5',
-                                   aseg=False,
-                                   aseg_labels=[]):
+def create_pipeline_source_reconstruction(main_path, sbj_dir,
+                                          pipeline_name='inv_sol_pipeline',
+                                          spacing='ico-5',
+                                          aseg=False,
+                                          aseg_labels=[]):
 
     pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
 
-    inputnode = pe.Node(IdentityInterface(fields=['sbj_id', 'raw_info']),
+    inputnode = pe.Node(IdentityInterface(fields=['sbj_id', 'raw']),
                         name='inputnode')
 
-    LF_computation = pe.Node(interface=LFComputation(), name="LF_computation")
+    LF_computation = pe.Node(interface=LFComputation(), name='LF_computation')
 
     LF_computation.inputs.sbj_dir = sbj_dir
     LF_computation.inputs.spacing = spacing
@@ -30,7 +31,11 @@ def create_pipeline_LF_computation(main_path, sbj_dir,
         LF_computation.inputs.aseg_labels = aseg_labels
 
     pipeline.connect(inputnode, 'sbj_id', LF_computation, 'sbj_id')
-    pipeline.connect(inputnode, 'raw_info', LF_computation, 'raw_info')
+#    pipeline.connect(inputnode, 'raw_info', LF_computation, 'raw_info')
+    pipeline.connect(inputnode, ('raw', get_raw_info), LF_computation, 'raw_info')
+    
+#    create_noise_cov = pe.Node(interface=NoiseCovariance(),
+#                               name="create_noise_cov")
 
     return pipeline
 
@@ -93,15 +98,18 @@ if __name__ == '__main__':
                                                     data_type='ds')
 
     main_workflow.connect(datasource, 'raw_file',
-                          preproc_workflow, 'inputspec.raw_file')
+                          preproc_workflow, 'inputnode.raw_file')
 
-    LF_workflow = create_pipeline_LF_computation(main_path, sbj_dir)
+    inv_sol_workflow = create_pipeline_source_reconstruction(main_path, sbj_dir)
 
     main_workflow.connect(infosource, 'subject_id',
-                          LF_workflow, 'inputnode.sbj_id')
-
-    main_workflow.connect(preproc_workflow, ('preproc.out_file', get_raw_info),
-                          LF_workflow, 'inputnode.raw_info')
+                          inv_sol_workflow, 'inputnode.sbj_id')
+#
+#    main_workflow.connect(preproc_workflow, ('preproc.out_file', get_raw_info),
+#                          LF_workflow, 'inputnode.raw_info')
+#                          
+    main_workflow.connect(preproc_workflow, 'preproc.out_file',
+                          inv_sol_workflow, 'inputnode.raw')
                           
     # run pipeline
     main_workflow.write_graph(graph2use='colored')  # colored
