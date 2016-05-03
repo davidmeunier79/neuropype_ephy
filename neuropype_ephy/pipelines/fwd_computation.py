@@ -95,14 +95,12 @@ if __name__ == '__main__':
     main_workflow.connect(datasource, 'raw_file',
                           preproc_workflow, 'inputspec.raw_file')
 
-    LF_workflow = create_pipeline_LF_computation(main_path, sbj_dir,
-                                                 aseg=True,
-                                                 aseg_labels=aseg_labels)
+    LF_workflow = create_pipeline_LF_computation(main_path, sbj_dir)
 
     main_workflow.connect(infosource, 'subject_id',
                           LF_workflow, 'inputnode.sbj_id')
 
-    main_workflow.connect(preproc_workflow, ('preproc.ts_file', get_raw_info),
+    main_workflow.connect(preproc_workflow, ('preproc.out_file', get_raw_info),
                           LF_workflow, 'inputnode.raw_info')
                           
     # run pipeline
