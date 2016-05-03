@@ -59,7 +59,8 @@ def create_pipeline_preproc_meeg(main_path,
     pipeline = pe.Workflow(name='preproc_meeg')
     pipeline.base_dir = main_path
     print '***** ' + "main_path %s" % main_path + ' *****'
-
+    print is_sensor_space
+    print '*****************'
     # define the inputs of the pipeline
     inputnode = pe.Node(IdentityInterface(fields=['raw_file']),
                         name='inputspec')
@@ -121,7 +122,7 @@ def create_pipeline_preproc_meeg(main_path,
                                              function=preprocess_fif_to_ts),
                           name='preproc')
 
-    preproc.inputs.is_sensor_space = True
+    preproc.inputs.is_sensor_space = is_sensor_space
     preproc.inputs.l_freq = l_freq
     preproc.inputs.h_freq = h_freq
     preproc.inputs.down_sfreq = down_sfreq
