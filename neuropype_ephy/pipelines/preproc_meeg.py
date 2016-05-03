@@ -64,7 +64,7 @@ def create_pipeline_preproc_meeg(main_path,
     print '*****************'
     # define the inputs of the pipeline
     inputnode = pe.Node(IdentityInterface(fields=['raw_file']),
-                        name='inputspec')
+                        name='inputnode')
 
     if data_type is 'ds':
         convert = pe.Node(interface=Function(input_names=['ds_file'],
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     preproc_workflow = create_pipeline_preproc_meeg(main_path, data_type='ds')
 
     main_workflow.connect(datasource, 'raw_file',
-                          preproc_workflow, 'inputspec.raw_file')
+                          preproc_workflow, 'inputnode.raw_file')
 
     # run pipeline
     main_workflow.write_graph(graph2use='colored')  # colored
