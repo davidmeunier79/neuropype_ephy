@@ -239,9 +239,6 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
 
         print cur_data.shape
             
-
-
-
         if epoch_window_length == None :
             
             data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])

@@ -158,7 +158,7 @@ class PlotSpectralConn(BaseInterface):
                 node_order = list()
                 node_order.extend(lh_labels[::-1])  # reverse the order
                 node_order.extend(rh_labels)             
-              
+
         else:
             label_names = range(conmat.shape[0])
             node_order  = label_names
