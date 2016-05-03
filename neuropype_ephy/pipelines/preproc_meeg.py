@@ -48,6 +48,7 @@ def get_ext_file(raw_file):
 #                               the ICA
 # in Elekta data, ICA routine automatically looks for EEG61, EEG62
 def create_pipeline_preproc_meeg(main_path,
+                                 pipeline_name='preproc_meeg',
                                  data_type='fif',
                                  l_freq=1, h_freq=150, down_sfreq=300,
                                  is_ICA=True, variance=0.95,
@@ -56,10 +57,10 @@ def create_pipeline_preproc_meeg(main_path,
                                  n_comp_exclude=[],
                                  is_sensor_space=True):
 
-    pipeline = pe.Workflow(name='preproc_meeg')
+    pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
     print '***** ' + "main_path %s" % main_path + ' *****'
-    print is_sensor_space
+    print '***** %s *****' % is_sensor_space
     print '*****************'
     # define the inputs of the pipeline
     inputnode = pe.Node(IdentityInterface(fields=['raw_file']),
@@ -82,7 +83,7 @@ def create_pipeline_preproc_meeg(main_path,
                                                               'h_freq',
                                                               'down_sfreq',
                                                               'is_sensor_space'],
-                                                 output_names=['ts_file',
+                                                 output_names=['out_file',
                                                                'channel_coords_file',
                                                                'channel_names_file',
                                                                'sfreq'],
@@ -99,7 +100,7 @@ def create_pipeline_preproc_meeg(main_path,
                                                               'variance',
                                                               'is_sensor_space',
                                                               'data_type'],
-                                                 output_names=['ts_file',
+                                                 output_names=['out_file',
                                                                'channel_coords_file',
                                                                'channel_names_file',
                                                                'sfreq'],
@@ -115,7 +116,7 @@ def create_pipeline_preproc_meeg(main_path,
                                                           'l_freq',
                                                           'h_freq',
                                                           'down_sfreq'],
-                                             output_names=['ts_file',
+                                             output_names=['out_file',
                                                            'channel_coords_file',
                                                            'channel_names_file',
                                                            'sfreq'],
