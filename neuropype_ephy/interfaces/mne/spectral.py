@@ -23,7 +23,7 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     freq_band = traits.List(traits.Float(exists=True), desc='frequency bands', mandatory=True)
     
-    con_method = traits.Enum("coh","imcoh","plv","pli",desc='metric computed on time series for connectivity')
+    con_method = traits.Enum("coh","imcoh","plv","pli","wpli","pli2_unbiased","ppc","cohy","wpli2_debiased",desc='metric computed on time series for connectivity')
     
     epoch_window_length = traits.Float(desc='epoched data', mandatory=False)
     
