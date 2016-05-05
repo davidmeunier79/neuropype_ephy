@@ -34,9 +34,7 @@ def compute_noise_cov(cov_fname, raw):
 
     else:
         print '*** NOISE cov file %s exists!!!' % cov_fname
-#        noise_cov = read_cov(cov_fname)
 
-#    return noise_cov
     return cov_fname
 
 
@@ -64,7 +62,7 @@ def read_noise_cov(cov_fname, raw_info):
 
 
 # compute inverse solution on raw data
-def compute_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
+def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
     import os.path as op
     import numpy as np
     import mne
@@ -154,6 +152,8 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
     print '***** READ FWD SOL %s *****' % fwd_filename
     forward = mne.read_forward_solution(fwd_filename)
 
+    print '***** SNR %s *****' % snr
+    
     if not aseg:
         forward = mne.convert_forward_solution(forward, surf_ori=True,
                                                force_fixed=False)
@@ -201,7 +201,7 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
     # save results in .npy file that will be the input for spectral node
     print '***** SAVE SOL *****'
     subj_path, basename, ext = split_f(raw.info['filename'])
-    ts_file = op.abspath(basename + '.npy')
+    ts_file = op.abspath(basename + '_ROI_ts.npy')
     np.save(ts_file, label_ts)
 
     if aseg:

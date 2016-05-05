@@ -139,6 +139,15 @@ class PlotSpectralConn(BaseInterface):
                     ypos = np.mean(labels_file[idx].pos[:, 1])
                     label_ypos.append(ypos)
 
+                 # TODO aggiungere il Brainstem!
+                try:
+                    idx = label_names.index('Brain-Stem')
+                    ypos = np.mean(labels_file[idx].pos[:, 1])
+                    lh_labels.append('Brain-Stem')
+                    label_ypos.append(ypos)
+                except ValueError:
+                    pass
+                        
                 # Reorder the labels based on their location
                 lh_labels = [label for (yp, label) in sorted(zip(label_ypos, lh_labels))]
                 
@@ -148,8 +157,8 @@ class PlotSpectralConn(BaseInterface):
                 # Save the plot order 
                 node_order = list()
                 node_order.extend(lh_labels[::-1])  # reverse the order
-                node_order.extend(rh_labels)
-                
+                node_order.extend(rh_labels)             
+
         else:
             label_names = range(conmat.shape[0])
             node_order  = label_names
