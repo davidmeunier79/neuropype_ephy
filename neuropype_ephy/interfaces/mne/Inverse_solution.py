@@ -20,9 +20,7 @@ from nipype.utils.filemanip import split_filename as split_f
 from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
 from nipype.interfaces.base import traits, File, TraitedSpec
 
-from neuropype_ephy.compute_fwd_problem import create_mixed_source_space
-from neuropype_ephy.compute_fwd_problem import create_bem_sol, create_src_space
-from neuropype_ephy.compute_fwd_problem import is_trans, compute_fwd_sol
+from neuropype_ephy.compute_inv_problem import compute_ROIs_inv_sol
 
 from mne import compute_raw_covariance, pick_types, write_cov
 
@@ -36,18 +34,26 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 
     raw = traits.Any(desc='raw data', mandatory=True)
 
-    snr = traits.Float(desc='use smaller SNR for raw data',
-                       mandatory=False)
-
-    parc = traits.String(desc='the parcellation to use: aparc vs aparc.a2009s',
-                         mandatory=True)
-
-    aseg_labels = traits.List(desc='list of substructures in the src space',
-                              mandatory=False)
+    cov_filename = traits.File(exists=True, desc='Noise Covariance matrix',
+                               mandatory=True)
 
     fwd_filename = traits.File(exists=True, desc='LF matrix', mandatory=True)
 
-    inv_method = traits.String(desc='inverse method used', mandatory=True)
+    inv_method = traits.String(desc='possible inverse methods are \
+                               sLORETA, MNE, dSPM', mandatory=True)
+
+    snr = traits.Float(1.0, usedefault=True, desc='use smaller SNR for \
+                       raw data', mandatory=False)
+
+    parc = traits.String('aparc', usedefault=True,
+                         desc='the parcellation to use: aparc vs aparc.a2009s',
+                         mandatory=False)
+
+    aseg = traits.Bool(desc='if true sub structures will be considered',
+                       mandatory=False)
+
+    aseg_labels = traits.List(desc='list of substructures in the src space',
+                              mandatory=False)
 
 
 class InverseSolutionConnOutputSpec(TraitedSpec):
@@ -69,11 +75,19 @@ class InverseSolution(BaseInterface):
         sbj_id = self.inputs.sbj_id
         sbj_dir = self.inputs.sbj_dir
         raw = self.inputs.raw
-        snr = self.inputs.snr
-        parc = self.inputs.parc
-        aseg_labels = self.inputs.aseg_labels
+        cov_filename = self.inputs.cov_filename
         fwd_filename = self.inputs.fwd_filename
         inv_method = self.inputs.inv_method
+        snr = self.inputs.snr
+        parc = self.inputs.parc
+        aseg = self.inputs.aseg
+        aseg_labels = self.inputs.aseg_labels
+
+        self.ts_file, self.labels = compute_ROIs_inv_sol(raw, sbj_id, sbj_dir,
+                                                         fwd_filename,
+                                                         cov_filename,
+                                                         snr, inv_method, parc,
+                                                         aseg, aseg_labels)
 
         return runtime
 
@@ -119,10 +133,10 @@ class NoiseCovariance(BaseInterface):
 
             print '***** COMPUTE RAW COV *****' + self.cov_fname_out
 
-            # TODO check su eog channel
+            # TODO check su eog channel, grad
 #            reject = dict(mag=4e-12, grad=4000e-13, eog=250e-6)
-            reject = dict(mag=4e-12, grad=4000e-13)
-            
+            reject = dict(mag=4e-12)
+
             picks = pick_types(raw.info, meg=True, ref_meg=False,
                                exclude='bads')
 
