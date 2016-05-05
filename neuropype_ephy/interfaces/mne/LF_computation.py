@@ -27,10 +27,10 @@ class LFComputationConnInputSpec(BaseInterfaceInputSpec):
 
     raw_info = traits.Any(desc='raw info', mandatory=True)
 
-    spacing = traits.String('ico-5', desc='spacing to use to setup a source space',
+    spacing = traits.String(desc='spacing to use to setup a source space',
                             mandatory=False)
 
-    aseg = traits.Bool(False, desc='if true sub structures will be considered',
+    aseg = traits.Bool(desc='if true sub structures will be considered',
                        mandatory=False)
 
     aseg_labels = traits.List(desc='list of substructures in the src space',
@@ -53,7 +53,7 @@ class LFComputation(BaseInterface):
 
         data_path, raw_fname, ext = split_f(raw_info['filename'])
 
-        if aseg == traits.Undefined:
+        if not aseg:
             fwd_filename = op.join(data_path, '%s-%s-fwd.fif'
                                    % (raw_fname, spacing))
         else:
@@ -72,10 +72,7 @@ class LFComputation(BaseInterface):
         spacing = self.inputs.spacing
         aseg_labels = self.inputs.aseg_labels
 
-        if aseg == traits.Undefined:
-            self.fwd_filename = self._get_fwd_filename(raw_info, aseg, spacing)
-        else:
-            self.fwd_filename = self._get_fwd_filename(raw_info, aseg, spacing)
+        self.fwd_filename = self._get_fwd_filename(raw_info, aseg, spacing)
 
         # check if we have just created the fwd matrix
         if not op.isfile(self.fwd_filename):
@@ -83,7 +80,7 @@ class LFComputation(BaseInterface):
 
             src = create_src_space(sbj_dir, sbj_id, spacing)  # src space
 
-            if aseg != traits.Undefined:
+            if aseg:
                 src = create_mixed_source_space(sbj_dir, sbj_id, spacing,
                                                 aseg_labels, src)
 
