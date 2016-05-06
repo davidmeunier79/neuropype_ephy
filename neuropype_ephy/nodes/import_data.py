@@ -44,6 +44,9 @@ class ImportMat(BaseInterface):
         
         good_channels_field_name = self.inputs.good_channels_field_name
 
+        if not isdefined(good_channels_field_name):
+            good_channels_field_name = None
+            
         self.ts_file = import_tsmat_to_ts(ts_file,data_field_name,good_channels_field_name)
         
         return runtime
