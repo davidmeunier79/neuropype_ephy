@@ -20,7 +20,7 @@ class ImportMatInputSpec(BaseInterfaceInputSpec):
     
     data_field_name = traits.String("F", desc='Name of the structure in matlab', usedefault=True)
     
-    good_channels_field_name = traits.String('ChannelFlag', desc='Boolean structure for choosing nodes, name of structure in matlab file', mandatory=False)
+    good_channels_field_name = traits.String('ChannelFlag', desc='Boolean structure for choosing nodes, name of structure in matlab file')
     
 class ImportMatOutputSpec(TraitedSpec):
     
@@ -47,7 +47,7 @@ class ImportMat(BaseInterface):
         if not isdefined(good_channels_field_name):
             good_channels_field_name = None
             
-        self.ts_file = import_tsmat_to_ts(ts_file,data_field_name,good_channels_field_name)
+        self.ts_file = import_tsmat_to_ts(tsmat_file,data_field_name,good_channels_field_name)
         
         return runtime
         
