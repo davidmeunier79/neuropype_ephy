@@ -15,7 +15,7 @@ from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralCon
 ### to modify and add in "Nodes"
 #from neuropype_ephy.spectral import  filter_adj_plot_mat
 
-def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multicon = False):
+def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multicon = False, export_to_matlab = False):
     
     
     pipeline = pe.Workflow(name= pipeline_name)
@@ -31,6 +31,7 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         spectral = pe.Node(interface = SpectralConn(), name = "spectral")
         
         spectral.inputs.con_method = con_method  
+        spectral.inputs.export_to_matlab = export_to_matlab
         
         pipeline.connect(inputnode, 'sfreq', spectral, 'sfreq')
         pipeline.connect(inputnode, 'ts_file', spectral, 'ts_file')
