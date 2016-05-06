@@ -85,7 +85,7 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     raw_data = np.array(mat[data_field_name],dtype = "f")
     print raw_data.shape
 
-    print [key in mat.keys()]
+    print [key for key in mat.keys()]
     
     if good_channels_field_name != None:
         
