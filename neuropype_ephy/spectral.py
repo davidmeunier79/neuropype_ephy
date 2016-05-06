@@ -55,7 +55,7 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
         
         conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
         
-        savemat(conmat_matfile,{"conmat":conmat})
+        savemat(conmat_matfile,{"conmat":con_matrix})
         
     return conmat_file
 
