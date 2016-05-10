@@ -140,7 +140,8 @@ class NoiseCovariance(BaseInterface):
             picks = pick_types(raw.info, meg=True, ref_meg=False,
                                exclude='bads')
 
-            noise_cov = compute_raw_covariance(raw, picks=picks, reject=reject)
+            noise_cov = compute_raw_covariance(raw, picks=picks, reject=reject,
+                                               method='auto')
 
             write_cov(self.cov_fname_out, noise_cov)
 
