@@ -5,11 +5,14 @@ import nipype.pipeline.engine as pe
 import nipype.interfaces.io as nio
 
 from nipype.interfaces.utility import IdentityInterface
+
 from neuropype_ephy.interfaces.mne.LF_computation import LFComputation
 from neuropype_ephy.interfaces.mne.Inverse_solution import NoiseCovariance
 from neuropype_ephy.interfaces.mne.Inverse_solution import InverseSolution
 from neuropype_ephy.pipelines.preproc_meeg import create_pipeline_preproc_meeg
+from neuropype_ephy.pipelines.ts_to_conmat import create_pipeline_time_series_to_spectral_connectivity
 
+from neuropype_graph.pipelines.conmat_to_graph import create_pipeline_conmat_to_graph_density
 
 def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
@@ -72,11 +75,25 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 def get_raw_info(raw):
     return raw.info
 
+
+def get_freq_band(freq_band_name):
+
+    freq_bands = [[8, 12]]  # [15,29],[60,90]
+    freq_band_names = ['alpha']  # "beta",'gamma2'
+#    from params import freq_band_names,freq_bands
+
+    if freq_band_name in freq_band_names:
+        print freq_band_name
+        print freq_band_names.index(freq_band_name)
+
+        return freq_bands[freq_band_names.index(freq_band_name)]
+        
 if __name__ == '__main__':
     main_path = '/home/karim/Documents/Fanny'
     data_path = main_path
     sbj_dir = os.path.join(main_path, 'FSF')
-    subject_ids = ['S01', 'S02']  # 'S02'
+
+    subject_ids = ['S01']  # 'S02'
     sessions = ['repos_1']  # 'repos_2'
 
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
@@ -110,15 +127,17 @@ if __name__ == '__main__':
                    'Right-Cerebellum-Cortex']
 
     # create main workflow
-    main_workflow = pe.Workflow(name='wf_inv_sol_computation')
+    main_workflow = pe.Workflow(name='wf_raw_to_graph_analysis')
     main_workflow.base_dir = main_path
 
     # info source
     infosource = pe.Node(interface=IdentityInterface(fields=['subject_id',
-                                                             'sess_index']),
+                                                             'sess_index',
+                                                             'freq_band_name']),
                          name="infosource")
     infosource.iterables = [('subject_id', subject_ids),
-                            ('sess_index', sessions)]
+                            ('sess_index', sessions),
+                            ('freq_band_name', ['alpha'])]
 
     # data source
     datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id',
@@ -129,6 +148,9 @@ if __name__ == '__main__':
     datasource.inputs.template = '%s/%s%s'
     datasource.inputs.template_args = dict(raw_file=[['subject_id',
                                                      'sess_index', ".ds"]])
+#    datasource.inputs.template = 'wf_raw_to_graph_analysis/preproc_meeg/_freq_band_name_alpha_sess_index_%s_subject_id_%s/preproc/*_ica%s' # meditation
+#    datasource.inputs.template_args = dict(raw_file=[['sess_index',
+#                                                     'subject_id', ".npy"]])
     datasource.inputs.sort_filelist = True
 
     main_workflow.connect(infosource, 'subject_id', datasource, 'subject_id')
@@ -146,6 +168,7 @@ if __name__ == '__main__':
 #                                                             aseg=True,
 #                                                             aseg_labels=aseg_labels,
 #                                                             noise_cov_fname=noise_cov_fname)
+
     inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
                                                              sbj_dir,
                                                              noise_cov_fname=noise_cov_fname)
@@ -153,8 +176,32 @@ if __name__ == '__main__':
     main_workflow.connect(infosource, 'subject_id',
                           inv_sol_workflow, 'inputnode.sbj_id')
 
+#    main_workflow.connect(datasource, 'raw_file',
+#                          inv_sol_workflow, 'inputnode.raw')
+
     main_workflow.connect(preproc_workflow, 'preproc.out_file',
                           inv_sol_workflow, 'inputnode.raw')
+
+    spectral_workflow = create_pipeline_time_series_to_spectral_connectivity(main_path)
+
+    main_workflow.connect(inv_sol_workflow, 'inv_solution.ts_file',
+                          spectral_workflow, 'inputnode.ts_file')
+
+    main_workflow.connect(inv_sol_workflow, 'inv_solution.labels',
+                          spectral_workflow, 'inputnode.labels_file')
+
+    main_workflow.connect(infosource, ('freq_band_name', get_freq_band),
+                          spectral_workflow, 'inputnode.freq_band')
+
+    main_workflow.connect(preproc_workflow, 'preproc.sfreq',
+                          spectral_workflow, 'inputnode.sfreq')
+
+    spectral_workflow.inputs.inputnode.epoch_window_length = 3.0
+
+    graph_den_pipe = create_pipeline_conmat_to_graph_density(main_path)
+
+    main_workflow.connect(spectral_workflow, 'spectral.conmat_file',
+                          graph_den_pipe, 'compute_net_List.Z_cor_mat_file')
 
     # run pipeline
     main_workflow.write_graph(graph2use='colored')  # colored
