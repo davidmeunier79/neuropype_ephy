@@ -14,7 +14,7 @@ from nipype.utils.filemanip import split_filename as split_f
     
 ############################################################################################### SpectralConn #####################################################################################################
 
-from neuropype_ephy.spectral import spectral_proc,epoched_spectral_proc
+from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
 
 class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
@@ -24,9 +24,11 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     freq_band = traits.List(traits.Float(exists=True), desc='frequency bands', mandatory=True)
     
-    con_method = traits.Enum("coh","imcoh","plv","pli",desc='metric computed on time series for connectivity')
+    con_method = traits.Enum("coh","imcoh","plv","pli","wpli","pli2_unbiased","ppc","cohy","wpli2_debiased",desc='metric computed on time series for connectivity')
     
     epoch_window_length = traits.Float(desc='epoched data', mandatory=False)
+    
+    export_to_matlab = traits.Bool(False, desc='If conmat is exported to .mat format as well',usedefault = True)
     
 class SpectralConnOutputSpec(TraitedSpec):
     
@@ -43,18 +45,27 @@ class SpectralConn(BaseInterface):
     def _run_interface(self, runtime):
                 
         print 'in SpectralConn'
+        
         ts_file = self.inputs.ts_file
         sfreq = self.inputs.sfreq
         freq_band = self.inputs.freq_band
         con_method = self.inputs.con_method
         epoch_window_length = self.inputs.epoch_window_length
+        export_to_matlab = self.inputs.export_to_matlab
         
         if epoch_window_length == traits.Undefined:
-            self.conmat_file = spectral_proc(ts_file,sfreq,freq_band,con_method)
-        
+            data = np.load(ts_file)
         else:
-            self.conmat_file = epoched_spectral_proc(ts_file,sfreq,freq_band,con_method,epoch_window_length)
-
+            raw_data = np.load(ts_file)
+            nb_splits = raw_data.shape[1] // (epoch_window_length * sfreq)
+            reste = raw_data.shape[1] % int(epoch_window_length * sfreq)
+            if reste != 0:
+                raw_data = raw_data[:,:-reste]
+            print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
+            data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
+        
+        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
+        
         return runtime
         
     def _list_outputs(self):
