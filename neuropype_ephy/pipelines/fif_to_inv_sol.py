@@ -98,6 +98,11 @@ if __name__ == '__main__':
 
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
 
+    mod = True
+    
+    if mod:
+        radatools_optim = "WS trfr 1"
+        
 #    aseg_labels = ['Left-Accumbens-area',
 #                   'Left-Amygdala',
 #                   'Left-Caudate',
@@ -158,20 +163,23 @@ if __name__ == '__main__':
 
     preproc_workflow = create_pipeline_preproc_meeg(main_path,
                                                     is_sensor_space=False,
+                                                    is_set_ICA_components=True,
+                                                    n_comp_exclude={'S01': [[0,5,53]]},
                                                     data_type='ds')
 
     main_workflow.connect(datasource, 'raw_file',
                           preproc_workflow, 'inputnode.raw_file')
 
-#    inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
-#                                                             sbj_dir,
-#                                                             aseg=True,
-#                                                             aseg_labels=aseg_labels,
-#                                                             noise_cov_fname=noise_cov_fname)
-
     inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
                                                              sbj_dir,
+                                                             spacing='ico-5',
+                                                             aseg=True,
+                                                             aseg_labels=aseg_labels,
                                                              noise_cov_fname=noise_cov_fname)
+
+#    inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
+#                                                             sbj_dir,
+#                                                             noise_cov_fname=noise_cov_fname)
 
     main_workflow.connect(infosource, 'subject_id',
                           inv_sol_workflow, 'inputnode.sbj_id')
@@ -184,6 +192,8 @@ if __name__ == '__main__':
 
     spectral_workflow = create_pipeline_time_series_to_spectral_connectivity(main_path)
 
+    spectral_workflow.inputs.inputnode.is_sensor_space = False
+    
     main_workflow.connect(inv_sol_workflow, 'inv_solution.ts_file',
                           spectral_workflow, 'inputnode.ts_file')
 
@@ -198,12 +208,20 @@ if __name__ == '__main__':
 
     spectral_workflow.inputs.inputnode.epoch_window_length = 3.0
 
-    graph_den_pipe = create_pipeline_conmat_to_graph_density(main_path)
+    graph_den_pipe = create_pipeline_conmat_to_graph_density(main_path,con_den = 0.1,mod = mod,plot = True)
 
     main_workflow.connect(spectral_workflow, 'spectral.conmat_file',
                           graph_den_pipe, 'compute_net_List.Z_cor_mat_file')
-
+    if mod:                       
+        graph_den_pipe.inputs.community_rada.optim_seq = radatools_optim 
+        main_workflow.connect(inv_sol_workflow, 'inv_solution.label_names',
+                          graph_den_pipe, 'plot_igraph_modules_rada.labels_file')
+        main_workflow.connect(inv_sol_workflow, 'inv_solution.label_coords',
+                          graph_den_pipe, 'plot_igraph_modules_rada.coords_file')
+                          
     # run pipeline
     main_workflow.write_graph(graph2use='colored')  # colored
     main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
-    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
+    
+    main_workflow.run()
+    #main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
