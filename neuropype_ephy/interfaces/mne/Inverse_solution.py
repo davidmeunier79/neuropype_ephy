@@ -59,7 +59,9 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 class InverseSolutionConnOutputSpec(TraitedSpec):
 
     ts_file = File(exists=False, desc='source reconstruction in .npy format')
-    labels = traits.Any(desc='labels list')
+    labels = File(exists=False, desc='labels file in pickle format')
+    label_names = File(exists=False, desc='labels name file in txt format')
+    label_coords = File(exists=False, desc='labels coords file in txt format')
 
 
 class InverseSolution(BaseInterface):
@@ -83,11 +85,11 @@ class InverseSolution(BaseInterface):
         aseg = self.inputs.aseg
         aseg_labels = self.inputs.aseg_labels
 
-        self.ts_file, self.labels = compute_ROIs_inv_sol(raw, sbj_id, sbj_dir,
-                                                         fwd_filename,
-                                                         cov_filename,
-                                                         snr, inv_method, parc,
-                                                         aseg, aseg_labels)
+        self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw, sbj_id, sbj_dir,
+                                                                                              fwd_filename,
+                                                                                              cov_filename,
+                                                                                              snr, inv_method, parc,
+                                                                                              aseg, aseg_labels)
 
         return runtime
 
@@ -97,6 +99,8 @@ class InverseSolution(BaseInterface):
 
         outputs['ts_file'] = self.ts_file
         outputs['labels'] = self.labels
+        outputs['label_names'] = self.label_names
+        outputs['label_coords'] = self.label_coords
 
         return outputs
 
