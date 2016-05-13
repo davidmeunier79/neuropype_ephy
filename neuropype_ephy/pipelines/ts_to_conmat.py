@@ -23,7 +23,7 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
     
     
     #inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq']), name='inputnode')
-    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length']), name='inputnode')
+    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length','is_sensor_space']), name='inputnode')
      
     if multicon == False:
             
@@ -41,6 +41,8 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         plot_spectral = pe.Node(interface = PlotSpectralConn(), name = "plot_spectral")
         
         pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
+        pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')
+        
         pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
         
         
