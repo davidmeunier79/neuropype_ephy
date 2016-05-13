@@ -141,6 +141,8 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
     import os.path as op
     import numpy as np
     import mne
+    import pickle
+    
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
     from nipype.utils.filemanip import split_filename as split_f
     
@@ -205,15 +207,40 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
     np.save(ts_file, label_ts)
 
     if aseg:
-        labels_aseg = get_aseg_labels(src, sbj_dir, sbj_id, aseg_labels)
+        labels_aseg = get_aseg_labels(src, sbj_dir, sbj_id)
         labels = labels_cortex + labels_aseg
     else:
         labels = labels_cortex
 
-    return ts_file, labels
+    print labels[0].pos
+    print len(labels)
+
+    labels_file = op.abspath('labels.dat')
+    with open(labels_file, "wb") as f:
+        pickle.dump(len(labels), f)
+        for value in labels:
+            pickle.dump(value, f)
+
+    label_names_file = op.abspath('label_names.txt')
+    label_coords_file = op.abspath('label_coords.txt')
+
+    label_names = []
+    label_coords = []
+
+    for value in labels:
+        label_names.append(value.name)
+        label_coords.append(value.pos[0])
+
+    np.savetxt(label_names_file, np.array(label_names, dtype=str),
+               fmt="%s")
+    np.savetxt(label_coords_file, np.array(label_coords, dtype=float),
+               fmt="%f %f %f")
+
+    return ts_file, labels_file, label_names_file, label_coords_file
 
 
-def get_aseg_labels(src, sbj_dir, sbj_id, aseg_labels):
+# return a list of Label objs
+def get_aseg_labels(src, sbj_dir, sbj_id):
     import os.path as op
     import numpy as np
 
@@ -222,7 +249,7 @@ def get_aseg_labels(src, sbj_dir, sbj_id, aseg_labels):
 
     # read the aseg file
     aseg_fname = op.join(sbj_dir, sbj_id, 'mri/aseg.mgz')
-    all_labels_aseg = get_volume_labels_from_aseg_AP(aseg_fname)  # unnecessary
+    all_labels_aseg = get_volume_labels_from_aseg_AP(aseg_fname)
 
     # creo una lista di label per aseg
     labels_aseg = list()
