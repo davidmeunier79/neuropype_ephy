@@ -99,6 +99,7 @@ if __name__ == '__main__':
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
 
     mod = True
+    aseg = True
     
     if mod:
         radatools_optim = "WS trfr 1"
@@ -170,16 +171,17 @@ if __name__ == '__main__':
     main_workflow.connect(datasource, 'raw_file',
                           preproc_workflow, 'inputnode.raw_file')
 
+    if aseg:
+        aseg_labels = aseg_labels
+    else:
+        aseg_labels = []
+
     inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
                                                              sbj_dir,
                                                              spacing='ico-5',
-                                                             aseg=True,
+                                                             aseg = aseg,
                                                              aseg_labels=aseg_labels,
                                                              noise_cov_fname=noise_cov_fname)
-
-#    inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
-#                                                             sbj_dir,
-#                                                             noise_cov_fname=noise_cov_fname)
 
     main_workflow.connect(infosource, 'subject_id',
                           inv_sol_workflow, 'inputnode.sbj_id')
