@@ -5,6 +5,7 @@ Definition of nodes for computing reordering and plotting coclass_matrices
 """
 import numpy as np
 import os
+import pickle
 
 from nipype.interfaces.base import BaseInterface, \
     BaseInterfaceInputSpec, traits, File, TraitedSpec, isdefined
@@ -125,24 +126,30 @@ class PlotSpectralConn(BaseInterface):
                 node_colors = None
             
             else:
+                labels = []
+                with open(labels_file, "rb") as f:
+                    for _ in range(pickle.load(f)):
+                        labels.append(pickle.load(f))
+                
+                print labels
+#                0/0
                 # read colors
-                node_colors = [label.color for label in labels_file]    
+                node_colors = [label.color for label in labels]    
                 
                 # reorder the labels based on their location in the left hemi
-                label_names = [label.name for label in labels_file]
+                label_names = [label.name for label in labels]
                 lh_labels = [name for name in label_names if name.endswith('lh')]
 
                 # Get the y-location of the label
                 label_ypos = list()
                 for name in lh_labels:
                     idx = label_names.index(name)
-                    ypos = np.mean(labels_file[idx].pos[:, 1])
+                    ypos = np.mean(labels[idx].pos[:, 1])
                     label_ypos.append(ypos)
 
-                 # TODO aggiungere il Brainstem!
                 try:
                     idx = label_names.index('Brain-Stem')
-                    ypos = np.mean(labels_file[idx].pos[:, 1])
+                    ypos = np.mean(labels[idx].pos[:, 1])
                     lh_labels.append('Brain-Stem')
                     label_ypos.append(ypos)
                 except ValueError:
@@ -152,7 +159,7 @@ class PlotSpectralConn(BaseInterface):
                 lh_labels = [label for (yp, label) in sorted(zip(label_ypos, lh_labels))]
                 
                 # For the right hemi
-                rh_labels = [label[:-2] + 'rh' for label in lh_labels]
+                rh_labels = [label[:-2] + 'rh' for label in lh_labels if label != 'Brain-Stem']
 
                 # Save the plot order 
                 node_order = list()
@@ -164,7 +171,9 @@ class PlotSpectralConn(BaseInterface):
             node_order  = label_names
             node_colors = None
            
-        
+        print label_names
+        print node_order
+#        0/0
         self.plot_conmat_file = plot_circular_connectivity(conmat,label_names,node_colors,node_order, vmin,vmax ,nb_lines, fname)
 
         return runtime
