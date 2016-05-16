@@ -1,39 +1,72 @@
 # -*- coding: utf-8 -*-
 
 import nipype.pipeline.engine as pe
+
 from nipype.interfaces.utility import Function
+from nipype.interfaces.utility import IdentityInterface
 
-from neuropype_ephy.import_txt import split_txt
 
-from neuropype_ephy.spectral import  epoched_spectral_proc,spectral_proc,multiple_spectral_proc
-from neuropype_ephy.spectral import  plot_circular_connectivity,filter_adj_plot_mat
+from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralConn
 
-def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,con_method = "coh", sample_size = 512, sep_label_name = "", sfreq = 512,filter_spectral = True, k_neigh = 3, multicon = False):
+#from neuropype_ephy.spectral import  epoched_spectral_proc,spectral_proc,multiple_spectral_proc
+#from neuropype_ephy.spectral import  plot_circular_connectivity,
 
-    pipeline = pe.Workflow(name="brain_vision_to_conmat")
+from neuropype_ephy.nodes.import_data import ImportBrainVisionAscii
+#from neuropype_ephy.import_txt import split_txt
+
+###TODO
+#from neuropype_ephy.nodes.? import filter_adj_plot_mat
+
+def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeline_name="brain_vision_to_conmat", con_method = "coh", sample_size = 512, sep_label_name = "", sfreq = 512,filter_spectral = True, k_neigh = 3, multicon = False):
+    
+    """
+    Description:
+    
+    Create pipeline from intraEEG times series in ascii format exported out of BrainVision, split txt and compute spectral connectivity.
+    Possibly also filter out connections between "adjacent" contacts (on the same electrode)
+    
+    
+    """
+    pipeline = pe.Workflow(name=pipeline_name )
     pipeline.base_dir = main_path
     
+    
+    inputnode = pe.Node(interface = IdentityInterface(fields=['txt_file','freq_band']), name='inputnode')
+    
+    
     #### convert
-    split_ascii = pe.Node(interface = Function(input_names = ["sample_size","txt_file","sep_label_name"],output_names = ["splitted_ts_file","elec_names_file"],function = split_txt),name = 'split_ascii')
+    #split_ascii = pe.Node(interface = Function(input_names = ["sample_size","txt_file","sep_label_name"],output_names = ["splitted_ts_file","elec_names_file"],function = split_txt),name = 'split_ascii')
+    
+    split_ascii = pe.Node(interface = ImportBrainVisionAscii(),name = 'split_ascii')
+    
     split_ascii.inputs.sample_size = sample_size
     split_ascii.inputs.sep_label_name = sep_label_name
     
+    pipeline.connect(inputnode, 'txt_file',split_ascii,'txt_file')
+
     if multicon == False:
             
         #### spectral
-        spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
-                                                output_names = "conmat_file",
-                                                function = spectral_proc),name = "spectral")
+        
+        spectral = pe.Node(interface = SpectralConn(), name = "spectral")
+        
+        #spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
+        #                                        output_names = "conmat_file",
+        #                                        function = spectral_proc),name = "spectral")
         
         spectral.inputs.con_method = con_method    
         spectral.inputs.sfreq = sfreq
         
+        pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
+        
         pipeline.connect(split_ascii, 'splitted_ts_file', spectral, 'ts_file')
 
         #### plot spectral
-        plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
-                                                    output_names = "plot_conmat_file",
-                                                    function = plot_circular_connectivity), name = "plot_spectral")
+        plot_spectral = pe.Node(interface = PlotSpectralConn(), name = "plot_spectral")
+        
+        #plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
+                                                    #output_names = "plot_conmat_file",
+                                                    #function = plot_circular_connectivity), name = "plot_spectral")
         
         # plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
         plot_spectral.inputs.nb_lines = 200
@@ -73,17 +106,17 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,con_me
             pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
             pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
             
-    else:
+    #else:
         
-        #### spectral
-        spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
-                                                output_names = "conmat_files",
-                                                function = multiple_spectral_proc),name = "spectral")
+        ##### spectral
+        #spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
+                                                #output_names = "conmat_files",
+                                                #function = multiple_spectral_proc),name = "spectral")
         
-        spectral.inputs.con_method = con_method    
-        spectral.inputs.sfreq = sfreq
+        #spectral.inputs.con_method = con_method    
+        #spectral.inputs.sfreq = sfreq
         
-        pipeline.connect(split_ascii, 'splitted_ts_file', spectral, 'ts_file')
+        #pipeline.connect(split_ascii, 'splitted_ts_file', spectral, 'ts_file')
 
     return pipeline
     
