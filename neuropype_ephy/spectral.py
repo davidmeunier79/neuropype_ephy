@@ -358,27 +358,59 @@ def multiple_windowed_spectral_proc(ts_file,sfreq,freq_band,con_method):
 
 ########################################################### splitting ts with temporal windows
 
-def split_win_ts(splitted_ts_file,n_windows):
+#def split_win_ts(splitted_ts_file,n_windows):
     
-    import numpy as np
-    import os
-    np_splitted_ts = np.load(splitted_ts_file)
+    #import numpy as np
+    #import os
+    #np_splitted_ts = np.load(splitted_ts_file)
     
-    print np_splitted_ts.shape
+    #print np_splitted_ts.shape
 
-    print len(n_windows)
+    #print len(n_windows)
     
-    all_win_splitted_ts = np.array([[np_splitted_ts[trial_index,:,n_win[0]:n_win[1]] for n_win in n_windows if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]] for trial_index in range(np_splitted_ts.shape[0])])
+    ##all_win_splitted_ts = np.array([[np_splitted_ts[trial_index,:,n_win[0]:n_win[1]] for n_win in n_windows if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]] for trial_index in range(np_splitted_ts.shape[0])])
     
-    print all_win_splitted_ts.shape
+    ##print all_win_splitted_ts.shape
     
-    win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
+    ##win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
 
-    np.save(win_splitted_ts_file,all_win_splitted_ts)
+    ##np.save(win_splitted_ts_file,all_win_splitted_ts)
 
-    return win_splitted_ts_file
-
+    ##return win_splitted_ts_file
+    
+    #win_splitted_ts_files = []
+    
+    #for i,n_win in enumerate(n_windows):
         
+        #print i
+        #print n_win
+        
+        #if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]:
+            
+            
+            #win_splitted_ts = []
+            
+            #for trial_index in range(np_splitted_ts.shape[0]):
+                
+                #print np_splitted_ts[trial_index,:,n_win[0]:n_win[1]]
+                
+                #win_splitted_ts.append(np_splitted_ts[trial_index,:,n_win[0]:n_win[1]])
+                
+            #win_splitted_ts = np.array(win_splitted_ts)
+            
+            ##win_splitted_ts = np.array([np_splitted_ts[trial_index,:,n_win[0]:n_win[1]]] for trial_index in range(np_splitted_ts.shape[0]))
+            
+            #print win_splitted_ts.shape
+    
+            #win_splitted_ts_file = os.path.abspath("win_splitted_ts_{}.npy".format(i))
+
+            #np.save(win_splitted_ts_file,win_splitted_ts)
+
+            #win_splitted_ts_files.append(win_splitted_ts_file)
+            
+    #print "Generated {} win files".format(len(win_splitted_ts_files))
+    
+    #return win_splitted_ts_files 
         
 def filter_adj_plot_mat(conmat_file,labels_file,sep_label_name,k_neigh):
 

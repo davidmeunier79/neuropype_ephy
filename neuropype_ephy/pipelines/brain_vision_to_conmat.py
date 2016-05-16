@@ -8,16 +8,18 @@ from nipype.interfaces.utility import IdentityInterface
 
 from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralConn
 
-#from neuropype_ephy.spectral import  epoched_spectral_proc,spectral_proc,multiple_spectral_proc
-#from neuropype_ephy.spectral import  plot_circular_connectivity,
+#from neuropype_ephy.spectral import  multiple_spectral_proc
 
 from neuropype_ephy.nodes.import_data import ImportBrainVisionAscii
-#from neuropype_ephy.import_txt import split_txt
+
+from neuropype_ephy.nodes.ts_tools import SplitWindows
+
+#from neuropype_ephy.spectral import split_win_ts
 
 ###TODO
 #from neuropype_ephy.nodes.? import filter_adj_plot_mat
 
-def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeline_name="brain_vision_to_conmat", con_method = "coh", sample_size = 512, sep_label_name = "", sfreq = 512,filter_spectral = True, k_neigh = 3, multicon = False):
+def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeline_name="brain_vision_to_conmat", con_method = "coh", sample_size = 512, sep_label_name = "", sfreq = 512,filter_spectral = True, k_neigh = 3, n_windows = []):
     
     """
     Description:
@@ -44,7 +46,7 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeli
     
     pipeline.connect(inputnode, 'txt_file',split_ascii,'txt_file')
 
-    if multicon == False:
+    if len(n_windows) == 0:
             
         #### spectral
         
@@ -106,7 +108,32 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeli
             pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
             pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
             
-    #else:
+    else:
+            
+        ### win_ts
+        ##### 
+        win_ts = pe.Node(interface = SplitWindows(), name = "win_ts")
+        
+        win_ts.inputs.n_windows = n_windows
+        
+        pipeline.connect(split_ascii,'splitted_ts_file',win_ts,'ts_file')
+                 
+        #win_ts = pe.Node(interface = Function(input_names = ["splitted_ts_file","n_windows"],output_names = ["win_splitted_ts_files"],function = split_win_ts), name = "win_ts")
+        
+        #win_ts.inputs.n_windows = n_windows
+        
+        #pipeline.connect(split_ascii,'splitted_ts_file',win_ts,'splitted_ts_file')
+                 
+                 
+        spectral = pe.MapNode(interface = SpectralConn(), iterfield = ['ts_file'], name = "spectral")
+        
+        
+        spectral.inputs.con_method = con_method    
+        spectral.inputs.sfreq = sfreq
+        
+        #spectral.inputs.epoch_window_length = epoch_window_length
+        pipeline.connect(win_ts, 'win_ts_files', spectral, 'ts_file')
+        pipeline.connect(inputnode,'freq_band', spectral, 'freq_band')
         
         ##### spectral
         #spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
