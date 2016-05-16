@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Definition of nodes for computing reordering and plotting coclass_matrices
+Definition of nodes for computing and plotting spectral connectivity
 """
 import numpy as np
 import os
@@ -37,7 +37,36 @@ class SpectralConnOutputSpec(TraitedSpec):
 class SpectralConn(BaseInterface):
     
     """
+    Description:
+    
     Compute spectral connectivity in a given frequency bands
+    
+    Inputs:
+    
+    ts_file 
+        type = File , exists=True, desc='nodes * time series in .npy format', mandatory=True
+    
+    sfreq 
+        type = Float, desc='sampling frequency', mandatory=True
+    
+    freq_band 
+        type = List(Float) , exists=True, desc='frequency bands', mandatory=True
+    
+    con_method 
+        type = Enum("coh","imcoh","plv","pli","wpli","pli2_unbiased","ppc","cohy","wpli2_debiased") , desc='metric computed on time series for connectivity'
+        
+    epoch_window_length 
+        type = Float, desc='epoched data', mandatory=False
+    
+    export_to_matlab 
+        type = Bool, default = False, desc='If conmat is exported to .mat format as well',usedefault = True
+   
+    Outputs:
+    
+    conmat_file 
+        type = File, exists=True, desc="spectral connectivty matrix in .npy format"
+    
+    
     """
     input_spec = SpectralConnInputSpec
     output_spec = SpectralConnOutputSpec
@@ -101,8 +130,39 @@ class PlotSpectralConnOutputSpec(TraitedSpec):
 class PlotSpectralConn(BaseInterface):
     
     """
-    Plot spectral connectivity matrix
+    
+    Description:
+    
+    Plot connectivity matrix using mne plot_circular_connectivity function
+    
+    Inputs:
+    
+    conmat_file 
+        type = File, exists=True, desc='connectivity matrix in .npy format', mandatory=True
+    
+    is_sensor_space 
+        type = Bool, default = True, desc = 'if True uses labels as returned from mne', usedefault = True
+    
+    vmin 
+        type = Float, default = 0.3, desc='min scale value', usedefault = True
+    
+    vmax
+        type = Float, default = 1.0, desc='max scale value', usedefault = True
+    
+    nb_lines 
+        type = Int, default = 200, desc='nb lines kept in the representation', usedefault = True
+    
+    labels_file 
+        type = File, desc='list of labels associated with nodes'
+    
+    Outputs:
+    
+    plot_conmat_file
+        type = File, exists=True, desc="plot spectral connectivity matrix in .eps format"
+        
+    
     """
+    
     input_spec = PlotSpectralConnInputSpec
     output_spec = PlotSpectralConnOutputSpec
 
