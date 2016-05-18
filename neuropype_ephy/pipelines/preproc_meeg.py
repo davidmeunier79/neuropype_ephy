@@ -59,9 +59,10 @@ def create_pipeline_preproc_meeg(main_path,
 
     pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
-    print '***** ' + "main_path %s" % main_path + ' *****'
-    print '***** %s *****' % is_sensor_space
-    print '*****************'
+
+    print '*** main_path -> %s' % main_path + ' ***'
+    print '*** is_sensor_space -> %s ***' % is_sensor_space
+
     # define the inputs of the pipeline
     inputnode = pe.Node(IdentityInterface(fields=['raw_file']),
                         name='inputnode')
