@@ -63,9 +63,7 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 
 def plot_circular_connectivity(conmat, label_names, node_colors, node_order, vmin = 0.3, vmax = 1.0, nb_lines = 200, fname = "_def"):
     import os
-    
     import numpy as np
-    
     from mne.viz import circular_layout, plot_connectivity_circle
     import matplotlib.pyplot as plt
 
@@ -101,18 +99,18 @@ def plot_circular_connectivity(conmat, label_names, node_colors, node_order, vmi
 #################################################################################################################################################################"
 
 ################ laisser pour l'instant, a modifier dans brainvision_to_conmat
-def spectral_proc(ts_file,sfreq,freq_band,con_method):
+#def spectral_proc(ts_file,sfreq,freq_band,con_method):
 
-    import numpy as np
-    #import os
+    #import numpy as np
+    ##import os
 
-    from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+    #from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
 
-    data = np.load(ts_file)
+    #data = np.load(ts_file)
 
-    conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+    #conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
         
-    return conmat_file
+    #return conmat_file
 
 
 def spectral_proc_label(ts_file,sfreq,freq_band,con_method,label,mode):
@@ -242,63 +240,63 @@ def epoched_multiple_spectral_proc(ts_file,sfreq,freq_band_name,freq_band,con_me
             
     return conmat_files
 
-################ laisser pour l'instant, a modifier dans brainvision_to_conmat
-def epoched_spectral_proc(ts_file,sfreq,freq_band,con_method,epoch_window_length):
+################# laisser pour l'instant, a modifier dans brainvision_to_conmat
+#def epoched_spectral_proc(ts_file,sfreq,freq_band,con_method,epoch_window_length):
 
-    import numpy as np
+    #import numpy as np
 
-    from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+    #from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
 
-    data = np.load(ts_file)
+    #data = np.load(ts_file)
 
-    print data.shape
-    print sfreq
-    print freq_band
+    #print data.shape
+    #print sfreq
+    #print freq_band
 
-    if epoch_window_length == None:
+    #if epoch_window_length == None:
         
-        conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
-    else:
+        #conmat_file = compute_and_save_spectral_connectivity(data=data,con_method=con_method,sfreq=sfreq,fmin = freq_band[0],fmax = freq_band[1])
+    #else:
         
-        print "Shape before splits:"
-        print data.shape
+        #print "Shape before splits:"
+        #print data.shape
         
-        print  "sfreq:"
-        print sfreq
+        #print  "sfreq:"
+        #print sfreq
         
-        nb_splits = data.shape[1] // (epoch_window_length * sfreq)
+        #nb_splits = data.shape[1] // (epoch_window_length * sfreq)
         
-        print "nb_splits:"
-        print nb_splits
+        #print "nb_splits:"
+        #print nb_splits
         
-        reste = data.shape[1] % int(epoch_window_length * sfreq)
+        #reste = data.shape[1] % int(epoch_window_length * sfreq)
         
-        print "reste:"
-        print reste
+        #print "reste:"
+        #print reste
         
-        if reste != 0:
-            data = data[:,:-reste]
+        #if reste != 0:
+            #data = data[:,:-reste]
         
-        print "shape after reste:"
-        print data.shape
+        #print "shape after reste:"
+        #print data.shape
         
-        print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
+        #print "epoching data with {}s by window, resulting in {} epochs".format(epoch_window_length,nb_splits)
         
         
         
-        list_epoched_data = np.array_split(data,nb_splits,axis = 1)
+        #list_epoched_data = np.array_split(data,nb_splits,axis = 1)
         
-        for epo in list_epoched_data:
-            print epo.shape
+        #for epo in list_epoched_data:
+            #print epo.shape
         
-        #print "Shape after splits:"
-        #print epoched_data.shape
+        ##print "Shape after splits:"
+        ##print epoched_data.shape
 
-        epoched_data = np.array(list_epoched_data)
+        #epoched_data = np.array(list_epoched_data)
         
-        conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
+        #conmat_file = compute_and_save_spectral_connectivity(data=epoched_data, con_method=con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1])
 
-        return conmat_file
+        #return conmat_file
     
 def multiple_windowed_spectral_proc(ts_file,sfreq,freq_band,con_method):
 
@@ -360,27 +358,59 @@ def multiple_windowed_spectral_proc(ts_file,sfreq,freq_band,con_method):
 
 ########################################################### splitting ts with temporal windows
 
-def split_win_ts(splitted_ts_file,n_windows):
+#def split_win_ts(splitted_ts_file,n_windows):
     
-    import numpy as np
-    import os
-    np_splitted_ts = np.load(splitted_ts_file)
+    #import numpy as np
+    #import os
+    #np_splitted_ts = np.load(splitted_ts_file)
     
-    print np_splitted_ts.shape
+    #print np_splitted_ts.shape
 
-    print len(n_windows)
+    #print len(n_windows)
     
-    all_win_splitted_ts = np.array([[np_splitted_ts[trial_index,:,n_win[0]:n_win[1]] for n_win in n_windows if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]] for trial_index in range(np_splitted_ts.shape[0])])
+    ##all_win_splitted_ts = np.array([[np_splitted_ts[trial_index,:,n_win[0]:n_win[1]] for n_win in n_windows if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]] for trial_index in range(np_splitted_ts.shape[0])])
     
-    print all_win_splitted_ts.shape
+    ##print all_win_splitted_ts.shape
     
-    win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
+    ##win_splitted_ts_file = os.path.abspath("win_splitted_ts.npy")
 
-    np.save(win_splitted_ts_file,all_win_splitted_ts)
+    ##np.save(win_splitted_ts_file,all_win_splitted_ts)
 
-    return win_splitted_ts_file
-
+    ##return win_splitted_ts_file
+    
+    #win_splitted_ts_files = []
+    
+    #for i,n_win in enumerate(n_windows):
         
+        #print i
+        #print n_win
+        
+        #if 0 <= n_win[0] and n_win[1] <= np_splitted_ts.shape[2]:
+            
+            
+            #win_splitted_ts = []
+            
+            #for trial_index in range(np_splitted_ts.shape[0]):
+                
+                #print np_splitted_ts[trial_index,:,n_win[0]:n_win[1]]
+                
+                #win_splitted_ts.append(np_splitted_ts[trial_index,:,n_win[0]:n_win[1]])
+                
+            #win_splitted_ts = np.array(win_splitted_ts)
+            
+            ##win_splitted_ts = np.array([np_splitted_ts[trial_index,:,n_win[0]:n_win[1]]] for trial_index in range(np_splitted_ts.shape[0]))
+            
+            #print win_splitted_ts.shape
+    
+            #win_splitted_ts_file = os.path.abspath("win_splitted_ts_{}.npy".format(i))
+
+            #np.save(win_splitted_ts_file,win_splitted_ts)
+
+            #win_splitted_ts_files.append(win_splitted_ts_file)
+            
+    #print "Generated {} win files".format(len(win_splitted_ts_files))
+    
+    #return win_splitted_ts_files 
         
 def filter_adj_plot_mat(conmat_file,labels_file,sep_label_name,k_neigh):
 

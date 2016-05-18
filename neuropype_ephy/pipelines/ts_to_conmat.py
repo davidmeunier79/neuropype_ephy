@@ -1,30 +1,27 @@
 # -*- coding: utf-8 -*-
+"""
+Description: 
 
+Wraps spectral connectivity function of MNE, as well as plot_circular_connectivity
+
+"""
 import nipype.pipeline.engine as pe
-from nipype.interfaces.utility import IdentityInterface,Function
+from nipype.interfaces.utility import IdentityInterface
+#,Function
 
-#from neuropype_ephy.import_txt import split_txt
-
-
-### TODO
 from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralConn
-
-### to modify and add in "interfaces.mne"
-#from neuropype_ephy.spectral import  plot_circular_connectivity
 
 ### to modify and add in "Nodes"
 #from neuropype_ephy.spectral import  filter_adj_plot_mat
 
-def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multicon = False, export_to_matlab = False):
+def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multicon = False, export_to_matlab = False, temporal_windows = []):
     
     
     pipeline = pe.Workflow(name= pipeline_name)
     pipeline.base_dir = main_path
     
-    
-    #inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq']), name='inputnode')
     inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length','is_sensor_space']), name='inputnode')
-     
+    
     if multicon == False:
             
         #### spectral
@@ -45,7 +42,6 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')
         
         pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
-        
         
         #if filter_spectral == True:
                 
@@ -75,8 +71,13 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
         
             #pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
             #pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
-            
+        
+    elif len(temporal_windows) != 0:
+      print "Not done yet...."
+      
     #else:
+       
+        
         
         ##### spectral
         #spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
