@@ -63,7 +63,7 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         inv_solution.inputs.aseg_labels = aseg_labels
 
     pipeline.connect(inputnode, 'sbj_id', inv_solution, 'sbj_id')
-    pipeline.connect(inputnode, 'raw', inv_solution, 'raw')
+    pipeline.connect(inputnode, 'raw', inv_solution, 'raw_filename')
     pipeline.connect(LF_computation, 'fwd_filename',
                      inv_solution, 'fwd_filename')
     pipeline.connect(create_noise_cov, 'cov_fname_out',
@@ -72,8 +72,18 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     return pipeline
 
 
-def get_raw_info(raw):
+def get_raw_info(raw_fname):
+    from mne.io import Raw
+
+    raw = Raw(raw_fname, preload=True)
     return raw.info
+
+
+def get_raw_sfreq(raw_fname):
+    from mne.io import Raw
+
+    raw = Raw(raw_fname, preload=True)
+    return raw.info['sfreq']
 
 
 def get_freq_band(freq_band_name):
@@ -87,23 +97,28 @@ def get_freq_band(freq_band_name):
         print freq_band_names.index(freq_band_name)
 
         return freq_bands[freq_band_names.index(freq_band_name)]
-        
+
+
 if __name__ == '__main__':
     main_path = '/home/karim/Documents/Fanny'
     data_path = main_path
     sbj_dir = os.path.join(main_path, 'FSF')
 
-    subject_ids = ['S01']  # 'S02'
-    sessions = ['repos_1']  # 'repos_2'
+    subject_ids = ['S01','S02']  # 'S02'
+    sessions = ['repos_1', 'repos_2']  # 'repos_2'
+    inv_method = 'MNE'
+    parc = 'aparc'
 
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
 
     mod = True
-    aseg = True
-    
+    aseg = False
+
+    is_preproc = False
+
     if mod:
         radatools_optim = "WS trfr 1"
-        
+
 #    aseg_labels = ['Left-Accumbens-area',
 #                   'Left-Amygdala',
 #                   'Left-Caudate',
@@ -133,7 +148,15 @@ if __name__ == '__main__':
                    'Right-Cerebellum-Cortex']
 
     # create main workflow
-    main_workflow = pe.Workflow(name='wf_raw_to_graph_analysis')
+    if not is_preproc:
+        wf_name = 'wf_raw_to_graph_analysis_' + inv_method + '_' + parc
+    else:
+        wf_name = 'wf_preproc_raw_to_graph_analysis_' + inv_method + '_' + parc
+
+    if aseg:
+        wf_name = wf_name + '_aseg'
+
+    main_workflow = pe.Workflow(name=wf_name)
     main_workflow.base_dir = main_path
 
     # info source
@@ -151,25 +174,36 @@ if __name__ == '__main__':
                                                    outfields=['raw_file']),
                          name='datasource')
     datasource.inputs.base_directory = data_path
-    datasource.inputs.template = '%s/%s%s'
-    datasource.inputs.template_args = dict(raw_file=[['subject_id',
-                                                     'sess_index', ".ds"]])
-#    datasource.inputs.template = 'wf_raw_to_graph_analysis/preproc_meeg/_freq_band_name_alpha_sess_index_%s_subject_id_%s/preproc/*_ica%s' # meditation
-#    datasource.inputs.template_args = dict(raw_file=[['sess_index',
-#                                                     'subject_id', ".npy"]])
+    if not is_preproc:
+        datasource.inputs.template = '%s/%s%s'
+        datasource.inputs.template_args = dict(raw_file=[['subject_id',
+                                                          'sess_index', ".ds"]])
+    else:
+#        datasource.inputs.template = 'wf_raw_to_graph_analysis_MNE_aparc/preproc_meeg/_freq_band_name_alpha_sess_index_%s_subject_id_%s/preproc/*-raw.fif' 
+        datasource.inputs.template = '%s/%s*_raw-ica-raw.fif' 
+        datasource.inputs.template_args = dict(raw_file=[['subject_id',
+                                                          'sess_index']])
     datasource.inputs.sort_filelist = True
 
     main_workflow.connect(infosource, 'subject_id', datasource, 'subject_id')
     main_workflow.connect(infosource, 'sess_index', datasource, 'sess_index')
 
-    preproc_workflow = create_pipeline_preproc_meeg(main_path,
-                                                    is_sensor_space=False,
-                                                    is_set_ICA_components=True,
-                                                    n_comp_exclude={'S01': [[0,5,53]]},
-                                                    data_type='ds')
+    if not is_preproc:
+        is_set_ICA_components = False
 
-    main_workflow.connect(datasource, 'raw_file',
-                          preproc_workflow, 'inputnode.raw_file')
+        if is_set_ICA_components:
+            n_comp_exclude = {'S01': [[0, 5, 53]]}
+        else:
+            n_comp_exclude = []
+
+        preproc_workflow = create_pipeline_preproc_meeg(main_path,
+                                                        is_sensor_space=False,
+                                                        is_set_ICA_components=is_set_ICA_components,
+                                                        n_comp_exclude=n_comp_exclude,
+                                                        data_type='ds')
+
+        main_workflow.connect(datasource, 'raw_file',
+                              preproc_workflow, 'inputnode.raw_file')
 
     if aseg:
         aseg_labels = aseg_labels
@@ -179,6 +213,8 @@ if __name__ == '__main__':
     inv_sol_workflow = create_pipeline_source_reconstruction(main_path,
                                                              sbj_dir,
                                                              spacing='ico-5',
+                                                             inv_method=inv_method,
+                                                             parc=parc,
                                                              aseg = aseg,
                                                              aseg_labels=aseg_labels,
                                                              noise_cov_fname=noise_cov_fname)
@@ -186,11 +222,12 @@ if __name__ == '__main__':
     main_workflow.connect(infosource, 'subject_id',
                           inv_sol_workflow, 'inputnode.sbj_id')
 
-#    main_workflow.connect(datasource, 'raw_file',
-#                          inv_sol_workflow, 'inputnode.raw')
-
-    main_workflow.connect(preproc_workflow, 'preproc.out_file',
-                          inv_sol_workflow, 'inputnode.raw')
+    if not is_preproc:
+        main_workflow.connect(preproc_workflow, 'preproc.out_file',
+                              inv_sol_workflow, 'inputnode.raw')
+    else:
+        main_workflow.connect(datasource, 'raw_file',
+                              inv_sol_workflow, 'inputnode.raw')
 
     spectral_workflow = create_pipeline_time_series_to_spectral_connectivity(main_path)
 
@@ -205,8 +242,12 @@ if __name__ == '__main__':
     main_workflow.connect(infosource, ('freq_band_name', get_freq_band),
                           spectral_workflow, 'inputnode.freq_band')
 
-    main_workflow.connect(preproc_workflow, 'preproc.sfreq',
-                          spectral_workflow, 'inputnode.sfreq')
+    if not is_preproc:
+        main_workflow.connect(preproc_workflow, 'preproc.sfreq',
+                              spectral_workflow, 'inputnode.sfreq')
+    else:
+        main_workflow.connect(datasource, ('raw_file', get_raw_sfreq),
+                              spectral_workflow, 'inputnode.sfreq')
 
     spectral_workflow.inputs.inputnode.epoch_window_length = 3.0
 
@@ -225,5 +266,5 @@ if __name__ == '__main__':
     main_workflow.write_graph(graph2use='colored')  # colored
     main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
     
-    main_workflow.run()
-    #main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
+#    main_workflow.run()
+    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
