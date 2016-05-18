@@ -143,7 +143,7 @@ def create_bem_sol(sbj_dir, sbj_id):
             print inner_skull_fname + '---> FILE NOT FOUND!!!---> BEM computed'
             make_watershed_bem(sbj_id, sbj_dir, overwrite=True)
         else:
-            print '*** inner skull surface exists!!!' % inner_skull_fname
+            print '*** inner skull %s surface exists!!!' % inner_skull_fname
 
         # Create a BEM model for a subject
         surfaces = mne.make_bem_model(sbj_id, ico=4, conductivity=[0.3],
@@ -239,6 +239,10 @@ def is_trans(raw_info):
 
     # check if the co-registration file was created
     # if not raise an runtime error
+    i_ica = raw_fname.find('-preproc')
+    if i_ica != -1:
+        raw_fname = raw_fname[:i_ica]
+
     trans_fname = op.join(data_path, '%s-trans.fif' % raw_fname)
     if not op.isfile(trans_fname):
         raise RuntimeError('*** coregistration file %s NOT found!!!'
