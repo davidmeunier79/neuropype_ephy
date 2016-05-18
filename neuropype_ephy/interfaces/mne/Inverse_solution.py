@@ -32,7 +32,7 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     sbj_dir = traits.Directory(exists=True, desc='Freesurfer main directory',
                                mandatory=True)
 
-    raw = traits.Any(desc='raw data', mandatory=True)
+    raw_filename = traits.File(exists=True, desc='raw filename', mandatory=True)
 
     cov_filename = traits.File(exists=True, desc='Noise Covariance matrix',
                                mandatory=True)
@@ -76,7 +76,7 @@ class InverseSolution(BaseInterface):
 
         sbj_id = self.inputs.sbj_id
         sbj_dir = self.inputs.sbj_dir
-        raw = self.inputs.raw
+        raw_filename = self.inputs.raw_filename
         cov_filename = self.inputs.cov_filename
         fwd_filename = self.inputs.fwd_filename
         inv_method = self.inputs.inv_method
@@ -85,7 +85,7 @@ class InverseSolution(BaseInterface):
         aseg = self.inputs.aseg
         aseg_labels = self.inputs.aseg_labels
 
-        self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw, sbj_id, sbj_dir,
+        self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir,
                                                                                               fwd_filename,
                                                                                               cov_filename,
                                                                                               snr, inv_method, parc,
