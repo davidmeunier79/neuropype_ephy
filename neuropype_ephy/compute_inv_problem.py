@@ -136,17 +136,21 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 
 # compute the inverse solution on raw data considering N_r regions in source
 # space  based on a FreeSurfer cortical parcellation
-def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
+def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
                          inv_method, parc, aseg, aseg_labels):
     import os.path as op
     import numpy as np
     import mne
     import pickle
-    
+
+    from mne.io import Raw
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
     from nipype.utils.filemanip import split_filename as split_f
-    
+
     from neuropype_ephy.compute_inv_problem import get_aseg_labels
+
+    print '***** READ raw filename %s *****' % raw_filename
+    raw = Raw(raw_filename)
 
     print '***** READ noise covariance %s *****' % cov_fname
     noise_cov = mne.read_cov(cov_fname)
@@ -229,7 +233,8 @@ def compute_ROIs_inv_sol(raw, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
 
     for value in labels:
         label_names.append(value.name)
-        label_coords.append(value.pos[0])
+#        label_coords.append(value.pos[0])
+        label_coords.append(np.mean(value.pos, axis=0))
 
     np.savetxt(label_names_file, np.array(label_names, dtype=str),
                fmt="%s")
