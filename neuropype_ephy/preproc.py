@@ -113,7 +113,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     ### filtering + downsampling
     #raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
     raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir')
-    raw.resample(sfreq = down_sfreq, npad = 0)
+#    raw.resample(sfreq = down_sfreq, npad = 0)
 
 
     ### 1) Fit ICA model using the FastICA algorithm
@@ -314,6 +314,9 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
 #    raw_ica_file = os.path.abspath(basename[:i_raw] + 'ica-raw.fif')
     raw_ica_file = os.path.join(subj_path, basename + '-preproc-raw.fif')
     raw_ica = ica.apply(raw)
+
+    raw_ica.resample(sfreq=down_sfreq, npad=0)
+
     raw_ica.save(raw_ica_file, overwrite=True)
 
     # save ICA solution
