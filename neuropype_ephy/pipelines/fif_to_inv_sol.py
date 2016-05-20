@@ -104,17 +104,17 @@ if __name__ == '__main__':
     data_path = main_path
     sbj_dir = os.path.join(main_path, 'FSF')
 
-    subject_ids = ['S01','S02']  # 'S02'
-    sessions = ['repos_1', 'repos_2']  # 'repos_2'
+    subject_ids = ['S01']  # 'S02'
+    sessions = ['repos_1']  # 'repos_2'
     inv_method = 'MNE'
     parc = 'aparc'
 
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
 
     mod = True
-    aseg = False
+    aseg = True
 
-    is_preproc = False
+    is_preproc = True
 
     if mod:
         radatools_optim = "WS trfr 1"
@@ -266,5 +266,5 @@ if __name__ == '__main__':
     main_workflow.write_graph(graph2use='colored')  # colored
     main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
     
-#    main_workflow.run()
-    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
+    main_workflow.run()
+#    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
