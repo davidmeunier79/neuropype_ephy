@@ -47,10 +47,10 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     create_noise_cov = pe.Node(interface=NoiseCovariance(),
                                name="create_noise_cov")
 
-    if noise_cov_fname is not None:
-        create_noise_cov.inputs.cov_fname_in = noise_cov_fname
+#    if noise_cov_fname is not None:
+    create_noise_cov.inputs.cov_fname_in = noise_cov_fname
 
-    pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw')
+    pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw_filename')
 
     # Inverse Solution Node
     inv_solution = pe.Node(interface=InverseSolution(), name='inv_solution')
