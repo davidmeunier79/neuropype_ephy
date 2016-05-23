@@ -23,7 +23,7 @@ from nipype.interfaces.base import traits, File, TraitedSpec
 from neuropype_ephy.compute_inv_problem import compute_ROIs_inv_sol
 
 from mne import compute_raw_covariance, pick_types, write_cov
-
+from mne.io import Raw
 
 class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 
@@ -107,9 +107,9 @@ class InverseSolution(BaseInterface):
 
 class NoiseCovarianceConnInputSpec(BaseInterfaceInputSpec):
 
-    cov_fname_in = traits.String(desc='file name for Noise Covariance Matrix')
+    cov_fname_in = traits.File(exists=False, desc='file name for Noise Covariance Matrix')
 
-    raw = traits.Any(desc='raw data')
+    raw_filename = traits.File(exists=True, desc='raw data filename')
 
 
 class NoiseCovarianceConnOutputSpec(TraitedSpec):
@@ -127,11 +127,15 @@ class NoiseCovariance(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        raw = self.inputs.raw
+        raw_filename = self.inputs.raw_filename
         cov_fname_in = self.inputs.cov_fname_in
-
-        if cov_fname_in == traits.Undefined:
-
+        
+        print '\n ***** \n' + cov_fname_in
+        
+        if cov_fname_in == '':
+            
+            raw = Raw(raw_filename)
+            
             data_path, basename, ext = split_f(raw.info['filename'])
             self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
 
@@ -150,7 +154,7 @@ class NoiseCovariance(BaseInterface):
             write_cov(self.cov_fname_out, noise_cov)
 
         else:
-            print '*** NOISE cov file %s exists!!!' % cov_fname_in
+            print '\n *** NOISE cov file %s exists!!! \n' % cov_fname_in
             self.cov_fname_out = cov_fname_in
 
         return runtime
