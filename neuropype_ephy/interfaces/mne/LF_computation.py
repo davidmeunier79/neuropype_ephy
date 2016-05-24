@@ -60,7 +60,7 @@ class LFComputation(BaseInterface):
             fwd_filename = op.join(data_path, '%s-%s-aseg-fwd.fif'
                                    % (raw_fname, spacing))
 
-        print '*** fwd_filename %s ***' % fwd_filename
+        print '\n *** fwd_filename %s ***\n' % fwd_filename
         return fwd_filename
 
     def _run_interface(self, runtime):
@@ -93,7 +93,7 @@ class LFComputation(BaseInterface):
             # TODO: ha senso una funzione con un solo cmd?
             compute_fwd_sol(raw_info, trans_fname, src, bem, self.fwd_filename)
         else:
-            print '*** FWD file %s exists!!!' % self.fwd_filename
+            print '\n*** FWD file %s exists!!!\n' % self.fwd_filename
 
         return runtime
 
