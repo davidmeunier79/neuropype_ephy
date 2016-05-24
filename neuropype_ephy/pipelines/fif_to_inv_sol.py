@@ -18,6 +18,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
                                           spacing='ico-5',
                                           inv_method='MNE',
+                                          is_epoched=False,
+                                          event_id=0, t_min=None, t_max=None,
                                           parc='aparc',
                                           aseg=False,
                                           aseg_labels=[],
@@ -57,6 +59,12 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     inv_solution.inputs.sbj_dir = sbj_dir
     inv_solution.inputs.inv_method = inv_method
+    if is_epoched:
+        inv_solution.inputs.is_epoched = is_epoched
+        inv_solution.inputs.event_id = event_id
+        inv_solution.inputs.t_min = t_min
+        inv_solution.inputs.t_max = t_max
+        
     inv_solution.inputs.parc = parc
     inv_solution.inputs.aseg = aseg
     if aseg:
