@@ -538,3 +538,23 @@ def get_raw_sfreq(raw_fname):
 
     raw = Raw(raw_fname, preload=True)
     return raw.info['sfreq']
+
+
+def create_reject_dict(raw_info):
+    from mne import pick_types
+    
+    picks_eog = pick_types(raw_info, meg=False, ref_meg=False, eog=True)
+    picks_mag = pick_types(raw_info, meg='mag', ref_meg=False)
+    picks_grad = pick_types(raw_info, meg='grad', ref_meg=False)
+
+    reject=dict()
+    if picks_mag.size != 0:
+        reject['mag'] = 4e-12
+    if picks_grad.size != 0:
+        reject['grad'] = 4000e-13
+    if picks_eog.size != 0:
+        reject['eog'] = 150e-6
+        
+    return reject
+
+
