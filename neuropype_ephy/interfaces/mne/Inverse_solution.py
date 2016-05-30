@@ -146,7 +146,7 @@ class NoiseCovariance(BaseInterface):
         raw_filename = self.inputs.raw_filename
         cov_fname_in = self.inputs.cov_fname_in
         
-        if cov_fname_in == '':
+        if cov_fname_in == '' or not op.exists(cov_fname_in):
             
             raw = Raw(raw_filename)
             
