@@ -18,6 +18,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
                                           spacing='ico-5',
                                           inv_method='MNE',
+                                          is_epoched=False,
+                                          event_id=0, t_min=None, t_max=None,
                                           parc='aparc',
                                           aseg=False,
                                           aseg_labels=[],
@@ -47,16 +49,22 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     create_noise_cov = pe.Node(interface=NoiseCovariance(),
                                name="create_noise_cov")
 
-    if noise_cov_fname is not None:
-        create_noise_cov.inputs.cov_fname_in = noise_cov_fname
+#    if noise_cov_fname is not None:
+    create_noise_cov.inputs.cov_fname_in = noise_cov_fname
 
-    pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw')
+    pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw_filename')
 
     # Inverse Solution Node
     inv_solution = pe.Node(interface=InverseSolution(), name='inv_solution')
 
     inv_solution.inputs.sbj_dir = sbj_dir
     inv_solution.inputs.inv_method = inv_method
+    if is_epoched:
+        inv_solution.inputs.is_epoched = is_epoched
+        inv_solution.inputs.event_id = event_id
+        inv_solution.inputs.t_min = t_min
+        inv_solution.inputs.t_max = t_max
+        
     inv_solution.inputs.parc = parc
     inv_solution.inputs.aseg = aseg
     if aseg:
@@ -104,17 +112,17 @@ if __name__ == '__main__':
     data_path = main_path
     sbj_dir = os.path.join(main_path, 'FSF')
 
-    subject_ids = ['S01','S02']  # 'S02'
-    sessions = ['repos_1', 'repos_2']  # 'repos_2'
+    subject_ids = ['S01']  # 'S02'
+    sessions = ['repos_1']  # 'repos_2'
     inv_method = 'MNE'
     parc = 'aparc'
 
     noise_cov_fname = os.path.join(main_path, 'Big_Noise-cov.fif')
 
     mod = True
-    aseg = False
+    aseg = True
 
-    is_preproc = False
+    is_preproc = True
 
     if mod:
         radatools_optim = "WS trfr 1"
@@ -266,5 +274,5 @@ if __name__ == '__main__':
     main_workflow.write_graph(graph2use='colored')  # colored
     main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
     
-#    main_workflow.run()
-    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
+    main_workflow.run()
+#    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})

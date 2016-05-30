@@ -16,6 +16,7 @@ def compute_noise_cov(cov_fname, raw):
 
     from mne import compute_raw_covariance, pick_types, write_cov
     from nipype.utils.filemanip import split_filename as split_f
+    from neuropype_ephy.preproc import create_reject_dict
 
     print '***** COMPUTE RAW COV *****' + cov_fname
 
@@ -24,7 +25,8 @@ def compute_noise_cov(cov_fname, raw):
         data_path, basename, ext = split_f(raw.info['filename'])
         fname = op.join(data_path, '%s-cov.fif' % basename)
 
-        reject = dict(mag=4e-12, grad=4000e-13, eog=250e-6)
+        reject = create_reject_dict(raw.info)
+#        reject = dict(mag=4e-12, grad=4000e-13, eog=250e-6)
 
         picks = pick_types(raw.info, meg=True, ref_meg=False, exclude='bads')
 
@@ -136,8 +138,10 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 
 # compute the inverse solution on raw data considering N_r regions in source
 # space  based on a FreeSurfer cortical parcellation
-def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname, snr,
-                         inv_method, parc, aseg, aseg_labels):
+def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
+                         is_epoched=False, event_id=None, t_min=None, t_max=None,
+                         snr=1.0, inv_method='MNE',
+                         parc='aparc', aseg=False, aseg_labels=[]):
     import os.path as op
     import numpy as np
     import mne
@@ -145,20 +149,21 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
 
     from mne.io import Raw
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
+    from mne.minimum_norm import apply_inverse_epochs
+    
     from nipype.utils.filemanip import split_filename as split_f
 
     from neuropype_ephy.compute_inv_problem import get_aseg_labels
-
-    print '***** READ raw filename %s *****' % raw_filename
+    from neuropype_ephy.preproc import create_reject_dict
+    
+    print '\n*** READ raw filename %s ***\n' % raw_filename
     raw = Raw(raw_filename)
 
-    print '***** READ noise covariance %s *****' % cov_fname
+    print '\n*** READ noise covariance %s ***\n' % cov_fname
     noise_cov = mne.read_cov(cov_fname)
 
-    print '***** READ FWD SOL %s *****' % fwd_filename
+    print '\n*** READ FWD SOL %s ***\n' % fwd_filename
     forward = mne.read_forward_solution(fwd_filename)
-
-    print '***** SNR %s *****' % snr
     
     if not aseg:
         forward = mne.convert_forward_solution(forward, surf_ori=True,
@@ -167,7 +172,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
     lambda2 = 1.0 / snr ** 2
 
     # compute inverse operator
-    print '***** COMPUTE INV OP *****'
+    print '\n*** COMPUTE INV OP ***\n'
     if not aseg:
         loose = 0.2
         depth = 0.8
@@ -180,16 +185,32 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
                                              fixed=False)
 
     # apply inverse operator to the time windows [t_start, t_stop]s
-    print '***** APPLY INV OP *****'
-    stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method,
-                            label=None,
-                            start=None, stop=None,
-                            buffer_size=1000,
-                            pick_ori=None)  # None 'normal'
+    print '\n*** APPLY INV OP ***\n'
+    if is_epoched:
+        events = mne.find_events(raw)
+        picks = mne.pick_types(raw.info, meg=True, eog=True, exclude='bads')
+        reject = create_reject_dict(raw.info)
+        
+        epochs = mne.Epochs(raw, events, event_id, t_min, t_max, picks=picks,
+                            baseline=(None, 0), reject=reject)
 
-    print '***'
-    print 'stc dim ' + str(stc.shape)
-    print '***'
+        stc = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,
+                                   pick_ori=None)
+                                   
+        print '***'
+        print 'len stc %d' % len(stc)
+        print '***'
+                            
+    else:
+        stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method,
+                                label=None,
+                                start=None, stop=None,
+                                buffer_size=1000,
+                                pick_ori=None)  # None 'normal'
+    
+        print '***'
+        print 'stc dim ' + str(stc.shape)
+        print '***'
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)
@@ -205,7 +226,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
                                                 return_generator=False)
 
     # save results in .npy file that will be the input for spectral node
-    print '***** SAVE SOL *****'
+    print '\n*** SAVE ROI TS ***\n'
     subj_path, basename, ext = split_f(raw.info['filename'])
     ts_file = op.abspath(basename + '_ROI_ts.npy')
     np.save(ts_file, label_ts)

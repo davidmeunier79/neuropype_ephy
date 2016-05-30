@@ -21,9 +21,10 @@ from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
 from nipype.interfaces.base import traits, File, TraitedSpec
 
 from neuropype_ephy.compute_inv_problem import compute_ROIs_inv_sol
+from neuropype_ephy.preproc import create_reject_dict
 
 from mne import compute_raw_covariance, pick_types, write_cov
-
+from mne.io import Raw
 
 class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 
@@ -39,6 +40,15 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 
     fwd_filename = traits.File(exists=True, desc='LF matrix', mandatory=True)
 
+    is_epoched = traits.Bool(desc='if true raw data will be epoched',
+                             mandatory=False)    
+                             
+    event_id = traits.Int(None, desc='the id of the event to consider.', mandatory=False)
+    
+    t_min = traits.Float(None, desc='start time before event', mandatory=False)
+
+    t_max = traits.Float(None, desc='end time after event', mandatory=False)
+                   
     inv_method = traits.String(desc='possible inverse methods are \
                                sLORETA, MNE, dSPM', mandatory=True)
 
@@ -79,6 +89,10 @@ class InverseSolution(BaseInterface):
         raw_filename = self.inputs.raw_filename
         cov_filename = self.inputs.cov_filename
         fwd_filename = self.inputs.fwd_filename
+        is_epoched = self.inputs.is_epoched
+        event_id = self.inputs.event_id
+        t_min = self.inputs.t_min
+        t_max = self.inputs.t_max
         inv_method = self.inputs.inv_method
         snr = self.inputs.snr
         parc = self.inputs.parc
@@ -88,6 +102,8 @@ class InverseSolution(BaseInterface):
         self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir,
                                                                                               fwd_filename,
                                                                                               cov_filename,
+                                                                                              is_epoched,
+                                                                                              event_id, t_min, t_max,
                                                                                               snr, inv_method, parc,
                                                                                               aseg, aseg_labels)
 
@@ -107,9 +123,9 @@ class InverseSolution(BaseInterface):
 
 class NoiseCovarianceConnInputSpec(BaseInterfaceInputSpec):
 
-    cov_fname_in = traits.String(desc='file name for Noise Covariance Matrix')
+    cov_fname_in = traits.File(exists=False, desc='file name for Noise Covariance Matrix')
 
-    raw = traits.Any(desc='raw data')
+    raw_filename = traits.File(exists=True, desc='raw data filename')
 
 
 class NoiseCovarianceConnOutputSpec(TraitedSpec):
@@ -127,30 +143,31 @@ class NoiseCovariance(BaseInterface):
 
     def _run_interface(self, runtime):
 
-        raw = self.inputs.raw
+        raw_filename = self.inputs.raw_filename
         cov_fname_in = self.inputs.cov_fname_in
-
-        if cov_fname_in == traits.Undefined:
-
+        
+        if cov_fname_in == '' or not op.exists(cov_fname_in):
+            
+            raw = Raw(raw_filename)
+            
             data_path, basename, ext = split_f(raw.info['filename'])
             self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
 
-            print '***** COMPUTE RAW COV *****' + self.cov_fname_out
+            print '\n*** COMPUTE RAW COV ***\n' + self.cov_fname_out
 
-            # TODO check su eog channel, grad
 #            reject = dict(mag=4e-12, grad=4000e-13, eog=250e-6)
-            reject = dict(mag=4e-12)
+            reject = create_reject_dict(raw.info)
 
             picks = pick_types(raw.info, meg=True, ref_meg=False,
                                exclude='bads')
 
-            noise_cov = compute_raw_covariance(raw, picks=picks, reject=reject,
-                                               method='auto')
+            # TODO: which method? method='auto' too long for raw data
+            noise_cov = compute_raw_covariance(raw, picks=picks, reject=reject)
 
             write_cov(self.cov_fname_out, noise_cov)
 
         else:
-            print '*** NOISE cov file %s exists!!!' % cov_fname_in
+            print '\n *** NOISE cov file %s exists!!! \n' % cov_fname_in
             self.cov_fname_out = cov_fname_in
 
         return runtime

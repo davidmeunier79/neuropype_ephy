@@ -102,19 +102,20 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     print '*** ' + channel_coords_file + '***'
     np.savetxt(channel_coords_file, sens_loc, fmt='%s')
 
-    ### save electrode names
+    # save electrode names
     sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],dtype = "str")
 
     # AP 21032016 
-#    channel_names_file = os.path.join(data_path, "correct_channel_names.txt")  
+#    channel_names_file = os.path.join(data_path, "correct_channel_names.txt") 
     channel_names_file = os.path.abspath("correct_channel_names.txt")
     np.savetxt(channel_names_file,sens_names , fmt = '%s')
  
     ### filtering + downsampling
-    #raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir', n_jobs=8)
-    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg, method='iir')
-    raw.resample(sfreq = down_sfreq, npad = 0)
-
+    raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg,
+               method='iir', n_jobs=8)
+#    raw.filter(l_freq = l_freq, h_freq = h_freq, picks = picks_meeg,
+#               method='iir')
+#    raw.resample(sfreq=down_sfreq, npad=0)
 
     ### 1) Fit ICA model using the FastICA algorithm
     # Other available choices are `infomax` or `extended-infomax`
@@ -126,42 +127,45 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
 
     # check if we have an ICA, if yes, we load it
     ica_filename = os.path.join(subj_path,basename + "-ica.fif")  
-    if os.path.exists(ica_filename) == False:
+    if os.path.exists(ica_filename) is False:
         ica = ICA(n_components=variance, method='fastica', max_iter=500) # , max_iter=500
         ica.fit(raw, picks=select_sensors, reject=reject) # decim = 3, 
-        
+
         has_ICA = False
     else:
         has_ICA = True
         print ica_filename + '   exists!!!'
         ica = read_ica(ica_filename)
-        ica.exclude = [] 
+        ica.exclude = []
 
-    ### 2) identify bad components by analyzing latent sources.
+    # 2) identify bad components by analyzing latent sources.
     # generate ECG epochs use detection via phase statistics
-    
+
     # if we just have exclude channels we jump these steps
 #    if len(ica.exclude)==0:
     n_max_ecg = 3
     n_max_eog = 2
-    
+
     # check if ECG_ch_name is in the raw channels
     if ECG_ch_name in raw.info['ch_names']:
-        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors, 
-                                       ch_name = ECG_ch_name)
+        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5,
+                                       picks=select_sensors,
+                                       ch_name=ECG_ch_name)
     # if not  a synthetic ECG channel is created from cross channel average
     else:
-        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=select_sensors)
-    
-    ### ICA for ECG artifact 
+        ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5,
+                                       picks=select_sensors)
+
+    # ICA for ECG artifact
     # threshold=0.25 come default
     ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
     print scores
-    print '*************************** ' + str(len(ecg_inds)) + '*********************************'
+    print '\n len ecg_inds *** ' + str(len(ecg_inds)) + '***\n'
     if len(ecg_inds) > 0:
         ecg_evoked = ecg_epochs.average()
-        
-        fig1 = ica.plot_scores(scores, exclude=ecg_inds, title=ICA_title % 'ecg', show=is_show)
+
+        fig1 = ica.plot_scores(scores, exclude=ecg_inds,
+                               title=ICA_title % 'ecg', show=is_show)
 
         show_picks = np.abs(scores).argsort()[::-1][:5] # Pick the five largest scores and plot them
 
@@ -260,7 +264,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
     print '*************** n_fig = ' + str(n_fig) + ' n_plot = ' + str(n_plot) + '********************'
     fig = []
     t_start = 0
-    t_stop  = 60 # take the fist 60s
+    t_stop = None # 60 if we want to take the fist 60s
     for n in range(0,n_fig):
         fig_tmp = ica.plot_components(range(n_topo*n,n_topo*(n+1)),title='ICA components', show=is_show)    
         fig.append(fig_tmp)
@@ -314,6 +318,9 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
 #    raw_ica_file = os.path.abspath(basename[:i_raw] + 'ica-raw.fif')
     raw_ica_file = os.path.join(subj_path, basename + '-preproc-raw.fif')
     raw_ica = ica.apply(raw)
+
+    raw_ica.resample(sfreq=down_sfreq, npad=0)
+
     raw_ica.save(raw_ica_file, overwrite=True)
 
     # save ICA solution
@@ -359,8 +366,8 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
 
     print '*** SBJ %s' % sbj_name + '***'
 
-    n_session = int(filter(str.isdigit, basename))
-    print '*** n session = %d' % n_session + '***'
+#    n_session = int(filter(str.isdigit, basename))
+#    print '*** n session = %d' % n_session + '***'
 
     # Read raw
     raw = Raw(fif_file, preload=True)
@@ -387,8 +394,9 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
 
     # filtering + downsampling
     # TODO n_jobs=8
-    raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg, method='iir')
-    raw.resample(sfreq=down_sfreq, npad=0)
+    raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg,
+               method='iir',n_jobs=8)
+#    raw.resample(sfreq=down_sfreq, npad=0)
 
     # load ICA
     is_show = False  # visualization
@@ -400,6 +408,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
         ica = read_ica(ica_filename)
 
     # AP 210316
+    '''
     print '*** ica.exclude before set components= ', ica.exclude
     if n_comp_exclude.has_key(sbj_name):
         print '*** ICA to be excluded for sbj %s ' % sbj_name + ' ' + str(n_comp_exclude[sbj_name]) + '***'
@@ -409,10 +418,30 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
             print 'no ICA'
         else:
             print '*** ICA to be excluded for session %d ' %n_session + ' ' + str(matrix_c_ICA[n_session-1]) + '***'        
-
     ica.exclude = matrix_c_ICA[n_session-1]
+    '''
+    # AP new dict
+    print '*** ica.exclude before set components= ', ica.exclude
+    if n_comp_exclude.has_key(sbj_name):
+        print '*** ICA to be excluded for sbj %s ' % sbj_name + ' ' + str(n_comp_exclude[sbj_name]) + '***'
+        session_dict = n_comp_exclude[sbj_name]
+        session_names = session_dict.keys()
 
-    print '*** ica.exclude after set components = ', ica.exclude
+        componentes = []
+        for s in session_names:
+            if basename.find(s) > -1:
+                componentes = session_dict[s]
+                break
+
+        if len(componentes) == 0:
+            print '\n no ICA to be excluded \n'
+        else:
+            print '\n *** ICA to be excluded for session %s ' % s + \
+                    ' ' + str(componentes) + ' *** \n'
+
+    ica.exclude = componentes
+
+    print '\n *** ica.exclude after set components = ', ica.exclude
 
     fig1 = ica.plot_overlay(raw, show=is_show)
     report.add_figs_to_section(fig1, captions=['Signal'],
@@ -426,6 +455,9 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
 #    raw_ica_file = os.path.abspath(basename[:i_raw] + 'ica-raw.fif')
     raw_ica_file = os.path.join(subj_path, basename + '-preproc-raw.fif')
     raw_ica = ica.apply(raw)
+    
+    raw_ica.resample(sfreq=down_sfreq, npad=0)
+    
     raw_ica.save(raw_ica_file, overwrite=True)
 
     # save ICA solution
@@ -535,3 +567,23 @@ def get_raw_sfreq(raw_fname):
 
     raw = Raw(raw_fname, preload=True)
     return raw.info['sfreq']
+
+
+def create_reject_dict(raw_info):
+    from mne import pick_types
+    
+    picks_eog = pick_types(raw_info, meg=False, ref_meg=False, eog=True)
+    picks_mag = pick_types(raw_info, meg='mag', ref_meg=False)
+    picks_grad = pick_types(raw_info, meg='grad', ref_meg=False)
+
+    reject=dict()
+    if picks_mag.size != 0:
+        reject['mag'] = 4e-12
+    if picks_grad.size != 0:
+        reject['grad'] = 4000e-13
+    if picks_eog.size != 0:
+        reject['eog'] = 150e-6
+        
+    return reject
+
+
