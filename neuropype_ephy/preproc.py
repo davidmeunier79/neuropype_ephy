@@ -587,3 +587,43 @@ def create_reject_dict(raw_info):
     return reject
 
 
+def create_ts(raw_fname):
+    
+    import os
+    import numpy as np
+
+    import mne
+    from mne.io import Raw
+
+    from nipype.utils.filemanip import split_filename as split_f
+
+    raw = Raw(raw_fname, preload=True)
+    
+    subj_path, basename, ext = split_f(raw_fname)    
+    
+    select_sensors = mne.pick_types(raw.info, meg=True, ref_meg=False,
+                                    exclude='bads')
+    
+    # save electrode locations
+    sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
+    sens_loc = np.array(sens_loc)
+
+    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+    np.savetxt(channel_coords_file, sens_loc, fmt='%s')
+
+    # save electrode names
+    sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],
+                          dtype="str")
+
+    channel_names_file = os.path.abspath("correct_channel_names.txt")
+    np.savetxt(channel_names_file, sens_names, fmt='%s')
+    
+    data, times = raw[select_sensors, :]
+    
+    print data.shape
+
+    ts_file = os.path.abspath(basename + '.npy')
+    np.save(ts_file, data)
+    print '\n *** TS FILE ' + ts_file + '*** \n'
+
+    return ts_file, channel_coords_file, channel_names_file, raw.info['sfreq']
