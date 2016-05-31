@@ -16,6 +16,7 @@ from neuropype_graph.pipelines.conmat_to_graph import create_pipeline_conmat_to_
 
 def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
+                                          is_blind=False,
                                           spacing='ico-5',
                                           inv_method='MNE',
                                           is_epoched=False,
@@ -33,8 +34,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     # Lead Field computation Node
     LF_computation = pe.Node(interface=LFComputation(), name='LF_computation')
-
     LF_computation.inputs.sbj_dir = sbj_dir
+    LF_computation.inputs.is_blind = is_blind
     LF_computation.inputs.spacing = spacing
     LF_computation.inputs.aseg = aseg
     if aseg:
