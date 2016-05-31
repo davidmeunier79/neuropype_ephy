@@ -130,7 +130,6 @@ class PlotSpectralConnOutputSpec(TraitedSpec):
 class PlotSpectralConn(BaseInterface):
     
     """
-    
     Description:
     
     Plot connectivity matrix using mne plot_circular_connectivity function
