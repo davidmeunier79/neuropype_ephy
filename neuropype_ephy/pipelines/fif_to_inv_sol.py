@@ -6,6 +6,7 @@ import nipype.interfaces.io as nio
 
 from nipype.interfaces.utility import IdentityInterface
 
+from neuropype_ephy.preproc import get_raw_sfreq, get_raw_info
 from neuropype_ephy.interfaces.mne.LF_computation import LFComputation
 from neuropype_ephy.interfaces.mne.Inverse_solution import NoiseCovariance
 from neuropype_ephy.interfaces.mne.Inverse_solution import InverseSolution
@@ -81,18 +82,18 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     return pipeline
 
 
-def get_raw_info(raw_fname):
-    from mne.io import Raw
-
-    raw = Raw(raw_fname, preload=True)
-    return raw.info
-
-
-def get_raw_sfreq(raw_fname):
-    from mne.io import Raw
-
-    raw = Raw(raw_fname, preload=True)
-    return raw.info['sfreq']
+#def get_raw_info(raw_fname):
+#    from mne.io import Raw
+#
+#    raw = Raw(raw_fname, preload=True)
+#    return raw.info
+#
+#
+#def get_raw_sfreq(raw_fname):
+#    from mne.io import Raw
+#
+#    raw = Raw(raw_fname, preload=True)
+#    return raw.info['sfreq']
 
 
 def get_freq_band(freq_band_name):
