@@ -171,7 +171,7 @@ def create_bem_sol(sbj_dir, sbj_id):
     return bem
 
 
-def create_src_space(sbj_dir, sbj_id, spacing):
+def create_src_space(sbj_dir, sbj_id, spacing, is_blind):
     import os.path as op
     import mne
 
@@ -180,17 +180,27 @@ def create_src_space(sbj_dir, sbj_id, spacing):
     # check if source space exists, if not it creates using mne-python fun
     # we have to create the cortical surface source space even when aseg is
     # True
-    src_fname = op.join(bem_dir, '%s-%s-src.fif' % (sbj_id, spacing))
-    if not op.isfile(src_fname):
-        src = mne.setup_source_space(sbj_id, subjects_dir=sbj_dir,
-                                     fname=True,
-                                     spacing=spacing.replace('-', ''),
-                                     add_dist=False, overwrite=True,
-                                     n_jobs=2)
-        print '\n*** source space file %s written ***\n' % src_fname
+    if is_blind:
+        # if is_blind we have to precomputed the source space sincw we had
+        # to remove some labels
+        src_fname = op.join(bem_dir, '%s-blind-%s-src.fif' % (sbj_id, spacing))
+        if not op.isfile(src_fname):
+            raise '\n *** you have to compute the source space blind!!! ***\n'
+        else:
+            print '\n*** source space file %s exists!!!\n' % src_fname
+            src = mne.read_source_spaces(src_fname)
     else:
-        print '\n*** source space file %s exists!!!\n' % src_fname
-        src = mne.read_source_spaces(src_fname)
+        src_fname = op.join(bem_dir, '%s-%s-src.fif' % (sbj_id, spacing))
+        if not op.isfile(src_fname):
+            src = mne.setup_source_space(sbj_id, subjects_dir=sbj_dir,
+                                         fname=True,
+                                         spacing=spacing.replace('-', ''),
+                                         add_dist=False, overwrite=True,
+                                         n_jobs=2)
+            print '\n*** source space file %s written ***\n' % src_fname
+        else:
+            print '\n*** source space file %s exists!!!\n' % src_fname
+            src = mne.read_source_spaces(src_fname)
 
     return src
 
