@@ -65,6 +65,12 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     aseg_labels = traits.List(desc='list of substructures in the src space',
                               mandatory=False)
 
+    is_blind = traits.Bool(desc='if in the source space there are ROI removed',
+                           mandatory=False)
+
+    labels_removed = traits.List(desc='list of label we consider in the blind case',
+                                 mandatory=False)
+
 
 class InverseSolutionConnOutputSpec(TraitedSpec):
 
@@ -98,6 +104,8 @@ class InverseSolution(BaseInterface):
         parc = self.inputs.parc
         aseg = self.inputs.aseg
         aseg_labels = self.inputs.aseg_labels
+        is_blind = self.inputs.is_blind
+        labels_removed = self.inputs.labels_removed
 
         self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir,
                                                                                               fwd_filename,
@@ -105,7 +113,8 @@ class InverseSolution(BaseInterface):
                                                                                               is_epoched,
                                                                                               event_id, t_min, t_max,
                                                                                               snr, inv_method, parc,
-                                                                                              aseg, aseg_labels)
+                                                                                              aseg, aseg_labels,
+                                                                                              is_blind, labels_removed)
 
         return runtime
 
