@@ -141,7 +141,8 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
                          is_epoched=False, event_id=None, t_min=None, t_max=None,
                          snr=1.0, inv_method='MNE',
-                         parc='aparc', aseg=False, aseg_labels=[]):
+                         parc='aparc', aseg=False, aseg_labels=[],
+                         is_blind=False, labels_removed=[]):
     import os.path as op
     import numpy as np
     import mne
@@ -214,7 +215,14 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)
-
+    if is_blind:
+        for l in labels_cortex:
+            if l.name in labels_removed:
+                print l.name
+                labels_cortex.remove(l)
+                
+    print '\n*** %d ***\n'  % len(labels_cortex)      
+       
     src = inverse_operator['src']
 
     # allow_empty : bool -> Instead of emitting an error, return all-zero time
@@ -227,6 +235,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
 
     # save results in .npy file that will be the input for spectral node
     print '\n*** SAVE ROI TS ***\n'
+    print len(label_ts)
     subj_path, basename, ext = split_f(raw.info['filename'])
     ts_file = op.abspath(basename + '_ROI_ts.npy')
     np.save(ts_file, label_ts)
