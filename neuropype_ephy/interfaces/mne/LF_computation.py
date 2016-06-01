@@ -52,16 +52,17 @@ class LFComputation(BaseInterface):
     input_spec = LFComputationConnInputSpec
     output_spec = LFComputationConnOutputSpec
 
-    def _get_fwd_filename(self, raw_info, aseg, spacing):
+    def _get_fwd_filename(self, raw_info, aseg, spacing, is_blind):
 
         data_path, raw_fname, ext = split_f(raw_info['filename'])
 
-        if not aseg:
-            fwd_filename = op.join(data_path, '%s-%s-fwd.fif'
-                                   % (raw_fname, spacing))
-        else:
-            fwd_filename = op.join(data_path, '%s-%s-aseg-fwd.fif'
-                                   % (raw_fname, spacing))
+        fwd_filename = '%s-%s' % (raw_fname, spacing)
+        if is_blind:
+            fwd_filename += '-blind'
+        if aseg:
+            fwd_filename += '-aseg'
+
+        fwd_filename = op.join(data_path, fwd_filename + '-fwd.fif')
 
         print '\n *** fwd_filename %s ***\n' % fwd_filename
         return fwd_filename
@@ -76,7 +77,8 @@ class LFComputation(BaseInterface):
         spacing = self.inputs.spacing
         aseg_labels = self.inputs.aseg_labels
 
-        self.fwd_filename = self._get_fwd_filename(raw_info, aseg, spacing)
+        self.fwd_filename = self._get_fwd_filename(raw_info, aseg,
+                                                   spacing, is_blind)
 
         # check if we have just created the fwd matrix
         if not op.isfile(self.fwd_filename):
