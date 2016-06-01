@@ -18,6 +18,7 @@ from neuropype_graph.pipelines.conmat_to_graph import create_pipeline_conmat_to_
 def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
                                           is_blind=False,
+                                          labels_removed=[],
                                           spacing='ico-5',
                                           inv_method='MNE',
                                           is_epoched=False,
@@ -66,12 +67,13 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         inv_solution.inputs.event_id = event_id
         inv_solution.inputs.t_min = t_min
         inv_solution.inputs.t_max = t_max
-        
     inv_solution.inputs.parc = parc
     inv_solution.inputs.aseg = aseg
     if aseg:
         inv_solution.inputs.aseg_labels = aseg_labels
-
+    inv_solution.inputs.is_blind = is_blind
+    if is_blind:
+        inv_solution.inputs.labels_removed = labels_removed
     pipeline.connect(inputnode, 'sbj_id', inv_solution, 'sbj_id')
     pipeline.connect(inputnode, 'raw', inv_solution, 'raw_filename')
     pipeline.connect(LF_computation, 'fwd_filename',
