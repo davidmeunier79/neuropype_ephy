@@ -23,6 +23,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           inv_method='MNE',
                                           is_epoched=False,
                                           event_id=0, t_min=None, t_max=None,
+                                          is_evoked=False,
+                                          events_id=[],
                                           parc='aparc',
                                           aseg=False,
                                           aseg_labels=[],
@@ -54,7 +56,13 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
 #    if noise_cov_fname is not None:
     create_noise_cov.inputs.cov_fname_in = noise_cov_fname
-
+    create_noise_cov.inputs.is_epoched = is_epoched
+    create_noise_cov.inputs.is_evoked = is_evoked    
+    if is_evoked:
+        create_noise_cov.inputs.events_id = events_id
+        create_noise_cov.inputs.t_min = t_min
+        create_noise_cov.inputs.t_max = t_max
+        
     pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw_filename')
 
     # Inverse Solution Node
@@ -62,11 +70,16 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     inv_solution.inputs.sbj_dir = sbj_dir
     inv_solution.inputs.inv_method = inv_method
+    inv_solution.inputs.is_epoched = is_epoched
     if is_epoched:
-        inv_solution.inputs.is_epoched = is_epoched
         inv_solution.inputs.event_id = event_id
         inv_solution.inputs.t_min = t_min
         inv_solution.inputs.t_max = t_max
+
+    inv_solution.inputs.is_evoked = is_evoked
+    if is_epoched and is_evoked:
+        inv_solution.inputs.events_id = events_id
+        
     inv_solution.inputs.parc = parc
     inv_solution.inputs.aseg = aseg
     if aseg:
