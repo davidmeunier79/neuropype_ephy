@@ -205,33 +205,34 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
             for k in range(len(events_id)):
                 stc = apply_inverse(evoked[k], inverse_operator, lambda2,
                                     inv_method, pick_ori=None)
-                
-                print '\n*** STC for event %s ***\n' %  ev_list[k][0]
+
+                print '\n*** STC for event %s ***\n' % ev_list[k][0]
                 stc_file = op.abspath(basename + '_' + ev_list[k][0])
-                             
+
                 print '***'
                 print 'stc dim ' + str(stc.shape)
                 print '***'
-                
-                stc.save(stc_file)
-            
-        else:                
-            epochs = mne.Epochs(raw, events, event_id, t_min, t_max, picks=picks,
-                                baseline=(None, 0), reject=reject)
+
+                if not aseg:
+                    stc.save(stc_file)
+
+        else:
+            epochs = mne.Epochs(raw, events, event_id, t_min, t_max,
+                                picks=picks, baseline=(None, 0), reject=reject)
             stc = apply_inverse_epochs(epochs, inverse_operator, lambda2,
                                        inv_method, pick_ori=None)
-                                   
+
             print '***'
             print 'len stc %d' % len(stc)
             print '***'
-                            
+
     else:
         stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method,
                                 label=None,
                                 start=None, stop=None,
                                 buffer_size=1000,
                                 pick_ori=None)  # None 'normal'
-    
+
         print '***'
         print 'stc dim ' + str(stc.shape)
         print '***'
