@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon May  2 21:30:03 2016
-
-@author: karim
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Mon May  2 17:24:00 2016
 
 @author: pasca
@@ -25,6 +18,7 @@ from neuropype_ephy.preproc import create_reject_dict
 from mne import find_events, compute_covariance, pick_types, write_cov, Epochs
 from mne.io import Raw
 
+
 class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
 
     sbj_id = traits.String(desc='subject id', mandatory=True)
@@ -40,7 +34,7 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     fwd_filename = traits.File(exists=True, desc='LF matrix', mandatory=True)
 
     is_epoched = traits.Bool(desc='if true raw data will be epoched',
-                             mandatory=False)    
+                             mandatory=False)
     
     events_id = traits.Dict(None, desc='the id of all events to consider.', mandatory=False)                         
     
@@ -143,19 +137,20 @@ class NoiseCovarianceConnInputSpec(BaseInterfaceInputSpec):
     cov_fname_in = traits.File(exists=False, desc='file name for Noise Covariance Matrix')
 
     raw_filename = traits.File(exists=True, desc='raw data filename')
-    
+
     is_epoched = traits.Bool(desc='if true if we want to epoch the data',
                              mandatory=False)
-                            
+
     is_evoked = traits.Bool(desc='if true if we want to analyze evoked data',
                             mandatory=False)
 
     events_id = traits.Dict(None, desc='the id of all events to consider.', mandatory=False)
-    
+
     t_min = traits.Float(None, desc='start time before event', mandatory=False)
 
     t_max = traits.Float(None, desc='end time after event', mandatory=False)
-    
+
+
 class NoiseCovarianceConnOutputSpec(TraitedSpec):
 
     cov_fname_out = File(exists=False, desc='LF matrix')
@@ -178,32 +173,35 @@ class NoiseCovariance(BaseInterface):
         events_id = self.inputs.events_id
         t_min = self.inputs.t_min
         t_max = self.inputs.t_max
-           
+
         if cov_fname_in == '' or not op.exists(cov_fname_in):
 
             if is_epoched and is_evoked:
                 raw = Raw(raw_filename)
                 events = find_events(raw)
-                
+
                 data_path, basename, ext = split_f(raw.info['filename'])
                 self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
-    
+
                 if not op.exists(self.cov_fname_out):
                     print '\n*** COMPUTE COV FROM EPOCHS ***\n' + self.cov_fname_out
-                
+
                     reject = create_reject_dict(raw.info)
     
                     picks = pick_types(raw.info, meg=True, ref_meg=False,
-                                   exclude='bads')
-                
-                    epochs = Epochs(raw, events, events_id, t_min, t_max, picks=picks,
-                                baseline=(None, 0), reject=reject)
-                    
-                    noise_cov = compute_covariance(epochs, tmax=0, method='auto')
+                                       exclude='bads')
+
+                    epochs = Epochs(raw, events, events_id, t_min, t_max,
+                                    picks=picks, baseline=(None, 0),
+                                    reject=reject)
+
+                    # TODO method='auto'? too long!!!
+                    noise_cov = compute_covariance(epochs, tmax=0,
+                                                   method='diagonal_fixed')
                     write_cov(self.cov_fname_out, noise_cov)
                 else:
                     print '\n *** NOISE cov file %s exists!!! \n' % self.cov_fname_out
-            else:              
+            else:
                 '\n *** NO EPOCH DATA \n'
 
         else:
