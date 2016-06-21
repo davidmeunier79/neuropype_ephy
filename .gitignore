@@ -1,5 +1,5 @@
 *.pyc
 *.mat
-*.txt
 *~
 crash*
+*.egg-info/*
