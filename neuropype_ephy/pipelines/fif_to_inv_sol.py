@@ -6,6 +6,7 @@ import nipype.interfaces.io as nio
 
 from nipype.interfaces.utility import IdentityInterface
 
+from neuropype_ephy.preproc import get_raw_sfreq, get_raw_info
 from neuropype_ephy.interfaces.mne.LF_computation import LFComputation
 from neuropype_ephy.interfaces.mne.Inverse_solution import NoiseCovariance
 from neuropype_ephy.interfaces.mne.Inverse_solution import InverseSolution
@@ -16,10 +17,14 @@ from neuropype_graph.pipelines.conmat_to_graph import create_pipeline_conmat_to_
 
 def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           pipeline_name='inv_sol_pipeline',
+                                          is_blind=False,
+                                          labels_removed=[],
                                           spacing='ico-5',
                                           inv_method='MNE',
                                           is_epoched=False,
                                           event_id=0, t_min=None, t_max=None,
+                                          is_evoked=False,
+                                          events_id=[],
                                           parc='aparc',
                                           aseg=False,
                                           aseg_labels=[],
@@ -33,8 +38,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     # Lead Field computation Node
     LF_computation = pe.Node(interface=LFComputation(), name='LF_computation')
-
     LF_computation.inputs.sbj_dir = sbj_dir
+    LF_computation.inputs.is_blind = is_blind
     LF_computation.inputs.spacing = spacing
     LF_computation.inputs.aseg = aseg
     if aseg:
@@ -51,7 +56,13 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
 #    if noise_cov_fname is not None:
     create_noise_cov.inputs.cov_fname_in = noise_cov_fname
-
+    create_noise_cov.inputs.is_epoched = is_epoched
+    create_noise_cov.inputs.is_evoked = is_evoked    
+    if is_evoked:
+        create_noise_cov.inputs.events_id = events_id
+        create_noise_cov.inputs.t_min = t_min
+        create_noise_cov.inputs.t_max = t_max
+        
     pipeline.connect(inputnode, 'raw', create_noise_cov, 'raw_filename')
 
     # Inverse Solution Node
@@ -59,17 +70,23 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     inv_solution.inputs.sbj_dir = sbj_dir
     inv_solution.inputs.inv_method = inv_method
+    inv_solution.inputs.is_epoched = is_epoched
     if is_epoched:
-        inv_solution.inputs.is_epoched = is_epoched
         inv_solution.inputs.event_id = event_id
         inv_solution.inputs.t_min = t_min
         inv_solution.inputs.t_max = t_max
+
+    inv_solution.inputs.is_evoked = is_evoked
+    if is_epoched and is_evoked:
+        inv_solution.inputs.events_id = events_id
         
     inv_solution.inputs.parc = parc
     inv_solution.inputs.aseg = aseg
     if aseg:
         inv_solution.inputs.aseg_labels = aseg_labels
-
+    inv_solution.inputs.is_blind = is_blind
+    if is_blind:
+        inv_solution.inputs.labels_removed = labels_removed
     pipeline.connect(inputnode, 'sbj_id', inv_solution, 'sbj_id')
     pipeline.connect(inputnode, 'raw', inv_solution, 'raw_filename')
     pipeline.connect(LF_computation, 'fwd_filename',
@@ -80,18 +97,18 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     return pipeline
 
 
-def get_raw_info(raw_fname):
-    from mne.io import Raw
-
-    raw = Raw(raw_fname, preload=True)
-    return raw.info
-
-
-def get_raw_sfreq(raw_fname):
-    from mne.io import Raw
-
-    raw = Raw(raw_fname, preload=True)
-    return raw.info['sfreq']
+#def get_raw_info(raw_fname):
+#    from mne.io import Raw
+#
+#    raw = Raw(raw_fname, preload=True)
+#    return raw.info
+#
+#
+#def get_raw_sfreq(raw_fname):
+#    from mne.io import Raw
+#
+#    raw = Raw(raw_fname, preload=True)
+#    return raw.info['sfreq']
 
 
 def get_freq_band(freq_band_name):

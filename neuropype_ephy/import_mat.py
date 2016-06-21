@@ -178,8 +178,9 @@ def import_mat_to_ts(mat_file,orig_channel_names_file,orig_channel_coords_file):
 
     mat = loadmat(mat_file)
 
-    #field_name = basename.split('_')[0]
-    field_name = basename.split('_')[1]
+    field_name = basename.split('_')[0]
+#    field_name = basename.split('_')[1]
+    print '************************************ \n'
     print field_name
     print mat[field_name].shape
 

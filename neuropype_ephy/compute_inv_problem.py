@@ -140,8 +140,10 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 # space  based on a FreeSurfer cortical parcellation
 def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
                          is_epoched=False, event_id=None, t_min=None, t_max=None,
+                         is_evoked=False, events_id = [],
                          snr=1.0, inv_method='MNE',
-                         parc='aparc', aseg=False, aseg_labels=[]):
+                         parc='aparc', aseg=False, aseg_labels=[],
+                         is_blind=False, labels_removed=[]):
     import os.path as op
     import numpy as np
     import mne
@@ -149,7 +151,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
 
     from mne.io import Raw
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
-    from mne.minimum_norm import apply_inverse_epochs
+    from mne.minimum_norm import apply_inverse_epochs, apply_inverse
     
     from nipype.utils.filemanip import split_filename as split_f
 
@@ -158,6 +160,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
     
     print '\n*** READ raw filename %s ***\n' % raw_filename
     raw = Raw(raw_filename)
+    subj_path, basename, ext = split_f(raw.info['filename'])
 
     print '\n*** READ noise covariance %s ***\n' % cov_fname
     noise_cov = mne.read_cov(cov_fname)
@@ -190,31 +193,60 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
         events = mne.find_events(raw)
         picks = mne.pick_types(raw.info, meg=True, eog=True, exclude='bads')
         reject = create_reject_dict(raw.info)
-        
-        epochs = mne.Epochs(raw, events, event_id, t_min, t_max, picks=picks,
-                            baseline=(None, 0), reject=reject)
 
-        stc = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,
-                                   pick_ori=None)
-                                   
-        print '***'
-        print 'len stc %d' % len(stc)
-        print '***'
-                            
+        if is_evoked:
+            epochs = mne.Epochs(raw, events, events_id, t_min, t_max, picks=picks,
+                                baseline=(None, 0), reject=reject)
+            evoked = [epochs[k].average() for k in events_id]
+            snr = 3.0
+            lambda2 = 1.0 / snr ** 2
+            
+            ev_list = events_id.items()
+            for k in range(len(events_id)):
+                stc = apply_inverse(evoked[k], inverse_operator, lambda2,
+                                    inv_method, pick_ori=None)
+
+                print '\n*** STC for event %s ***\n' % ev_list[k][0]
+                stc_file = op.abspath(basename + '_' + ev_list[k][0])
+
+                print '***'
+                print 'stc dim ' + str(stc.shape)
+                print '***'
+
+                if not aseg:
+                    stc.save(stc_file)
+
+        else:
+            epochs = mne.Epochs(raw, events, event_id, t_min, t_max,
+                                picks=picks, baseline=(None, 0), reject=reject)
+            stc = apply_inverse_epochs(epochs, inverse_operator, lambda2,
+                                       inv_method, pick_ori=None)
+
+            print '***'
+            print 'len stc %d' % len(stc)
+            print '***'
+
     else:
         stc = apply_inverse_raw(raw, inverse_operator, lambda2, inv_method,
                                 label=None,
                                 start=None, stop=None,
                                 buffer_size=1000,
                                 pick_ori=None)  # None 'normal'
-    
+
         print '***'
         print 'stc dim ' + str(stc.shape)
         print '***'
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)
-
+    if is_blind:
+        for l in labels_cortex:
+            if l.name in labels_removed:
+                print l.name
+                labels_cortex.remove(l)
+                
+    print '\n*** %d ***\n'  % len(labels_cortex)      
+       
     src = inverse_operator['src']
 
     # allow_empty : bool -> Instead of emitting an error, return all-zero time
@@ -227,7 +259,8 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
 
     # save results in .npy file that will be the input for spectral node
     print '\n*** SAVE ROI TS ***\n'
-    subj_path, basename, ext = split_f(raw.info['filename'])
+    print len(label_ts)
+    
     ts_file = op.abspath(basename + '_ROI_ts.npy')
     np.save(ts_file, label_ts)
 
@@ -262,6 +295,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename, cov_fname,
     np.savetxt(label_coords_file, np.array(label_coords, dtype=float),
                fmt="%f %f %f")
 
+   
     return ts_file, labels_file, label_names_file, label_coords_file
 
 
