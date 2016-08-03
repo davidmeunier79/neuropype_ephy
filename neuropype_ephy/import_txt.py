@@ -19,11 +19,15 @@ def split_txt(sample_size,txt_file,sep_label_name, repair = True, sep = ";"):
             
             for line in lines:
                 
-                print line
+                #print line
                 
                 splitted_line = line.strip().split(sep,1)
                 
+                #print splitted_line
+                
                 name = splitted_line[0]
+                
+                print name
                 
                 elec_names.append(name)
                 
@@ -32,12 +36,17 @@ def split_txt(sample_size,txt_file,sep_label_name, repair = True, sep = ";"):
                 
                 data = splitted_line[1]
                 
-                print len(data.split(sep))
+                #print data
+                
+                #print len(data.split(sep))
                 
                 new_data = data.replace(" ",sep)
                 
+                
                 df_data.append([float(data.replace(",",".")) for data in new_data.split(sep)])
                 
+                #print df_data
+             
         print df_data
         print np.array(df_data).shape
         
