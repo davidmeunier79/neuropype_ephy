@@ -1,4 +1,4 @@
-def compute_and_save_psd(epochs_fname,  fmin, fmax, method='welch',
+def compute_and_save_psd(epochs_fname,  fmin=0, fmax=120, method='welch',
 						 n_fft=256, n_overlap=0, picks=None,
 						 proj=False, n_jobs=1, verbose=None):
 	"""
@@ -23,7 +23,6 @@ def compute_and_save_psd(epochs_fname,  fmin, fmax, method='welch',
 	freqs_fname = base + '-freqs.npy'
 	psds_file = os.path.abspath(psds_fname)
 	freqs_file = os.path.abspath(freqs_fname)
-
 	np.save(psds_file, psds)
 	np.save(freqs_file, freqs)
-	return psds, freqs
+	return psds_file, freqs_file

@@ -1,8 +1,6 @@
 from neuropype_ephy.power import compute_and_save_psd
 import os
 
-
-
 def test_power_welch():
     fmin = 0.1
     fmax = 300
