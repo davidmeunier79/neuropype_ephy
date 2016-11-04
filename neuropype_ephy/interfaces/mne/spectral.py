@@ -30,6 +30,8 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     export_to_matlab = traits.Bool(False, desc='If conmat is exported to .mat format as well',usedefault = True)
     
+    index = traits.String("0",desc = "What to add to the name of the file" ,usedefault = True)
+    
 class SpectralConnOutputSpec(TraitedSpec):
     
     conmat_file = File(exists=True, desc="spectral connectivty matrix in .npy format")
@@ -61,6 +63,9 @@ class SpectralConn(BaseInterface):
     export_to_matlab 
         type = Bool, default = False, desc='If conmat is exported to .mat format as well',usedefault = True
    
+    index
+        type = String, default = "0", desc='What to add to the name of the file',usedefault = True
+        
     Outputs:
     
     conmat_file 
@@ -81,6 +86,7 @@ class SpectralConn(BaseInterface):
         con_method = self.inputs.con_method
         epoch_window_length = self.inputs.epoch_window_length
         export_to_matlab = self.inputs.export_to_matlab
+        index = self.inputs.index
         
         if epoch_window_length == traits.Undefined:
             data = np.load(ts_file)
@@ -93,7 +99,7 @@ class SpectralConn(BaseInterface):
             print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
             data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
         
-        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
+        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
         
         return runtime
         
