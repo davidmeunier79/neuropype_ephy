@@ -138,10 +138,10 @@ class NoiseCovarianceConnInputSpec(BaseInterfaceInputSpec):
 
     raw_filename = traits.File(exists=True, desc='raw data filename')
 
-    is_epoched = traits.Bool(desc='if true if we want to epoch the data',
+    is_epoched = traits.Bool(desc='true if we want to epoch the data',
                              mandatory=False)
 
-    is_evoked = traits.Bool(desc='if true if we want to analyze evoked data',
+    is_evoked = traits.Bool(desc='true if we want to analyze evoked data',
                             mandatory=False)
 
     events_id = traits.Dict(None, desc='the id of all events to consider.', mandatory=False)
