@@ -87,6 +87,7 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     inv_solution.inputs.is_blind = is_blind
     if is_blind:
         inv_solution.inputs.labels_removed = labels_removed
+        
     pipeline.connect(inputnode, 'sbj_id', inv_solution, 'sbj_id')
     pipeline.connect(inputnode, 'raw', inv_solution, 'raw_filename')
     pipeline.connect(LF_computation, 'fwd_filename',
