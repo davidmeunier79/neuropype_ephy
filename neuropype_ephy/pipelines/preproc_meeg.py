@@ -11,19 +11,6 @@ Created on Tue Apr 26 17:06:36 2016
 import matplotlib
 matplotlib.use('PS')
 
-import nipype
-print nipype.__version__
-
-import nipype.interfaces.io as nio
-import nipype.pipeline.engine as pe
-
-from nipype.interfaces.utility import IdentityInterface, Function
-
-from neuropype_ephy.import_ctf import convert_ds_to_raw_fif
-from neuropype_ephy.preproc import preprocess_fif_to_ts
-from neuropype_ephy.preproc import preprocess_ICA_fif_to_ts
-from neuropype_ephy.preproc import preprocess_set_ICA_comp_fif_to_ts
-
 
 def get_ext_file(raw_file):
     from nipype.utils.filemanip import split_filename as split_f
@@ -56,6 +43,17 @@ def create_pipeline_preproc_meeg(main_path,
                                  is_set_ICA_components=False,
                                  n_comp_exclude=[],
                                  is_sensor_space=True):
+
+    from neuropype_ephy.preproc import preprocess_fif_to_ts
+    from neuropype_ephy.preproc import preprocess_ICA_fif_to_ts
+    from neuropype_ephy.preproc import preprocess_set_ICA_comp_fif_to_ts
+    from nipype.interfaces.utility import IdentityInterface, Function
+    from neuropype_ephy.import_ctf import convert_ds_to_raw_fif
+
+    import nipype
+    print nipype.__version__
+
+    import nipype.pipeline.engine as pe
 
     pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
