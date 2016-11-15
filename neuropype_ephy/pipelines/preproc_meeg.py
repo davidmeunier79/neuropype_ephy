@@ -134,7 +134,7 @@ def create_pipeline_preproc_meeg(main_path,
 
     return pipeline
 
-
+# TODO remove this TEST code
 if __name__ == '__main__':
     main_path = '/home/karim/Documents/Fanny'
     data_path = main_path
