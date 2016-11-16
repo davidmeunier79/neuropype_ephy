@@ -65,7 +65,9 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
     else:
         return raw, channel_coords_file,channel_names_file,raw.info['sfreq']
 
-def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq, down_sfreq, variance, is_sensor_space, data_type):
+def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, 
+                             h_freq, down_sfreq, variance, is_sensor_space, 
+                             data_type):
     import os
     import numpy as np
 
@@ -193,8 +195,11 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
                                                   'ECG overlay'], section = 'ICA - ECG')    
     
     # check if EoG_ch_name is in the raw channels
-    # if EoG_ch_name is empty if data_type is fif, ICA routine automatically looks for EEG61, EEG62
+    # if EoG_ch_name is empty if data_type is fif, ICA routine automatically 
+    # looks for EEG61, EEG62
     # otherwise if data_type is ds we jump this step
+    # AP 06092016
+    '''
     if not EoG_ch_name and data_type=='ds':
         eog_inds = []
     else:
@@ -203,7 +208,17 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq, h_freq,
             eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
         else:
             eog_inds, scores = ica.find_bads_eog(raw)
-
+    '''
+    if EoG_ch_name in raw.info['ch_names']:        
+        ### ICA for eye blink artifact - detect EOG by correlation
+        eog_inds, scores = ica.find_bads_eog(raw, ch_name = EoG_ch_name)
+    else:
+        try:
+            eog_inds, scores = ica.find_bads_eog(raw)    
+        except RuntimeError as e:
+            eog_inds = []
+            print e
+            
     if len(eog_inds) > 0:  
         
         fig6 = ica.plot_scores(scores, exclude=eog_inds, title=ICA_title % 'eog', show=is_show)
