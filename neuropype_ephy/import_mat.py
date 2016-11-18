@@ -1,70 +1,53 @@
 # -*- coding: utf-8 -*-
 
-import os
-import mne
 
-from mne import filter
-#from mne.io import RawFIF
-
-#mne.set_log_level('WARNING')
-
-import numpy as np
-
-#from params import main_path
-
-##################### nodes (Function)
-
-#def preprocess_mat_to_conmat(mat_file,):
-def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_file):
+# def preprocess_mat_to_conmat(mat_file,):
+def import_mat_to_conmat(mat_file, data_field_name='F',
+                         orig_channel_names_file=None,
+                         orig_channel_coords_file=None):
 
     import os
     import numpy as np
-
-    import mne
-
-    from mne.io import RawArray	
     from nipype.utils.filemanip import split_filename as split_f
 
     from scipy.io import loadmat
 
-    subj_path,basename,ext = split_f(mat_file)
+    subj_path, basename, ext = split_f(mat_file)
 
     mat = loadmat(mat_file)
 
-    #field_name = basename.split('_')[0]
-    #field_name = basename.split('_')[1]
-    #print field_name
-    print mat["mat_x"].shape
+    print mat[data_field_name].shape
 
-
-    raw_data = np.array(mat["mat_x"],dtype = "f")
+    raw_data = np.array(mat[data_field_name], dtype='f')
     print raw_data
     print raw_data.shape
 
-    conmat_file = os.path.abspath(basename +".npy")
+    ts_file = os.path.abspath(basename + '.npy')
+    np.save(ts_file, raw_data)
 
-    np.save(conmat_file,raw_data)
+    if orig_channel_names_file is not None:
+        correct_channel_coords = np.loadtxt(orig_channel_coords_file)
+        print correct_channel_coords
 
-    correct_channel_coords = np.loadtxt(orig_channel_coords_file)
-    
-    print correct_channel_coords
-    
-    
-    correct_channel_names = np.loadtxt(orig_channel_coords_file)
-    
-    print correct_channel_names
-    
-    ### save channel coords
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
-    np.savetxt(channel_coords_file ,correct_channel_coords , fmt = '%s')
+        # save channel coords
+        channel_coords_file = os.path.abspath('correct_channel_coords.txt')
+        np.savetxt(channel_coords_file, correct_channel_coords, fmt='%s')
 
-    ### save channel names
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
-    np.savetxt(channel_names_file,correct_channel_names , fmt = '%s')
+    if orig_channel_coords_file is not None:
+        correct_channel_names = np.loadtxt(orig_channel_coords_file)
+        print correct_channel_names
 
-    return conmat_file,channel_coords_file,channel_names_file
+        # save channel names
+        channel_names_file = os.path.abspath('correct_channel_names.txt')
+        np.savetxt(channel_names_file, correct_channel_names, fmt='%s')
 
-def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_name = 'ChannelFlag'):
+    if orig_channel_names_file is not None and orig_channel_coords_file is not None:
+        return ts_file, channel_coords_file, channel_names_file
+    else:
+        return ts_file
+
+
+def import_tsmat_to_ts(tsmat_file, data_field_name = 'F', good_channels_field_name = 'ChannelFlag'):
     #,orig_channel_names_file,orig_channel_coords_file):
 
     import os
