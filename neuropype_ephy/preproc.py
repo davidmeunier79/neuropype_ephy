@@ -66,9 +66,9 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
         return raw, channel_coords_file,channel_names_file,raw.info['sfreq']
 
 
-def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
-                             h_freq, down_sfreq, variance, is_sensor_space,
-                             data_type):
+def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
+                             l_freq, h_freq, down_sfreq, variance,
+                             is_sensor_space, data_type):
     import os
     import numpy as np
 
@@ -365,8 +365,9 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
         return raw_cleaned_file, channel_coords_file, channel_names_file, raw.info['sfreq']
 
 
-def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
-                                      down_sfreq, is_sensor_space):
+def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
+                                      l_freq, h_freq, down_sfreq,
+                                      is_sensor_space):
     import os
     import numpy as np
     import sys
@@ -383,7 +384,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
     subj_path, basename, ext = split_f(fif_file)
     (data_path,  sbj_name) = os.path.split(subj_path)
 
-    print '*** SBJ %s' % sbj_name + '***'
+    print '*** SBJ %s' % subject_id + '***'
 
     # Read raw
     raw = mne.io.read_raw_fif(fif_file, preload=True)
@@ -436,10 +437,10 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
     '''
     # AP new dict
     print '\n *** ica.exclude before set components= ', ica.exclude
-    if n_comp_exclude in(sbj_name):
-        print '*** ICA to be excluded for sbj %s ' % sbj_name
-        print ' ' + str(n_comp_exclude[sbj_name]) + '***'
-        session_dict = n_comp_exclude[sbj_name]
+    if n_comp_exclude.has_key(subject_id):
+        print '*** ICA to be excluded for sbj %s ' % subject_id
+        print ' ' + str(n_comp_exclude[subject_id]) + '***'
+        session_dict = n_comp_exclude[subject_id]
         session_names = session_dict.keys()
 
         componentes = []
