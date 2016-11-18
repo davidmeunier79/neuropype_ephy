@@ -15,7 +15,6 @@ from nipype.interfaces.base import File
 
 ################ ImportMat #################################
 
-from neuropype_ephy.import_mat import import_tsmat_to_ts
 
 
 class ImportMatInputSpec(BaseInterfaceInputSpec):
@@ -67,6 +66,7 @@ class ImportMat(BaseInterface):
 
     def _run_interface(self, runtime):
 
+        from neuropype_ephy.import_mat import import_tsmat_to_ts
         print 'in ImportMat'
 
         tsmat_file = self.inputs.tsmat_file
@@ -92,7 +92,6 @@ class ImportMat(BaseInterface):
 
 ############# ImportBrainVisionAscii ##################################
 
-from neuropype_ephy.import_txt import split_txt
 
 class ImportBrainVisionAsciiInputSpec(BaseInterfaceInputSpec):
 
@@ -116,7 +115,6 @@ class ImportBrainVisionAsciiInputSpec(BaseInterfaceInputSpec):
 class ImportBrainVisionAsciiOutputSpec(TraitedSpec):
     ''' Output specification for ImportBrainVisionAscii '''
 
-    print "in ImportBrainVisionAsciiOutputSpec"
     splitted_ts_file = traits.File(exists=True, desc="splitted time series in .npy format")
 
     elec_names_file = traits.File(exists=True, desc="electrode names in txt format")
@@ -163,6 +161,7 @@ class ImportBrainVisionAscii(BaseInterface):
 
     def _run_interface(self, runtime):
 
+        from neuropype_ephy.import_txt import split_txt
         print 'in ImportBrainVisionAscii'
 
         txt_file = self.inputs.txt_file
@@ -194,18 +193,16 @@ class ImportBrainVisionAscii(BaseInterface):
 
 
 
+class Ep2tsInputSpec(BaseInterfaceInputSpec):
+    ''' Input specification for Ep2ts '''
+    fif_file = File(exists=True, desc='fif file with epochs', mandatory=True)
 
-class ConvertFif2TsInputSpec(BaseInterfaceInputSpec):
-    ''' Input specification for ConvetFif2Ts '''
-    fif_file = File(exists=True, desc='fif file with raw data or epochs', mandatory=True)
 
-
-class ConvertFif2TsOutputSpec(TraitedSpec):
-    ''' Output specification for ConvertFif2Ts '''
-    print "in ImportBrainVisionAsciiOutputSpec"
+class Ep2tsOutputSpec(TraitedSpec):
+    ''' Output specification for Ep2ts '''
     ts_file = traits.File(exists=True, desc="time series in .npy format")
 
-class ConvertFif2Ts(BaseInterface):
+class Ep2ts(BaseInterface):
 
     """
     Description:
@@ -217,16 +214,16 @@ class ConvertFif2Ts(BaseInterface):
     Outputs:
 
     """
-    input_spec = ImportBrainVisionAsciiInputSpec
-    output_spec = ImportBrainVisionAsciiOutputSpec
+    input_spec = Ep2tsInputSpec
+    output_spec = Ep2tsOutputSpec
 
     def _run_interface(self, runtime):
 
-        print 'in ImportBrainVisionAscii'
+        from neuropype_ephy.fif2ts import ep2ts
 
         fif_file = self.inputs.fif_file
 
-        split_txt(fif_file=fif_file)
+        self.ts_file = ep2ts(fif_file=fif_file)
 
         return runtime
 
@@ -234,8 +231,7 @@ class ConvertFif2Ts(BaseInterface):
 
         outputs = self._outputs().get()
 
-
-        outputs["ts_file"] = os.path.abspath("ts.npy")
+        outputs["ts_file"] = self.ts_file
 
         return outputs
 
