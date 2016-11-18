@@ -62,7 +62,7 @@ def create_pipeline_preproc_meeg(main_path,
     print '*** is_sensor_space -> %s ***' % is_sensor_space
 
     # define the inputs of the pipeline
-    inputnode = pe.Node(IdentityInterface(fields=['raw_file']),
+    inputnode = pe.Node(IdentityInterface(fields=['raw_file', 'subject_id']),
                         name='inputnode')
 
     if data_type is 'ds':
@@ -77,6 +77,7 @@ def create_pipeline_preproc_meeg(main_path,
     if is_ICA:
         if is_set_ICA_components:
             preproc = pe.Node(interface=Function(input_names=['fif_file',
+                                                              'subject_id',
                                                               'n_comp_exclude',
                                                               'l_freq',
                                                               'h_freq',
@@ -89,8 +90,12 @@ def create_pipeline_preproc_meeg(main_path,
                                                  function=preprocess_set_ICA_comp_fif_to_ts),
                               name='preproc')
             preproc.inputs.n_comp_exclude = n_comp_exclude
+            
+            pipeline.connect(inputnode, 'subject_id', preproc, 'subject_id')
+            
         else:
             preproc = pe.Node(interface=Function(input_names=['fif_file',
+                                                              'subject_id',
                                                               'ECG_ch_name',
                                                               'EoG_ch_name',
                                                               'l_freq',
@@ -109,6 +114,8 @@ def create_pipeline_preproc_meeg(main_path,
             preproc.inputs.EoG_ch_name = EoG_ch_name
             preproc.inputs.data_type = data_type
             preproc.inputs.variance = variance
+            
+            pipeline.connect(inputnode, 'subject_id', preproc, 'subject_id')
 
     else:
         preproc = pe.Node(interface=Function(input_names=['fif_file',
