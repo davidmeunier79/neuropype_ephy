@@ -290,6 +290,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
                                    title='ICA components')
         fig.append(fig_tmp)
 
+    ''' AP 171126
     if n_plot > 5:
         n_fig_l = n_plot//5
 
@@ -313,8 +314,18 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
         fig_tmp = ica.plot_sources(raw,
                                    range(n_fig*n_topo+5*(n+1), n_ica_components), 
                                    start=t_start, stop=t_stop,
-                                   title='ICA components')     
-        fig.append(fig_tmp)   
+                                   title='ICA components')
+        fig.append(fig_tmp)
+    '''
+    # AP 171126
+    print range(n_topo*(n+1), n_ica_components)
+    fig_tmp = ica.plot_components(range(n_topo*(n+1), n_ica_components),
+                                  title='ICA components')
+    fig.append(fig_tmp)
+    fig_tmp = ica.plot_sources(raw, range(n_topo*(n+1), n_ica_components),
+                               start=t_start, stop=t_stop,
+                               title='ICA components')
+    fig.append(fig_tmp)
 
     for n in range(0, len(fig)):
         report.add_figs_to_section(fig[n], captions=['TOPO'],
@@ -326,11 +337,11 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
 
     # 3) apply ICA to raw data and save solution and report
     # check the amplitudes do not change
-    raw_ica_file = os.path.join(subj_path, basename + '-cleaned-raw.fif')
+    raw_cleaned_file = os.path.join(subj_path, basename + '-cleaned-raw.fif')
     raw_ica = ica.apply(raw)
 
     raw_ica.resample(sfreq=down_sfreq, npad=0)
-    raw_ica.save(raw_ica_file, overwrite=True)
+    raw_ica.save(raw_cleaned_file, overwrite=True)
 
     # save ICA solution
     print ica_filename
@@ -351,7 +362,7 @@ def preprocess_ICA_fif_to_ts(fif_file, ECG_ch_name, EoG_ch_name, l_freq,
     if is_sensor_space:
         return ts_file, channel_coords_file, channel_names_file, raw.info['sfreq']
     else:
-        return raw_ica_file, channel_coords_file, channel_names_file, raw.info['sfreq']
+        return raw_cleaned_file, channel_coords_file, channel_names_file, raw.info['sfreq']
 
 
 def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
@@ -374,11 +385,8 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
 
     print '*** SBJ %s' % sbj_name + '***'
 
-#    n_session = int(filter(str.isdigit, basename))
-#    print '*** n session = %d' % n_session + '***'
-
     # Read raw
-    raw = Raw(fif_file, preload=True)
+    raw = mne.io.read_raw_fif(fif_file, preload=True)
 
     # select sensors
     select_sensors = mne.pick_types(raw.info, meg=True, ref_meg=False,
@@ -401,10 +409,8 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
     np.savetxt(channel_names_file, sens_names, fmt='%s')
 
     # filtering + downsampling
-    # TODO n_jobs=8
     raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg,
-               method='iir',n_jobs=8)
-#    raw.resample(sfreq=down_sfreq, npad=0)
+               method='iir', n_jobs=8)
 
     # load ICA
     is_show = False  # visualization
@@ -429,9 +435,10 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
     ica.exclude = matrix_c_ICA[n_session-1]
     '''
     # AP new dict
-    print '*** ica.exclude before set components= ', ica.exclude
-    if n_comp_exclude.has_key(sbj_name):
-        print '*** ICA to be excluded for sbj %s ' % sbj_name + ' ' + str(n_comp_exclude[sbj_name]) + '***'
+    print '\n *** ica.exclude before set components= ', ica.exclude
+    if n_comp_exclude in(sbj_name):
+        print '*** ICA to be excluded for sbj %s ' % sbj_name
+        print ' ' + str(n_comp_exclude[sbj_name]) + '***'
         session_dict = n_comp_exclude[sbj_name]
         session_names = session_dict.keys()
 
@@ -460,13 +467,12 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
 
     # 3) apply ICA to raw data and save solution and report
     # check the amplitudes do not change
-#    raw_ica_file = os.path.abspath(basename[:i_raw] + 'ica-raw.fif')
-    raw_ica_file = os.path.join(subj_path, basename + '-preproc-raw.fif')
+    raw_cleaned_file = os.path.join(subj_path, basename + '-cleaned-raw.fif')
     raw_ica = ica.apply(raw)
-    
+
     raw_ica.resample(sfreq=down_sfreq, npad=0)
-    
-    raw_ica.save(raw_ica_file, overwrite=True)
+
+    raw_ica.save(raw_cleaned_file, overwrite=True)
 
     # save ICA solution
     print ica_filename
@@ -487,7 +493,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, n_comp_exclude, l_freq, h_freq,
     if is_sensor_space:
         return ts_file, channel_coords_file, channel_names_file, raw.info['sfreq']
     else:
-        return raw_ica_file, channel_coords_file, channel_names_file, raw.info['sfreq']
+        return raw_cleaned_file, channel_coords_file, channel_names_file, raw.info['sfreq']
 
 
 def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_freq, orig_sfreq, down_sfreq ,prefiltered = False):
