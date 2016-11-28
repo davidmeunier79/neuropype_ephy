@@ -25,18 +25,18 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
     sens_loc = np.array(sens_loc)
 
     	# AP 21032016 
-#    channel_coords_file = os.path.join(data_path, "correct_channel_coords.txt")
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+#    channel_coords_file = os.path.join(data_path, 'correct_channel_coords.txt')
+    channel_coords_file = os.path.abspath('correct_channel_coords.txt')
     np.savetxt(channel_coords_file ,sens_loc , fmt = '%s')
     
     	# print sens_loc
     
     	### save electrode names
-    sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],dtype = "str")
+    sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],dtype = 'str')
     
      # AP 21032016 
-#    channel_names_file = os.path.join(data_path, "correct_channel_names.txt")  
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
+#    channel_names_file = os.path.join(data_path, 'correct_channel_names.txt')  
+    channel_names_file = os.path.abspath('correct_channel_names.txt')
     np.savetxt(channel_names_file,sens_names , fmt = '%s')
     
     	### filtering + downsampling
@@ -56,7 +56,7 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
     print raw.info['sfreq']
     	#0/0
     
-    ts_file = os.path.abspath(basename +".npy")
+    ts_file = os.path.abspath(basename +'.npy')
     
     np.save(ts_file,data)    
     
@@ -100,15 +100,15 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
     sens_loc = np.array(sens_loc)
 
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+    channel_coords_file = os.path.abspath('correct_channel_coords.txt')
     print '*** ' + channel_coords_file + '***'
     np.savetxt(channel_coords_file, sens_loc, fmt='%s')
 
     # save electrode names
     sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],
-                          dtype="str")
+                          dtype='str')
 
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
+    channel_names_file = os.path.abspath('correct_channel_names.txt')
     np.savetxt(channel_names_file, sens_names, fmt='%s')
 
     # filtering
@@ -124,7 +124,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     reject = dict(mag=4e-12, grad=4000e-13)
 
     # check if we have an ICA, if yes, we load it
-    ica_filename = os.path.join(subj_path, basename + "-ica.fif")
+    ica_filename = os.path.join(subj_path, basename + '-ica.fif')
     if os.path.exists(ica_filename) is False:
         ica = ICA(n_components=variance, method='fastica', max_iter=500)
         ica.fit(raw, picks=select_sensors, reject=reject)  # decim = 3
@@ -355,7 +355,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     print data.shape
     print raw.info['sfreq']
 
-    ts_file = os.path.abspath(basename + "_ica.npy")
+    ts_file = os.path.abspath(basename + '_ica.npy')
     np.save(ts_file, data)
     print '***** TS FILE ' + ts_file + '*****'
 
@@ -399,14 +399,14 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
     sens_loc = np.array(sens_loc)
 
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+    channel_coords_file = os.path.abspath('correct_channel_coords.txt')
     np.savetxt(channel_coords_file, sens_loc, fmt='%s')
 
     # save electrode names
     sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],
-                          dtype="str")
+                          dtype='str')
 
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
+    channel_names_file = os.path.abspath('correct_channel_names.txt')
     np.savetxt(channel_names_file, sens_names, fmt='%s')
 
     # filtering + downsampling
@@ -417,7 +417,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     is_show = False  # visualization
     ica_filename = os.path.join(subj_path, basename + '-ica.fif')
     if os.path.exists(ica_filename) is False:
-        print "$$$ Warning, no %s found" % ica_filename
+        print '$$$ Warning, no %s found' % ica_filename
         sys.exit()
     else:
         ica = read_ica(ica_filename)
@@ -462,12 +462,13 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     fig1 = ica.plot_overlay(raw, show=is_show)
     report.add_figs_to_section(fig1, captions=['Signal'],
                                section='Signal quality')
-    report_filename = os.path.join(subj_path, basename + "-report_NEW.html")
+    report_filename = os.path.join(subj_path, basename + '-report_NEW.html')
     print report_filename
     report.save(report_filename, open_browser=False, overwrite=True)
 
     # 3) apply ICA to raw data and save solution and report
     # check the amplitudes do not change
+    basename = basename.replace('raw', '')
     raw_cleaned_file = os.path.join(subj_path, basename + '-cleaned-raw.fif')
     raw_ica = ica.apply(raw)
 
@@ -523,11 +524,11 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_fr
         
         
     ### save electrode locations	
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+    channel_coords_file = os.path.abspath('correct_channel_coords.txt')
     np.savetxt(channel_coords_file ,correct_elec_loc , fmt = '%s')
     
     	#### save electrode names
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
+    channel_names_file = os.path.abspath('correct_channel_names.txt')
     np.savetxt(channel_names_file,correct_elec_names , fmt = '%s')
 
         
@@ -557,7 +558,7 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_fr
         print downsampled_ts.shape
         
         
-        downsampled_ts_file = os.path.abspath("downsampled_ts.npy")
+        downsampled_ts_file = os.path.abspath('downsampled_ts.npy')
 
         np.save(downsampled_ts_file,downsampled_ts)
 
@@ -566,7 +567,7 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_fr
         return downsampled_ts_file,channel_coords_file,channel_names_file,raw.info['sfreq']
     
     else:
-        print "No downsampling was applied as orig_sfreq and down_sfreq are identical"
+        print 'No downsampling was applied as orig_sfreq and down_sfreq are identical'
         return ts_file,channel_coords_file,channel_names_file,orig_sfreq
 
 
@@ -613,28 +614,28 @@ def create_ts(raw_fname):
     from nipype.utils.filemanip import split_filename as split_f
 
     raw = Raw(raw_fname, preload=True)
-    
-    subj_path, basename, ext = split_f(raw_fname)    
-    
+
+    subj_path, basename, ext = split_f(raw_fname)
+
     select_sensors = mne.pick_types(raw.info, meg=True, ref_meg=False,
                                     exclude='bads')
-    
+
     # save electrode locations
     sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
     sens_loc = np.array(sens_loc)
 
-    channel_coords_file = os.path.abspath("correct_channel_coords.txt")
+    channel_coords_file = os.path.abspath('correct_channel_coords.txt')
     np.savetxt(channel_coords_file, sens_loc, fmt='%s')
 
     # save electrode names
     sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],
-                          dtype="str")
+                          dtype='str')
 
-    channel_names_file = os.path.abspath("correct_channel_names.txt")
+    channel_names_file = os.path.abspath('correct_channel_names.txt')
     np.savetxt(channel_names_file, sens_names, fmt='%s')
-    
+
     data, times = raw[select_sensors, :]
-    
+
     print data.shape
 
     ts_file = os.path.abspath(basename + '.npy')
