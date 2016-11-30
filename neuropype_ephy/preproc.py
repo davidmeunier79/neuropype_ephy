@@ -281,6 +281,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     fig = []
     t_start = 0
     t_stop = None  # 60 if we want to take the fist 60s
+    n = 0
     for n in range(n_fig):
         fig_tmp = ica.plot_components(range(n_topo*n, n_topo*(n+1)),
                                       title='ICA components', show=is_show)
@@ -289,6 +290,8 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
                                    start=t_start, stop=t_stop,
                                    title='ICA components')
         fig.append(fig_tmp)
+        
+        
 
     ''' AP 171126
     if n_plot > 5:
@@ -318,6 +321,8 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
         fig.append(fig_tmp)
     '''
     # AP 171126
+    if n is 0:
+        n = -1
     print range(n_topo*(n+1), n_ica_components)
     fig_tmp = ica.plot_components(range(n_topo*(n+1), n_ica_components),
                                   title='ICA components')
