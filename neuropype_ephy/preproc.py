@@ -67,7 +67,7 @@ def preprocess_fif_to_ts(fif_file, l_freq, h_freq, down_sfreq, is_sensor_space):
 
 
 def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
-                             l_freq, h_freq, down_sfreq, variance,
+                             reject, l_freq, h_freq, down_sfreq, variance,
                              is_sensor_space, data_type):
     import os
     import numpy as np
@@ -121,7 +121,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     # percentage of variance explained by the PCA components.
     ICA_title = 'Sources related to %s artifacts (red)'
     is_show = False  # visualization
-    reject = dict(mag=4e-12, grad=4000e-13)
+#    reject = dict(mag=4e-12, grad=4000e-13)
 
     # check if we have an ICA, if yes, we load it
     ica_filename = os.path.join(subj_path, basename + '-ica.fif')

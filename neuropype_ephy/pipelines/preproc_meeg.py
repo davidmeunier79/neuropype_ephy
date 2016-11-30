@@ -40,6 +40,7 @@ def create_pipeline_preproc_meeg(main_path,
                                  l_freq=1, h_freq=150, down_sfreq=300,
                                  is_ICA=True, variance=0.95,
                                  ECG_ch_name='', EoG_ch_name='',
+                                 reject=None,
                                  is_set_ICA_components=False,
                                  n_comp_exclude=[],
                                  is_sensor_space=True):
@@ -98,6 +99,7 @@ def create_pipeline_preproc_meeg(main_path,
                                                               'subject_id',
                                                               'ECG_ch_name',
                                                               'EoG_ch_name',
+                                                              'reject',
                                                               'l_freq',
                                                               'h_freq',
                                                               'down_sfreq',
@@ -112,6 +114,7 @@ def create_pipeline_preproc_meeg(main_path,
                               name='preproc')
             preproc.inputs.ECG_ch_name = ECG_ch_name
             preproc.inputs.EoG_ch_name = EoG_ch_name
+            preproc.inputs.reject = reject
             preproc.inputs.data_type = data_type
             preproc.inputs.variance = variance
             
