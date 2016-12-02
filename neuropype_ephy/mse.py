@@ -1,13 +1,13 @@
-import numpy as np
-import os
-import glob
 
-def get_mse_multiple_sensors(ep_data, m, r):
+def get_mse_multiple_sensors(ts_file, m, r):
     """
     Compute multiscale entropy across sensors for epoched data
     ep_data should be in {n_trials x n_sensors x n_times} format
     
     """
+    import numpy as np
+    from neuropype_ephy.mse import get_mse_curve_across_trials
+    ep_data = np.load(ts_file)
     mean_mses= []
     std_mses = []
     for iSen in range(ep_data.shape[1]):
@@ -17,6 +17,7 @@ def get_mse_multiple_sensors(ep_data, m, r):
         std_mses.append(std_mse)
     mean_mses = np.array(mean_mses)
     std_mses = np.array(std_mses)
+    np.savez('mse', mean_mse=mean_mses, std_mse=std_mses)
     return mean_mses, std_mses
         
 
@@ -26,6 +27,12 @@ def get_mse_curve_across_trials(single_sensor_data, m, r):
     mse is column vector containing mean entropy at different scales
     """
 
+    import numpy as np
+    import os
+    import glob
+    import os
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     f = open('data_filelist.txt', 'w')
     for iTrial in range(single_sensor_data.shape[1]):
         y = single_sensor_data[:, iTrial]
@@ -34,7 +41,7 @@ def get_mse_curve_across_trials(single_sensor_data, m, r):
         f.write('{} \n'.format(fname))
     f.close()
 
-    cmd = './mse -n 40 -a 1 -m ' + str(m) + ' -M ' +  str(m) +\
+    cmd = dir_path + '/mse -n 40 -a 1 -m ' + str(m) + ' -M ' +  str(m) +\
           ' -r ' + str(r) + ' -R ' + str(r) + ' -F data_filelist.txt > data_filelist.mse'
     os.system(cmd)
     res = np.loadtxt('data_filelist.mse', skiprows=7)
@@ -54,6 +61,7 @@ def get_mse_curve_across_trials(single_sensor_data, m, r):
 if __name__ == '__main__':
     test_path = '/media/dmalt/SSD500/aut_gamma/aut_gamma_pipeline/\
 _keys_K0001__K0001ec-epo-fif/ep2ts/ts_epochs.npy'
+    import numpy as np
     data = np.load(test_path)
     # data1 = data[:,0,:] 
     m = 2 
