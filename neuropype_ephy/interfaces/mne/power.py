@@ -20,8 +20,7 @@ class PowerInputSpec(BaseInterfaceInputSpec):
 
 
 class PowerOutputSpec(TraitedSpec):
-    psds_file = File(exists=True, desc='psd tensor in .npy format')
-    freqs_file = File(exists=True, desc='freqs array in .npy format')
+    psds_file = File(exists=True, desc='psd tensor and frequencies in .npz format')
 
 class Power(BaseInterface):
     """
@@ -36,11 +35,10 @@ class Power(BaseInterface):
         fmin = self.inputs.fmin
         fmax = self.inputs.fmax
         method = self.inputs.method
-        self.psds_file, self.freqs_file = compute_and_save_psd(epochs_file, fmin, fmax, method)
+        self.psds_file = compute_and_save_psd(epochs_file, fmin, fmax, method)
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['psds_file'] = self.psds_file
-        outputs['freqs_file'] = self.freqs_file
         return outputs
