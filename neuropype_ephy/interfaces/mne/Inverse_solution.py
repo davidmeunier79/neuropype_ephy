@@ -7,6 +7,7 @@ Created on Mon May  2 17:24:00 2016
 
 # -*- coding: utf-8 -*-
 import os.path as op
+import sys
 
 from nipype.utils.filemanip import split_filename as split_f
 
@@ -38,7 +39,8 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     
     events_id = traits.Dict(None, desc='the id of all events to consider.', mandatory=False)                         
     
-    event_id = traits.Int(None, desc='the id of the event to consider.', mandatory=False)
+    event_id = traits.Int(None, desc='the id of the event to consider.',
+                          usedefault=None, mandatory=False)
     
     t_min = traits.Float(None, desc='start time before event', mandatory=False)
 
@@ -80,8 +82,8 @@ class InverseSolutionConnOutputSpec(TraitedSpec):
 
 class InverseSolution(BaseInterface):
     """
-    Compute the inverse solution on raw data considering N_r regions in source
-    space based on a FreeSurfer cortical parcellation
+    Compute the inverse solution on raw or epoch data considering N_r regions
+    in source space based on a FreeSurfer cortical parcellation
     """
     input_spec = InverseSolutionConnInputSpec
     output_spec = InverseSolutionConnOutputSpec
@@ -107,16 +109,12 @@ class InverseSolution(BaseInterface):
         is_blind = self.inputs.is_blind
         labels_removed = self.inputs.labels_removed
 
-        self.ts_file, self.labels , self.label_names, self.label_coords= compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir,
-                                                                                              fwd_filename,
-                                                                                              cov_filename,
-                                                                                              is_epoched,
-                                                                                              event_id, t_min, t_max,
-                                                                                              is_evoked,
-                                                                                              events_id,
-                                                                                              snr, inv_method, parc,
-                                                                                              aseg, aseg_labels,
-                                                                                              is_blind, labels_removed)
+        self.ts_file, self.labels, self.label_names, self.label_coords = \
+            compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
+                                 cov_filename, is_epoched, event_id,
+                                 t_min, t_max, is_evoked, events_id,
+                                 snr, inv_method, parc,
+                                 aseg, aseg_labels, is_blind, labels_removed)
 
         return runtime
 
@@ -153,7 +151,7 @@ class NoiseCovarianceConnInputSpec(BaseInterfaceInputSpec):
 
 class NoiseCovarianceConnOutputSpec(TraitedSpec):
 
-    cov_fname_out = File(exists=False, desc='LF matrix')
+    cov_fname_out = File(exists=False, desc='Noise covariances matrix')
 
 
 class NoiseCovariance(BaseInterface):
@@ -174,7 +172,7 @@ class NoiseCovariance(BaseInterface):
         t_min = self.inputs.t_min
         t_max = self.inputs.t_max
 
-        if cov_fname_in == '' or not op.exists(cov_fname_in):
+        if not op.isfile(cov_fname_in):
 
             if is_epoched and is_evoked:
                 raw = Raw(raw_filename)
@@ -183,7 +181,7 @@ class NoiseCovariance(BaseInterface):
                 data_path, basename, ext = split_f(raw.info['filename'])
                 self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
 
-                if not op.exists(self.cov_fname_out):
+                if not op.isfile(self.cov_fname_out):
                     print '\n*** COMPUTE COV FROM EPOCHS ***\n' + self.cov_fname_out
 
                     reject = create_reject_dict(raw.info)
@@ -203,7 +201,8 @@ class NoiseCovariance(BaseInterface):
                     print '\n *** NOISE cov file %s exists!!! \n' % self.cov_fname_out
             else:
                 '\n *** NO EPOCH DATA \n'
-
+                # TODO creare una matrice diagonale?
+                sys.exit("No covariance matrix as input!")
         else:
             print '\n *** NOISE cov file %s exists!!! \n' % cov_fname_in
             self.cov_fname_out = cov_fname_in
