@@ -323,14 +323,15 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
     # AP 171126
     if n is 0:
         n = -1
-    print range(n_topo*(n+1), n_ica_components)
-    fig_tmp = ica.plot_components(range(n_topo*(n+1), n_ica_components),
-                                  title='ICA components')
-    fig.append(fig_tmp)
-    fig_tmp = ica.plot_sources(raw, range(n_topo*(n+1), n_ica_components),
-                               start=t_start, stop=t_stop,
-                               title='ICA components')
-    fig.append(fig_tmp)
+    if n_topo*(n+1) != n_ica_components:
+        print range(n_topo*(n+1), n_ica_components)
+        fig_tmp = ica.plot_components(range(n_topo*(n+1), n_ica_components),
+                                      title='ICA components')
+        fig.append(fig_tmp)
+        fig_tmp = ica.plot_sources(raw, range(n_topo*(n+1), n_ica_components),
+                                   start=t_start, stop=t_stop,
+                                   title='ICA components')
+        fig.append(fig_tmp)
 
     for n in range(0, len(fig)):
         report.add_figs_to_section(fig[n], captions=['TOPO'],
@@ -577,17 +578,30 @@ def preprocess_ts(ts_file,orig_channel_names_file,orig_channel_coords_file, h_fr
 
 
 def get_raw_info(raw_fname):
-    from mne.io import Raw
+    from mne.io import read_raw_fif
 
-    raw = Raw(raw_fname, preload=True)
+    raw = read_raw_fif(raw_fname, preload=True)
     return raw.info
 
 
-def get_raw_sfreq(raw_fname):
-    from mne.io import Raw
+def get_epochs_info(raw_fname):
+    from mne import read_epochs
 
-    raw = Raw(raw_fname, preload=True)
-    return raw.info['sfreq']
+    epochs = read_epochs(raw_fname)
+    return epochs.info
+
+
+def get_fif_info(fif_fname):
+    from mne.io import read_info
+
+    return read_info(fif_fname)
+
+
+def get_raw_sfreq(raw_fname):
+    from mne.io import read_info
+
+    info = read_info(raw_fname)
+    return info['sfreq']
 
 
 def create_reject_dict(raw_info):
