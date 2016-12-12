@@ -241,6 +241,7 @@ def create_mixed_source_space(sbj_dir, sbj_id, spacing, labels, src):
 
 
 def is_trans(raw_info):
+    import glob
     import os.path as op
 
     from nipype.utils.filemanip import split_filename as split_f
@@ -249,11 +250,14 @@ def is_trans(raw_info):
 
     # check if the co-registration file was created
     # if not raise an runtime error
-    i_ica = raw_fname.find('-preproc')
+    i_ica = raw_fname.find('-cleaned')
     if i_ica != -1:
         raw_fname = raw_fname[:i_ica]
 
-    trans_fname = op.join(data_path, '%s-trans.fif' % raw_fname)
+    trans_fname = op.join(data_path, '%s*trans.fif' % raw_fname)
+    for trans_fname in glob.glob(trans_fname):
+        print '\n*** coregistration file %s found!!!\n' % trans_fname
+
     if not op.isfile(trans_fname):
         raise RuntimeError('*** coregistration file %s NOT found!!!'
                            % trans_fname)
