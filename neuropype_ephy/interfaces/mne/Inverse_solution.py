@@ -174,13 +174,13 @@ class NoiseCovariance(BaseInterface):
         t_min = self.inputs.t_min
         t_max = self.inputs.t_max
 
-        raw = read_raw_fif(raw_filename)
-        data_path, basename, ext = split_f(raw.info['filename'])
+        data_path, basename, ext = split_f(raw_filename)
 
         self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
 
         if not op.isfile(cov_fname_in):
             if is_epoched and is_evoked:
+                raw = read_raw_fif(raw_filename)
                 events = find_events(raw)
 
                 if not op.isfile(self.cov_fname_out):
