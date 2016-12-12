@@ -8,6 +8,7 @@ Created on Mon May  2 17:24:00 2016
 # -*- coding: utf-8 -*-
 import os.path as op
 import sys
+import glob
 
 from nipype.utils.filemanip import split_filename as split_f
 
@@ -16,8 +17,9 @@ from nipype.interfaces.base import traits, File, TraitedSpec
 
 from neuropype_ephy.compute_inv_problem import compute_ROIs_inv_sol
 from neuropype_ephy.preproc import create_reject_dict
-from mne import find_events, compute_covariance, pick_types, write_cov, Epochs
-from mne.io import Raw
+from mne import find_events, compute_raw_covariance, compute_covariance
+from mne import pick_types, write_cov, Epochs
+from mne.io import read_raw_fif
 
 
 class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
@@ -172,20 +174,19 @@ class NoiseCovariance(BaseInterface):
         t_min = self.inputs.t_min
         t_max = self.inputs.t_max
 
+        raw = read_raw_fif(raw_filename)
+        data_path, basename, ext = split_f(raw.info['filename'])
+
+        self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
+
         if not op.isfile(cov_fname_in):
-
             if is_epoched and is_evoked:
-                raw = Raw(raw_filename)
                 events = find_events(raw)
-
-                data_path, basename, ext = split_f(raw.info['filename'])
-                self.cov_fname_out = op.join(data_path, '%s-cov.fif' % basename)
 
                 if not op.isfile(self.cov_fname_out):
                     print '\n*** COMPUTE COV FROM EPOCHS ***\n' + self.cov_fname_out
 
                     reject = create_reject_dict(raw.info)
-    
                     picks = pick_types(raw.info, meg=True, ref_meg=False,
                                        exclude='bads')
 
@@ -200,9 +201,23 @@ class NoiseCovariance(BaseInterface):
                 else:
                     print '\n *** NOISE cov file %s exists!!! \n' % self.cov_fname_out
             else:
-                '\n *** NO EPOCH DATA \n'
+                '\n *** RAW DATA \n'
                 # TODO creare una matrice diagonale?
-                sys.exit("No covariance matrix as input!")
+                for er_fname in glob.glob(op.join(data_path, cov_fname_in)):
+                    print '\n found RAW data %s to compute cov \n' % er_fname
+
+                try:
+                    er_raw = read_raw_fif(er_fname)
+                    reject = create_reject_dict(er_raw.info)
+                    picks = pick_types(er_raw.info, meg=True, ref_meg=False,
+                                       exclude='bads')
+
+                    noise_cov = compute_raw_covariance(er_raw, picks=picks,
+                                                       reject=reject)
+                    write_cov(self.cov_fname_out, noise_cov)
+                except NameError:
+                    sys.exit("No covariance matrix as input!")
+
         else:
             print '\n *** NOISE cov file %s exists!!! \n' % cov_fname_in
             self.cov_fname_out = cov_fname_in
