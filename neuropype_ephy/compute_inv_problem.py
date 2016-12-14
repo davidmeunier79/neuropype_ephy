@@ -144,7 +144,8 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
                          is_evoked=False, events_id=[],
                          snr=1.0, inv_method='MNE',
                          parc='aparc', aseg=False, aseg_labels=[],
-                         is_blind=False, labels_removed=[]):
+                         is_blind=False, labels_removed=[], save_stc=False):
+    import os
     import os.path as op
     import numpy as np
     import mne
@@ -256,6 +257,19 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
         print '***'
         print 'stc dim ' + str(stc.shape)
         print '***'
+
+    if save_stc:
+        if aseg:
+            for i in range(len(stc)):
+                try:
+                    os.mkdir(op.join(subj_path, 'TS'))
+                except OSError:
+                    pass
+                stc_file = op.join(subj_path, 'TS', basename + '_' +
+                                   inv_method + '_stc_' + str(i) + '.npy')
+
+                if not op.isfile(stc_file):
+                    np.save(stc_file, stc[i].data)
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)

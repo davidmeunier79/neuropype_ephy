@@ -73,6 +73,8 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     labels_removed = traits.List(desc='list of label we consider in the blind case',
                                  mandatory=False)
 
+    save_stc = traits.Bool(desc='if true save stc', mandatory=False)
+
 
 class InverseSolutionConnOutputSpec(TraitedSpec):
 
@@ -110,13 +112,15 @@ class InverseSolution(BaseInterface):
         aseg_labels = self.inputs.aseg_labels
         is_blind = self.inputs.is_blind
         labels_removed = self.inputs.labels_removed
+        save_stc = self.inputs.save_stc
 
         self.ts_file, self.labels, self.label_names, self.label_coords = \
             compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
                                  cov_filename, is_epoched, event_id,
                                  t_min, t_max, is_evoked, events_id,
                                  snr, inv_method, parc,
-                                 aseg, aseg_labels, is_blind, labels_removed)
+                                 aseg, aseg_labels, is_blind, labels_removed,
+                                 save_stc)
 
         return runtime
 

@@ -29,7 +29,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
                                           parc='aparc',
                                           aseg=False,
                                           aseg_labels=[],
-                                          noise_cov_fname=None):
+                                          noise_cov_fname=None,
+                                          save_stc=False):
 
     pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
@@ -98,6 +99,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
     inv_solution.inputs.is_blind = is_blind
     if is_blind:
         inv_solution.inputs.labels_removed = labels_removed
+
+    inv_solution.inputs.save_stc = save_stc
 
     pipeline.connect(inputnode, 'sbj_id', inv_solution, 'sbj_id')
     pipeline.connect(inputnode, 'raw', inv_solution, 'raw_filename')
