@@ -19,12 +19,16 @@ class CompIcaInputSpec(BaseInterfaceInputSpec):
 class CompIcaOutputSpec(TraitedSpec):
     """Output specification for CompIca"""
     ica_file = traits.File(exists=True,
-                           desc='file with ica solution in .fif',
+                           desc='file with raw file in .fif',
                            mandatory=True)
 
+    ica_sol_file = traits.File(exists=True,
+                               desc='file with ica solution in .fif',
+                               mandatory=True)
     ica_ts_file = traits.File(exists=True,
                               desc='file with ica components in .fif',
                               mandatory=True)
+
     report_file = traits.File(exists=True,
                               desc='ica report in .html',
                               mandatory=True)
@@ -41,19 +45,20 @@ class CompIca(BaseInterface):
         eog_ch_name = self.inputs.eog_ch_name
         n_components = self.inputs.n_components
 
-        ica_file, ica_ts_file, report_file = compute_ica(fif_file,
-                                                         ecg_ch_name,
-                                                         eog_ch_name,
-                                                         n_components)
-        self.ica_file = ica_file
-        self.ica_ts_file = ica_ts_file
-        self.report_file = report_file
+        
+        ica_output = compute_ica(fif_file, ecg_ch_name,
+                                   eog_ch_name, n_components)
+        self.ica_file = ica_output[0]
+        self.ica_sol_file = ica_output[1]
+        self.ica_ts_file = ica_output[2]
+        self.report_file = ica_output[3]
 
         return runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['ica_file'] = self.ica_file
+        outputs['ica_sol_file'] = self.ica_sol_file
         outputs['ica_ts_file'] = self.ica_ts_file
         outputs['report_file'] = self.report_file
         return outputs
