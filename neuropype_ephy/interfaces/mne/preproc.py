@@ -3,7 +3,7 @@
 from nipype.interfaces.base import BaseInterface,\
     BaseInterfaceInputSpec, traits, TraitedSpec
 
-from neuropype_ephy.preproc import compute_ica
+from neuropype_ephy.preproc import compute_ica, preprocess_fif
 
 
 class CompIcaInputSpec(BaseInterfaceInputSpec):
@@ -45,9 +45,8 @@ class CompIca(BaseInterface):
         eog_ch_name = self.inputs.eog_ch_name
         n_components = self.inputs.n_components
 
-        
         ica_output = compute_ica(fif_file, ecg_ch_name,
-                                   eog_ch_name, n_components)
+                                 eog_ch_name, n_components)
         self.ica_file = ica_output[0]
         self.ica_sol_file = ica_output[1]
         self.ica_ts_file = ica_output[2]
@@ -61,4 +60,43 @@ class CompIca(BaseInterface):
         outputs['ica_sol_file'] = self.ica_sol_file
         outputs['ica_ts_file'] = self.ica_ts_file
         outputs['report_file'] = self.report_file
+        return outputs
+
+
+class PreprocFifInputSpec(BaseInterfaceInputSpec):
+    """Input specification for PreprocFif"""
+    fif_file = traits.File(exists=True,
+                           desc='raw meg data in fif format',
+                           mandatory=True)
+    l_freq = traits.Float(desc='lower bound for filtering')
+    h_freq = traits.Float(desc='upper bound for filtering')
+    down_sfreq = traits.Int(desc='downsampling frequency')
+
+
+class PreprocFifOutputSpec(TraitedSpec):
+    """Output specification for PreprocFif"""
+    fif_file = traits.File(exists=True,
+                           desc='.fif file',
+                           mandatory=True)
+
+
+class PreprocFif(BaseInterface):
+    """Interface for preproc.preprocess_fif"""
+    input_spec = PreprocFifInputSpec
+    output_spec = PreprocFifOutputSpec
+
+    def _run_interface(self, runtime):
+        fif_file = self.inputs.fif_file
+        l_freq = self.inputs.l_freq
+        h_freq = self.inputs.h_freq
+        down_sfreq = self.inputs.down_sfreq
+
+        result_fif = preprocess_fif(fif_file, l_freq, h_freq, down_sfreq)
+
+        self.fif_file = result_fif
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['fif_file'] = self.fif_file
         return outputs
