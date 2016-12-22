@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
     name='neuropype_ephy',
     version='0.0.1dev',
-    packages=['neuropype_ephy'],
+    packages=find_packages(),
     author=['David Meunier',
             'Annalisa Pascarella',
             'Dmitrii Altukhov'],
