@@ -322,13 +322,14 @@ def create_epochs(fif_file, ep_length):
     """Split raw .fif file into epochs of
     length ep_length with rejection criteria"""
 
+    import os
     from mne.io import Raw
     from mne import Epochs
     from mne import pick_types
     from nipype.utils.filemanip import split_filename as split_f
 
     flat = dict(mag=0.1e-12, grad=1e-13)
-    reject = dict(mag=6e-12, grad_rej=25e-11)
+    reject = dict(mag=6e-12, grad=25e-11)
 
     raw = Raw(fif_file)
     picks = pick_types(raw.info, ref_meg=False, eeg=False)
@@ -342,6 +343,6 @@ def create_epochs(fif_file, ep_length):
                     add_eeg_ref=False, flat=flat, reject=reject)
 
     _, base, ext = split_f(fif_file)
-    savename = base + '-epo' + ext
+    savename = os.path.abspath(base + '-epo' + ext)
     epochs.save(savename)
     return savename
