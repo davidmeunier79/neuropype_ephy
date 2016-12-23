@@ -299,3 +299,49 @@ def generate_report(raw, ica, subj_name, basename,
     print '******* ' + report_filename
     report.save(report_filename, open_browser=False, overwrite=True)
     return report_filename
+
+
+def create_events(raw, epoch_length):
+    """Create events to split raw into epochs"""
+    import numpy as np
+    file_length = raw.n_times
+    first_samp = raw.first_samp
+    sfreq = raw.info['sfreq']
+    n_samp_in_epoch = int(epoch_length * sfreq)
+
+    n_epochs = int(file_length // n_samp_in_epoch)
+
+    events = []
+    for i_epoch in range(n_epochs):
+        events.append([first_samp + i_epoch * n_samp_in_epoch, int(0), int(0)])
+    events = np.array(events)
+    return events
+
+
+def create_epochs(fif_file, ep_length):
+    """Split raw .fif file into epochs of
+    length ep_length with rejection criteria"""
+
+    from mne.io import Raw
+    from mne import Epochs
+    from mne import pick_types
+    from nipype.utils.filemanip import split_filename as split_f
+
+    flat = dict(mag=0.1e-12, grad=1e-13)
+    reject = dict(mag=6e-12, grad_rej=25e-11)
+
+    raw = Raw(fif_file)
+    picks = pick_types(raw.info, ref_meg=False, eeg=False)
+    if raw.times[-1] >= ep_length:
+        events = create_events(raw, ep_length)
+    else:
+        raise Exception('File {} is too short!'.format(fif_file))
+
+    epochs = Epochs(raw, events=events, tmin=0, tmax=ep_length,
+                    preload=True, picks=picks, proj=False,
+                    add_eeg_ref=False, flat=flat, reject=reject)
+
+    _, base, ext = split_f(fif_file)
+    savename = base + '-epo' + ext
+    epochs.save(savename)
+    return savename

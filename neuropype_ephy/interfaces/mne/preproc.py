@@ -3,7 +3,9 @@
 from nipype.interfaces.base import BaseInterface,\
     BaseInterfaceInputSpec, traits, TraitedSpec
 
-from neuropype_ephy.preproc import compute_ica, preprocess_fif
+from neuropype_ephy.preproc import compute_ica,\
+                                   preprocess_fif,\
+                                   create_epochs
 
 
 class CompIcaInputSpec(BaseInterfaceInputSpec):
@@ -100,3 +102,40 @@ class PreprocFif(BaseInterface):
         outputs = self._outputs().get()
         outputs['fif_file'] = self.fif_file
         return outputs
+
+
+
+class CreateEpInputSpec(BaseInterfaceInputSpec):
+    """Input specification for CreateEp"""
+    fif_file = traits.File(exists=True,
+                           desc='raw meg data in fif format',
+                           mandatory=True)
+    ep_length = traits.Float(desc='epoch length in seconds')
+
+
+class CreateEpOutputSpec(TraitedSpec):
+    """Output specification for CreateEp"""
+    fif_file = traits.File(exists=True,
+                           desc='-epo.fif file',
+                           mandatory=True)
+
+
+class CreateEp(BaseInterface):
+    """Interface for preproc.create_epochs"""
+    input_spec = CreateEpInputSpec
+    output_spec = CreateEpOutputSpec
+
+    def _run_interface(self, runtime):
+        fif_file = self.inputs.fif_file
+        ep_length = self.inputs.ep_length
+
+        result_fif = create_epochs(fif_file, ep_length)
+
+        self.fif_file = result_fif
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['fif_file'] = self.fif_file
+        return outputs
+
