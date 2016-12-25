@@ -7,33 +7,33 @@ All nodes for import that are NOT specific to a ephy package
 """
 import os
 
-from nipype.interfaces.base import BaseInterface, \
+from nipype.interfaces.base import BaseInterface,\
     BaseInterfaceInputSpec, traits, TraitedSpec, isdefined
 
 from nipype.interfaces.base import File
 
 
-################ ImportMat #################################
-
-
-
+# ----------------- ImportMat ----------------------------- #
 class ImportMatInputSpec(BaseInterfaceInputSpec):
-    ''' Input specification for ImportMat '''
+    """Input specification for ImportMat"""
     tsmat_file = traits.File(exists=True,
-                             desc='nodes * time series in .mat (matlab format format',
+                             desc='time series in .mat (matlab format)',
                              mandatory=True)
 
-    data_field_name = traits.String("F", desc='Name of the structure in matlab', usedefault=True)
+    data_field_name = traits.String('F', desc='Name of structure in matlab',
+                                    usedefault=True)
 
     good_channels_field_name = traits.String('ChannelFlag',
                                              desc='Boolean structure for\
                                                    choosing nodes, name of\
                                                    structure in matlab file')
 
+
 class ImportMatOutputSpec(TraitedSpec):
-    ''' Output spec for Import Mat '''
+    """Output spec for Import Mat"""
 
     ts_file = traits.File(exists=True, desc="time series in .npy format")
+
 
 class ImportMat(BaseInterface):
 
@@ -49,11 +49,13 @@ class ImportMat(BaseInterface):
                in .mat (matlab format format', mandatory=True
 
     data_field_name
-        type = String, default = "F", desc='Name of the structure in matlab', usedefault=True
+        type = String, default = 'F', desc='Name of the structure in matlab',
+        usedefault=True
 
     good_channels_field_name
         type = String, default = 'ChannelFlag',
-               desc='Boolean structure for choosing nodes, name of structure in matlab file'
+               desc='Boolean structure for choosing nodes,
+               name of structure in matlab file'
 
     Outputs:
 
@@ -61,13 +63,13 @@ class ImportMat(BaseInterface):
         type = File, exists=True, desc="time series in .npy format"
 
     """
+
     input_spec = ImportMatInputSpec
     output_spec = ImportMatOutputSpec
 
     def _run_interface(self, runtime):
 
         from neuropype_ephy.import_mat import import_tsmat_to_ts
-        print 'in ImportMat'
 
         tsmat_file = self.inputs.tsmat_file
 
@@ -86,19 +88,19 @@ class ImportMat(BaseInterface):
 
         outputs = self._outputs().get()
 
-        outputs["ts_file"] = self.ts_file
+        outputs['ts_file'] = self.ts_file
 
         return outputs
 
-############# ImportBrainVisionAscii ##################################
 
-
+# ------------ ImportBrainVisionAscii --------------------- #
 class ImportBrainVisionAsciiInputSpec(BaseInterfaceInputSpec):
 
     txt_file = File(exists=True,
-                    desc='Ascii text file exported from BrainVision', mandatory=True)
+                    desc='Ascii text file exported from BrainVision',
+                    mandatory=True)
 
-    sample_size = traits.Float(desc="Size (number of time points) of all samples",
+    sample_size = traits.Float(desc='Size (number of time points) of all samples',
                                mandatory=True)
 
     sep_label_name = traits.String("",
@@ -107,17 +109,19 @@ class ImportBrainVisionAsciiInputSpec(BaseInterfaceInputSpec):
                                    usedefault=True)
 
     repair = traits.Bool(True,
-                         desc='Repair file if behaves strangely  (adding space sometimes...)',
+                         desc='Repair file if behaves strangely (adding space sometimes...)',
                          usedefault=True)
 
     sep = traits.Str(";", desc="Separator between time points", usedefault=True)
 
+
 class ImportBrainVisionAsciiOutputSpec(TraitedSpec):
-    ''' Output specification for ImportBrainVisionAscii '''
+    """Output specification for ImportBrainVisionAscii"""
 
-    splitted_ts_file = traits.File(exists=True, desc="splitted time series in .npy format")
+    splitted_ts_file = traits.File(exists=True, desc='splitted time series in .npy format')
 
-    elec_names_file = traits.File(exists=True, desc="electrode names in txt format")
+    elec_names_file = traits.File(exists=True, desc='electrode names in txt format')
+
 
 class ImportBrainVisionAscii(BaseInterface):
 
@@ -162,7 +166,6 @@ class ImportBrainVisionAscii(BaseInterface):
     def _run_interface(self, runtime):
 
         from neuropype_ephy.import_txt import split_txt
-        print 'in ImportBrainVisionAscii'
 
         txt_file = self.inputs.txt_file
 
@@ -183,24 +186,22 @@ class ImportBrainVisionAscii(BaseInterface):
 
         outputs = self._outputs().get()
 
-        outputs["elec_names_file"] = os.path.abspath("correct_channel_names.txt")
+        outputs['elec_names_file'] = os.path.abspath('correct_channel_names.txt')
 
-        outputs["splitted_ts_file"] = os.path.abspath("splitted_ts.npy")
+        outputs['splitted_ts_file'] = os.path.abspath('uplitted_ts.npy')
 
         return outputs
 
 
-
-
-
 class Ep2tsInputSpec(BaseInterfaceInputSpec):
-    ''' Input specification for Ep2ts '''
+    """Input specification for Ep2ts"""
     fif_file = File(exists=True, desc='fif file with epochs', mandatory=True)
 
 
 class Ep2tsOutputSpec(TraitedSpec):
     ''' Output specification for Ep2ts '''
     ts_file = traits.File(exists=True, desc="time series in .npy format")
+
 
 class Ep2ts(BaseInterface):
 
@@ -214,6 +215,7 @@ class Ep2ts(BaseInterface):
     Outputs:
 
     """
+
     input_spec = Ep2tsInputSpec
     output_spec = Ep2tsOutputSpec
 
@@ -231,9 +233,51 @@ class Ep2ts(BaseInterface):
 
         outputs = self._outputs().get()
 
-        outputs["ts_file"] = self.ts_file
+        outputs['ts_file'] = self.ts_file
 
         return outputs
 
 
+class ConvertDs2FifInputSpec(BaseInterfaceInputSpec):
+    """Input specification for ImportMat"""
+    ds_file = traits.Directory(exists=True,
+                          desc='raw .ds file',
+                          mandatory=True)
 
+
+class ConvertDs2FifOutputSpec(TraitedSpec):
+    ''' Output spec for Import Mat '''
+
+    fif_file = traits.File(exists=True, desc='raw .fif file')
+
+
+class ConvertDs2Fif(BaseInterface):
+
+    """
+    Description:
+
+    Inputs:
+
+    Outputs:
+
+    """
+    input_spec = ConvertDs2FifInputSpec
+    output_spec = ConvertDs2FifOutputSpec
+
+    def _run_interface(self, runtime):
+
+        from neuropype_ephy.import_ctf import convert_ds_to_raw_fif
+
+        ds_file = self.inputs.ds_file
+
+        self.fif_file = convert_ds_to_raw_fif(ds_file)
+
+        return runtime
+
+    def _list_outputs(self):
+
+        outputs = self._outputs().get()
+
+        outputs["fif_file"] = self.fif_file
+
+        return outputs
