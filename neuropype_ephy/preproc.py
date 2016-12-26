@@ -328,8 +328,10 @@ def create_epochs(fif_file, ep_length):
     from mne import pick_types
     from nipype.utils.filemanip import split_filename as split_f
 
-    flat = dict(mag=0.1e-12, grad=1e-13)
-    reject = dict(mag=6e-12, grad=25e-11)
+    # flat = dict(mag=0.1e-12, grad=1e-13)
+    # reject = dict(mag=6e-12, grad=25e-11)
+    flat = None
+    reject = None
 
     raw = Raw(fif_file)
     picks = pick_types(raw.info, ref_meg=False, eeg=False)
