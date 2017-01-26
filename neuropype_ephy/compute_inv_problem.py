@@ -156,6 +156,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
     from mne.minimum_norm import apply_inverse_epochs, apply_inverse
     from mne import get_volume_labels_from_src
+    from mne import pick_types
 
     from nipype.utils.filemanip import split_filename as split_f
 
@@ -177,6 +178,11 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
             info['filename']
         except:
             info['filename'] = raw_filename
+
+    picks_eeg = pick_types(info, meg=False, ref_meg=False, eeg=True)
+    if len(picks_eeg) > 0:
+        for i, p in enumerate(picks_eeg):
+            info['bads'][i] = info['ch_names'][p]
 
     subj_path, basename, ext = split_f(info['filename'])
 
