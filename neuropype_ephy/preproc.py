@@ -581,6 +581,12 @@ def get_raw_info(raw_fname):
     from mne.io import read_raw_fif
 
     raw = read_raw_fif(raw_fname, preload=True)
+
+    try:
+        raw.info['filename']
+    except:
+        raw.info['filename'] = raw_fname
+
     return raw.info
 
 
