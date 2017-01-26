@@ -179,9 +179,10 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
         except:
             info['filename'] = raw_filename
 
-    picks_eeg = pick_types(info, meg=False, ref_meg=False, eeg=True)
+    picks_eeg = pick_types(info, meg=False, ref_meg=False, eeg=True, ecg=False)
     if len(picks_eeg) > 0:
         for i, p in enumerate(picks_eeg):
+            print info['bads']
             print i
             print p
             print info['ch_names'][p]
