@@ -173,6 +173,10 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
     else:
         raw = read_raw_fif(raw_filename)
         info = raw.info
+        try:
+            info['filename']
+        except:
+            info['filename'] = raw_filename
 
     subj_path, basename, ext = split_f(info['filename'])
 
