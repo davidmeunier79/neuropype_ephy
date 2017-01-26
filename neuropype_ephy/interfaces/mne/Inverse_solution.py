@@ -208,7 +208,7 @@ class NoiseCovariance(BaseInterface):
                 '\n *** RAW DATA \n'
                 # TODO creare una matrice diagonale?
                 for er_fname in glob.glob(op.join(data_path, cov_fname_in)):
-                    print '\n found RAW data %s to compute cov \n' % er_fname
+                    print '\n found file name %s  \n' % er_fname
 
                 try:
                     if er_fname.rfind('cov.fif') > -1:
