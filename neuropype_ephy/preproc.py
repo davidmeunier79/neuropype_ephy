@@ -474,7 +474,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
 
     # 3) apply ICA to raw data and save solution and report
     # check the amplitudes do not change
-    basename = basename.replace('raw', '')
+#    basename = basename.replace('raw', '')
     raw_cleaned_file = os.path.join(subj_path, basename + '-cleaned-raw.fif')
     raw_ica = ica.apply(raw)
 
