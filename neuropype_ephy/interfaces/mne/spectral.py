@@ -30,6 +30,8 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     export_to_matlab = traits.Bool(False, desc='If conmat is exported to .mat format as well',usedefault = True)
     
+    index = traits.String("0",desc = "What to add to the name of the file" ,usedefault = True)
+    
 class SpectralConnOutputSpec(TraitedSpec):
     
     conmat_file = File(exists=True, desc="spectral connectivty matrix in .npy format")
@@ -61,6 +63,9 @@ class SpectralConn(BaseInterface):
     export_to_matlab 
         type = Bool, default = False, desc='If conmat is exported to .mat format as well',usedefault = True
    
+    index
+        type = String, default = "0", desc='What to add to the name of the file',usedefault = True
+        
     Outputs:
     
     conmat_file 
@@ -81,6 +86,7 @@ class SpectralConn(BaseInterface):
         con_method = self.inputs.con_method
         epoch_window_length = self.inputs.epoch_window_length
         export_to_matlab = self.inputs.export_to_matlab
+        index = self.inputs.index
         
         if epoch_window_length == traits.Undefined:
             data = np.load(ts_file)
@@ -93,7 +99,7 @@ class SpectralConn(BaseInterface):
             print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
             data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
         
-        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
+        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
         
         return runtime
         
@@ -194,6 +200,9 @@ class PlotSpectralConn(BaseInterface):
                 label_names = [line.strip() for line in open(labels_file)]
                 node_order  = label_names
                 node_colors = None
+                
+                
+                print label_names
             
             else:
                 labels = []
@@ -201,7 +210,9 @@ class PlotSpectralConn(BaseInterface):
                     for _ in range(pickle.load(f)):
                         labels.append(pickle.load(f))
                 
-                print labels
+                print '\n ********************** \n' 
+                print len(labels)
+                print '\n ********************** \n' 
 #                0/0
                 # read colors
                 node_colors = [label.color for label in labels]    
@@ -209,41 +220,49 @@ class PlotSpectralConn(BaseInterface):
                 # reorder the labels based on their location in the left hemi
                 label_names = [label.name for label in labels]
                 lh_labels = [name for name in label_names if name.endswith('lh')]
-
+                rh_labels = [name for name in label_names if name.endswith('rh')]
+                
                 # Get the y-location of the label
-                label_ypos = list()
+                label_ypos_lh = list()
                 for name in lh_labels:
                     idx = label_names.index(name)
                     ypos = np.mean(labels[idx].pos[:, 1])
-                    label_ypos.append(ypos)
-
+                    label_ypos_lh.append(ypos)
+                    
                 try:
                     idx = label_names.index('Brain-Stem')
                     ypos = np.mean(labels[idx].pos[:, 1])
                     lh_labels.append('Brain-Stem')
-                    label_ypos.append(ypos)
+                    label_ypos_lh.append(ypos)
                 except ValueError:
                     pass
                         
                 # Reorder the labels based on their location
-                lh_labels = [label for (yp, label) in sorted(zip(label_ypos, lh_labels))]
+                lh_labels = [label for (yp, label) in sorted(zip(label_ypos_lh, lh_labels))]
+#                rh_labels = [label for (yp, label) in sorted(zip(label_ypos_rh, rh_labels))]
                 
                 # For the right hemi
-                rh_labels = [label[:-2] + 'rh' for label in lh_labels if label != 'Brain-Stem']
+                rh_labels = [label[:-2] + 'rh' for label in lh_labels
+                            if label != 'Brain-Stem' and label[:-2]+ 'rh' in rh_labels]
 
                 # Save the plot order 
                 node_order = list()
                 node_order.extend(lh_labels[::-1])  # reverse the order
-                node_order.extend(rh_labels)             
-
+                node_order.extend(rh_labels)    
+                print '\n ********************** \n'  
+                print lh_labels
+                print rh_labels
+                print '\n ********************** \n'  
         else:
             label_names = range(conmat.shape[0])
             node_order  = label_names
             node_colors = None
            
-        print label_names
-        print node_order
-#        0/0
+        print '\n ********************** \n'   
+        print len(label_names)
+        print len(node_order)
+        print '\n ********************** \n'   
+        
         self.plot_conmat_file = plot_circular_connectivity(conmat,label_names,node_colors,node_order, vmin,vmax ,nb_lines, fname)
 
         return runtime
