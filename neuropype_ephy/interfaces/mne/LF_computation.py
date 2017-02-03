@@ -97,7 +97,7 @@ class LFComputation(BaseInterface):
             print('il src space contiene %d spaces e %d vertici'
                   % (len(src), n))
 
-            trans_fname = is_trans(raw_info)
+            trans_fname = is_trans(raw_fname)
 
             # TODO: ha senso una funzione con un solo cmd?
             compute_fwd_sol(raw_info, trans_fname, src, bem, self.fwd_filename)
