@@ -175,17 +175,18 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
         raw = read_raw_fif(raw_filename, add_eeg_ref=False)
         raw.set_eeg_reference()
         info = raw.info
-        try:
-            info['filename']
-        except:
-            info['filename'] = raw_filename
+#        try:
+#            info['filename']
+#        except:
+#            info['filename'] = raw_filename
 
 #    picks_eeg = pick_types(info, meg=False, ref_meg=False, eeg=True, ecg=False)
 #    if len(picks_eeg) > 0:
 #        for i, p in enumerate(picks_eeg):
 #            info['bads'].append(info['ch_names'][p])
 
-    subj_path, basename, ext = split_f(info['filename'])
+#    subj_path, basename, ext = split_f(info['filename'])
+    subj_path, basename, ext = split_f(raw_filename)
 
     print '\n*** READ noise covariance %s ***\n' % cov_fname
     noise_cov = mne.read_cov(cov_fname)
