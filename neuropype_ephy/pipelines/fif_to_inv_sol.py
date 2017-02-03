@@ -61,6 +61,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         pipeline.connect(inputnode, ('raw', get_raw_info),
                          LF_computation, 'raw_info')
 
+    pipeline.connect(inputnode, 'raw', LF_computation, 'raw_fname')
+
     # Noise Covariance Matrix Node
     create_noise_cov = pe.Node(interface=NoiseCovariance(),
                                name="create_noise_cov")
