@@ -133,13 +133,14 @@ def create_mixed_source_space(sbj_dir, sbj_id, spacing, labels, src):
     return src
 
 
-def is_trans(raw_info):
+def is_trans(raw_fname):
     import glob
     import os.path as op
 
     from nipype.utils.filemanip import split_filename as split_f
 
-    data_path, raw_fname, ext = split_f(raw_info['filename'])
+#    data_path, raw_fname, ext = split_f(raw_info['filename'])
+    data_path, raw_fname, ext = split_f(raw_fname)
 
     # check if the co-registration file was created
     # if not raise an runtime error
