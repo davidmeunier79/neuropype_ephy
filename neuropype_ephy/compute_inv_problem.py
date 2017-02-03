@@ -297,7 +297,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
 
     # allow_empty : bool -> Instead of emitting an error, return all-zero time
     # courses for labels that do not have any vertices in the source estimate
-    label_ts = mne.extract_label_time_course([stc], labels_cortex, src,
+    label_ts = mne.extract_label_time_course(stc, labels_cortex, src,
                                              mode='mean',
                                              allow_empty=True,
                                              return_generator=False)
