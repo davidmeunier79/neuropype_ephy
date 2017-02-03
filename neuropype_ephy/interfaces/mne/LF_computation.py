@@ -22,10 +22,12 @@ class LFComputationConnInputSpec(BaseInterfaceInputSpec):
 
     sbj_id = traits.String(desc='subject id', mandatory=True)
 
-    sbj_dir = traits.Directory(exists=True, desc='Freesurfer main directory',
+    sbj_dir = traits.String(exists=True, desc='Freesurfer main directory',
                                mandatory=True)
 
     raw_info = traits.Any(desc='raw info', mandatory=True)
+    
+    raw_fname = traits.String(desc='raw file name', mandatory=True)
 
     is_blind = traits.Bool(desc='if in the source space there are ROI removed',
                            mandatory=False)
@@ -54,8 +56,8 @@ class LFComputation(BaseInterface):
 
     def _get_fwd_filename(self, raw_info, aseg, spacing, is_blind):
 
-        data_path, raw_fname, ext = split_f(raw_info['filename'])
-
+#        data_path, raw_fname, ext = split_f(raw_info['filename'])
+        data_path, raw_fname, ext = split_f(raw_info)
         fwd_filename = '%s-%s' % (raw_fname, spacing)
         if is_blind:
             fwd_filename += '-blind'
@@ -72,12 +74,13 @@ class LFComputation(BaseInterface):
         sbj_id = self.inputs.sbj_id
         sbj_dir = self.inputs.sbj_dir
         raw_info = self.inputs.raw_info
+        raw_fname = self.inputs.raw_fname
         aseg = self.inputs.aseg
         is_blind = self.inputs.is_blind
         spacing = self.inputs.spacing
         aseg_labels = self.inputs.aseg_labels
 
-        self.fwd_filename = self._get_fwd_filename(raw_info, aseg,
+        self.fwd_filename = self._get_fwd_filename(raw_fname, aseg,
                                                    spacing, is_blind)
 
         # check if we have just created the fwd matrix
