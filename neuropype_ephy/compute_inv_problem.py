@@ -1,17 +1,15 @@
-# 2015.10.09 12:02:45 EDT
-# Embedded file name: /home/karim/Documents/pasca/packages/neuropype_ephy/neuropype_ephy/compute_inv_problem.py
-"""
-Created on Thu Oct  8 17:53:07 2015
-
-@author: pasca
-"""
+# Created on Thu Oct  8 17:53:07 2015
+# @author: pasca
 
 
-# compute noise covariance data from a continuous segment of raw data.
-# Employ empty room data (collected without the subject) to calculate
-# the full noise covariance matrix.
-# This is recommended for analyzing ongoing spontaneous activity.
 def compute_noise_cov(cov_fname, raw):
+    """
+    Compute noise covariance data from a continuous segment of raw data.
+    Employ empty room data (collected without the subject) to calculate
+    the full noise covariance matrix.
+    This is recommended for analyzing ongoing spontaneous activity.
+    """
+
     import os.path as op
 
     from mne import compute_raw_covariance, pick_types, write_cov
@@ -26,7 +24,6 @@ def compute_noise_cov(cov_fname, raw):
         fname = op.join(data_path, '%s-cov.fif' % basename)
 
         reject = create_reject_dict(raw.info)
-#        reject = dict(mag=4e-12, grad=4000e-13, eog=250e-6)
 
         picks = pick_types(raw.info, meg=True, ref_meg=False, exclude='bads')
 
@@ -139,12 +136,11 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 # compute the inverse solution on raw data considering N_r regions in source
 # space  based on a FreeSurfer cortical parcellation
 def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
-                         cov_fname, is_epoched=False, event_id=None,
-                         t_min=None, t_max=None,
-                         is_evoked=False, events_id=[],
+                         cov_fname, is_epoched=False, events_id=[],
+                         t_min=None, t_max=None, is_evoked=False,
                          snr=1.0, inv_method='MNE',
                          parc='aparc', aseg=False, aseg_labels=[],
-                         is_blind=False, labels_removed=[], save_stc=False):
+                         save_stc=False):
     import os
     import os.path as op
     import numpy as np
@@ -156,36 +152,25 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
     from mne.minimum_norm import make_inverse_operator, apply_inverse_raw
     from mne.minimum_norm import apply_inverse_epochs, apply_inverse
     from mne import get_volume_labels_from_src
-    from mne import pick_types
 
     from nipype.utils.filemanip import split_filename as split_f
 
     from neuropype_ephy.preproc import create_reject_dict
 
     try:
-        traits.undefined(event_id)
+        traits.undefined(events_id)
     except NameError:
-        event_id = None
+        events_id = None
 
     print '\n*** READ raw filename %s ***\n' % raw_filename
-    if is_epoched and event_id is None:
+    if is_epoched and events_id is None:
         epochs = read_epochs(raw_filename)
         info = epochs.info
     else:
         raw = read_raw_fif(raw_filename, add_eeg_ref=False)
         raw.set_eeg_reference()
         info = raw.info
-#        try:
-#            info['filename']
-#        except:
-#            info['filename'] = raw_filename
 
-#    picks_eeg = pick_types(info, meg=False, ref_meg=False, eeg=True, ecg=False)
-#    if len(picks_eeg) > 0:
-#        for i, p in enumerate(picks_eeg):
-#            info['bads'].append(info['ch_names'][p])
-
-#    subj_path, basename, ext = split_f(info['filename'])
     subj_path, basename, ext = split_f(raw_filename)
 
     print '\n*** READ noise covariance %s ***\n' % cov_fname
@@ -215,7 +200,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
 
     # apply inverse operator to the time windows [t_start, t_stop]s
     print '\n*** APPLY INV OP ***\n'
-    if is_epoched and event_id is not None:
+    if is_epoched and events_id is not None:
         events = mne.find_events(raw)
         picks = mne.pick_types(info, meg=True, eog=True, exclude='bads')
         reject = create_reject_dict(info)
@@ -243,7 +228,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
                     stc.save(stc_file)
 
         else:
-            epochs = mne.Epochs(raw, events, event_id, t_min, t_max,
+            epochs = mne.Epochs(raw, events, events_id, t_min, t_max,
                                 picks=picks, baseline=(None, 0), reject=reject)
             stc = apply_inverse_epochs(epochs, inverse_operator, lambda2,
                                        inv_method, pick_ori=None)
@@ -252,7 +237,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
             print 'len stc %d' % len(stc)
             print '***'
 
-    elif is_epoched and event_id is None:
+    elif is_epoched and events_id is None:
         stc = apply_inverse_epochs(epochs, inverse_operator, lambda2,
                                    inv_method, pick_ori=None)
 
@@ -285,11 +270,6 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)
-    if is_blind:
-        for l in labels_cortex:
-            if l.name in labels_removed:
-                print l.name
-                labels_cortex.remove(l)
 
     print '\n*** %d ***\n' % len(labels_cortex)
 
