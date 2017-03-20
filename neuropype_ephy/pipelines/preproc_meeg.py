@@ -1,11 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 26 17:06:36 2016
-
-@author: pasca
-"""
-
-# -*- coding: utf-8 -*-
+# Created on Tue Apr 26 17:06:36 2016
+# @author: pasca
 
 
 import matplotlib
@@ -45,6 +39,52 @@ def create_pipeline_preproc_meeg(main_path,
                                  n_comp_exclude=[],
                                  is_sensor_space=True):
 
+    """
+    Description:
+    
+        Preprocessing pipeline
+
+    Inputs:
+
+        main_path : str
+            the main path of the pipeline
+        pipeline_name: str (default 'preproc_meeg')
+            name of the pipeline
+        data_type: str (default 'fif')
+            data type: 'fif' or 'ds'
+        l_freq: float (default 1)
+            low cut-off frequency in Hz
+        h_freq: float (default 150)
+            high cut-off frequency in Hz
+        down_sfreq: float (default 300)
+            sampling frequency at which the data are downsampled
+        is_ICA : boolean (default True)
+            if True apply ICA to automatically remove ECG and EoG artifacts
+        variance: float (default 0.95)
+            the cumulative percentage of explained variance
+        ECG_ch_name: str
+            the name of ECG channels
+        EoG_ch_name:
+            the name of EoG channels
+        reject: dict | None
+            rejection parameters based on peak-to-peak amplitude. Valid keys
+            are 'grad' | 'mag' | 'eeg' | 'eog' | 'ecg'. If reject is None then
+            no rejection is done
+        is_set_ICA_components: boolean (default False)
+            set to True if we had the ICA of the raw data, checked the Report
+            and want to exclude some ICA components based on their topographies
+            and time series
+            if True, we have to fill the dictionary variable n_comp_exclude
+        n_comp_exclude: dict
+            if is_set_ICA_components=True, it has to be a dict containing for
+            each subject and for each session the components to be excluded
+        is_sensor_space: boolean (default True)
+            True if we perform the analysis in sensor space and we use the
+            pipeline as lego with the connectivity or inverse pipeline
+    Outouts:
+
+        pipeline : instance of Workflow
+    """
     from neuropype_ephy.preproc import preprocess_fif_to_ts
     from neuropype_ephy.preproc import preprocess_ICA_fif_to_ts
     from neuropype_ephy.preproc import preprocess_set_ICA_comp_fif_to_ts
@@ -143,61 +183,3 @@ def create_pipeline_preproc_meeg(main_path,
         pipeline.connect(inputnode, 'raw_file', preproc, 'fif_file')
 
     return pipeline
-
-# TODO remove this TEST code
-if __name__ == '__main__':
-    main_path = '/home/karim/Documents/Fanny'
-    data_path = main_path
-    subject_ids = ['S01']
-    sessions = ['repos_1']
-
-    # create main workflow
-    main_workflow = pe.Workflow(name='wf_preproc_meeg')
-    main_workflow.base_dir = main_path
-
-    # info source
-    infosource = pe.Node(interface=IdentityInterface(fields=['subject_id',
-                                                             'sess_index']),
-                         name="infosource")
-    infosource.iterables = [('subject_id', subject_ids),
-                            ('sess_index', sessions)]
-
-    # data source
-    datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id',
-                                                             'sess_index'],
-                                                   outfields=['raw_file']),
-                         name='datasource')
-    datasource.inputs.base_directory = data_path
-    datasource.inputs.template = '%s/%s%s'
-    datasource.inputs.template_args = dict(raw_file=[['subject_id',
-                                                     'sess_index', ".ds"]])
-    datasource.inputs.sort_filelist = True
-
-    '''
-    datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id'],
-                                                   outfields=['fif_file']),
-                         name='datasource')
-    datasource.inputs.base_directory = data_path
-    datasource.inputs.template = '%s/%s*%s'
-    datasource.inputs.template_args = dict(fif_file=[['subject_id',
-                                                      'subject_id',
-                                                      "_tsss_mc.fif"]])
-    datasource.inputs.sort_filelist = True
-    '''
-    main_workflow.connect(infosource, 'subject_id', datasource, 'subject_id')
-    main_workflow.connect(infosource, 'sess_index', datasource, 'sess_index')
-
-#    preproc_workflow = create_pipeline_preproc_meeg(main_path,
-#                                                    is_set_ICA_components=True,
-#                                                    n_comp_exclude={'S01': [[0,5,53], [1,19,28]], 
-#                                                                    'S02': [[1,10,18,78],[6,33,52]]})
-
-    preproc_workflow = create_pipeline_preproc_meeg(main_path, data_type='ds')
-
-    main_workflow.connect(datasource, 'raw_file',
-                          preproc_workflow, 'inputnode.raw_file')
-
-    # run pipeline
-    main_workflow.write_graph(graph2use='colored')  # colored
-    main_workflow.config['execution'] = {'remove_unnecessary_outputs': 'false'}
-    main_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
