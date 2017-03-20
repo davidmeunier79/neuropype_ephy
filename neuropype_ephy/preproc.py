@@ -113,7 +113,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
 
     # filtering
     raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg,
-               method='iir', n_jobs=8)
+               method='fir', n_jobs=8)
 
     # 1) Fit ICA model using the FastICA algorithm
     # Other available choices are `infomax` or `extended-infomax`
@@ -290,36 +290,7 @@ def preprocess_ICA_fif_to_ts(fif_file, subject_id, ECG_ch_name, EoG_ch_name,
                                    start=t_start, stop=t_stop,
                                    title='ICA components')
         fig.append(fig_tmp)
-        
-        
 
-    ''' AP 171126
-    if n_plot > 5:
-        n_fig_l = n_plot//5
-
-        print '*** ' + str(n_fig_l) + ' ***'
-        for n in range(n_fig_l):
-            print range(n_fig*n_topo+5*n, n_fig*n_topo+5*(n+1))
-            fig_tmp = ica.plot_components(range(n_fig*n_topo+5*n,
-                                                n_fig*n_topo+5*(n+1)),
-                                          title='ICA components')
-            fig.append(fig_tmp)
-            fig_tmp = ica.plot_sources(raw,range(n_fig*n_topo+5*n, n_fig*n_topo+5*(n+1)), 
-                                       start=t_start, stop=t_stop,
-                                       title='ICA components')
-            fig.append(fig_tmp)
-
-        print range(n_fig*n_topo+5*(n+1), n_ica_components)
-        fig_tmp = ica.plot_components(range(n_fig*n_topo+5*(n+1),
-                                            n_ica_components),
-                                      title='ICA components')
-        fig.append(fig_tmp)
-        fig_tmp = ica.plot_sources(raw,
-                                   range(n_fig*n_topo+5*(n+1), n_ica_components), 
-                                   start=t_start, stop=t_stop,
-                                   title='ICA components')
-        fig.append(fig_tmp)
-    '''
     # AP 171126
     if n is 0:
         n = -1
@@ -417,7 +388,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
 
     # filtering + downsampling
     raw.filter(l_freq=l_freq, h_freq=h_freq, picks=picks_meeg,
-               method='iir', n_jobs=8)
+               method='fir', n_jobs=8)
 
     # load ICA
     is_show = False  # visualization
