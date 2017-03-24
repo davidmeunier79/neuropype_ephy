@@ -46,7 +46,7 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
             in the format -epo.fif
             if True and events_id is not None, the raw data are epoched
             according to events_id and t_min and t_max values
-        events_id: dict (default [])
+        events_id: dict (default None)
             the dict of events
         t_min, t_max: int (defualt None)
             define the time interval in which to epoch the raw data

@@ -21,7 +21,7 @@ class LFComputationConnInputSpec(BaseInterfaceInputSpec):
                             mandatory=True)
 
     raw_info = traits.Any(desc='raw info', mandatory=True)
-    
+
     raw_fname = traits.String(desc='raw file name', mandatory=True)
 
     spacing = traits.String(desc='spacing to use to setup a source space',
@@ -41,14 +41,30 @@ class LFComputationConnOutputSpec(TraitedSpec):
 
 class LFComputation(BaseInterface):
     """
-    Compute LF matrix using MNE Python functions
+    Compute the Lead Field matrix using MNE Python functions
+
+    Parameters
+        sbj_id : str
+            subject name
+        sbj_dir : str
+            Freesurfer directory
+        raw_info : dict
+            information dictionary of the raw data
+        raw_filename : str
+            filename of the raw data
+        spacing : str (default 'ico-5')
+            spacing to use to setup a source space
+        aseg: bool (defualt False)
+            if True a mixed source space will be created and the sub cortical
+            regions defined in aseg_labels will be added to the source space
+        aseg_labels: list (default [])
+            list of substructures we want to include in the mixed source space
     """
     input_spec = LFComputationConnInputSpec
     output_spec = LFComputationConnOutputSpec
 
     def _get_fwd_filename(self, raw_info, aseg, spacing):
 
-#        data_path, raw_fname, ext = split_f(raw_info['filename'])
         data_path, raw_fname, ext = split_f(raw_info)
         fwd_filename = '%s-%s' % (raw_fname, spacing)
         if aseg:
