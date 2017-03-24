@@ -1,12 +1,8 @@
 # 2015.10.09 12:03:07 EDT
 # Embedded file name: /home/karim/Documents/pasca/packages/neuropype_ephy/neuropype_ephy/compute_fwd_problem.py
-"""
-Created on Mon Oct  5 17:36:56 2015
 
-@author: pasca
-
-Compute leadfield matrix by BEM
-"""
+# Created on Mon Oct  5 17:36:56 2015
+# @author: pasca
 
 
 def create_bem_sol(sbj_dir, sbj_id):
@@ -150,6 +146,9 @@ def is_trans(raw_fname):
 
 
 def compute_fwd_sol(raw_info, trans_fname, src, bem, fwd_filename):
+    """
+    Compute leadfield matrix by BEM
+    """
     import mne
 
     mne.make_forward_solution(raw_info, trans_fname, src, bem,

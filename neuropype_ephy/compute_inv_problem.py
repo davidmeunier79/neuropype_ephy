@@ -8,6 +8,17 @@ def compute_noise_cov(cov_fname, raw):
     Employ empty room data (collected without the subject) to calculate
     the full noise covariance matrix.
     This is recommended for analyzing ongoing spontaneous activity.
+
+    Inputs
+        cov_fname : str
+            noise covariance file name
+        raw : Raw
+            the raw data
+
+    Output
+        cov_fname : str
+            noise covariance file name in which is saved the noise covariance
+            matrix
     """
 
     import os.path as op
@@ -38,6 +49,19 @@ def compute_noise_cov(cov_fname, raw):
 
 
 def read_noise_cov(cov_fname, raw_info):
+    """
+    Read a noise covariance matrix from cov_fname
+
+    Inputs
+        cov_fname : str
+            noise covariance file name
+        raw_info : dict
+            dictionary containing the information about the raw data
+
+    Outputs
+        noise_cov : Covariance
+            the noise covariance matrix
+    """
     import os.path as op
     import numpy as np
     import mne
@@ -60,7 +84,6 @@ def read_noise_cov(cov_fname, raw_info):
     return noise_cov
 
 
-# compute inverse solution on raw data
 def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
     import os.path as op
     import numpy as np
@@ -133,14 +156,67 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 '''
 
 
-# compute the inverse solution on raw data considering N_r regions in source
-# space  based on a FreeSurfer cortical parcellation
 def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
                          cov_fname, is_epoched=False, events_id=[],
                          t_min=None, t_max=None, is_evoked=False,
                          snr=1.0, inv_method='MNE',
                          parc='aparc', aseg=False, aseg_labels=[],
                          save_stc=False):
+    """
+    Compute the inverse solution on raw/epoched data and return the average
+    time series computed in the N_r regions of the source space defined by
+    the specified cortical parcellation
+
+    Inputs
+        raw_filename : str
+            filename of the raw/epoched data
+        sbj_id : str
+            subject name
+        sbj_dir : str
+            Freesurfer directory
+        fwd_filename : str
+            filename of the forward operator
+        cov_filename : str
+            filename of the noise covariance matrix
+        is_epoched : bool
+            if True and events_id = None the input data are epoch data
+            in the format -epo.fif
+            if True and events_id is not None, the raw data are epoched
+            according to events_id and t_min and t_max values
+        events_id: dict
+            the dict of events
+        t_min, t_max: int
+            define the time interval in which to epoch the raw data
+        is_evoked: bool
+            if True the raw data will be averaged according to the events
+            contained in the dict events_id
+        inv_method : str
+            the inverse method to use; possible choices: MNE, dSPM, sLORETA
+        snr : float
+            the SNR value used to define the regularization parameter
+        parc: str
+            the parcellation defining the ROIs atlas in the source space
+        aseg: bool
+            if True a mixed source space will be created and the sub cortical
+            regions defined in aseg_labels will be added to the source space
+        aseg_labels: list
+            list of substructures we want to include in the mixed source space
+        save_stc: bool
+            if True the stc will be saved
+
+    Outputs
+        ts_file : str
+            filename of the file where are saved the ROIs time series
+        labels_file : str
+            filename of the file where are saved the ROIs of the parcellation
+        label_names_file : str
+            filename of the file where are saved the name of the ROIs of the
+            parcellation
+        label_coords_file : str
+            filename of the file where are saved the coordinates of the
+            centroid of the ROIs of the parcellation
+
+    """
     import os
     import os.path as op
     import numpy as np
