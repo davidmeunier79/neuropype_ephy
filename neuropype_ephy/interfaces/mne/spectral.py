@@ -200,6 +200,9 @@ class PlotSpectralConn(BaseInterface):
                 label_names = [line.strip() for line in open(labels_file)]
                 node_order  = label_names
                 node_colors = None
+                
+                
+                print label_names
             
             else:
                 labels = []
@@ -259,7 +262,7 @@ class PlotSpectralConn(BaseInterface):
         print len(label_names)
         print len(node_order)
         print '\n ********************** \n'   
-#        0/0
+        
         self.plot_conmat_file = plot_circular_connectivity(conmat,label_names,node_colors,node_order, vmin,vmax ,nb_lines, fname)
 
         return runtime

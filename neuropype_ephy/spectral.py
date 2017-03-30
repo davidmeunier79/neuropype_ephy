@@ -70,28 +70,34 @@ def plot_circular_connectivity(conmat, label_names, node_colors, node_order, vmi
     # Angles
     node_angles = circular_layout(label_names, node_order, start_pos=90,
                                 group_boundaries=[0, len(label_names) / 2])
-
+    print conmat
+    print node_angles.astype(int)
+    
+    conmat = conmat + np.transpose(conmat)
+    
     # Plot the graph using node colors from the FreeSurfer parcellation. We only
     # show the 300 strongest connections.
     fig,_ = plot_connectivity_circle(conmat, 
                                      label_names, 
                                      n_lines=nb_lines,  
-                                     node_angles=node_angles, 
-                                     node_colors = node_colors,
+                                     node_angles=node_angles.astype(int), 
+                                     node_colors = None,
                                      fontsize_names = 12, 
                                      title='All-to-All Connectivity' , 
                                      show = False, 
                                      vmin = vmin, 
                                      vmax = vmax)
     
-    
-    #plot_conmat_file = os.path.abspath('circle.png')
+    #plt.show()
+    #print fig
+    ##plot_conmat_file = os.path.abspath('circle.png')
     plot_conmat_file = os.path.abspath('circle_' + fname + '.eps')
-    fig.savefig(plot_conmat_file, facecolor='black')
+    #fig.savefig(plot_conmat_file, facecolor='black')
+    fig.savefig(plot_conmat_file)
     
     
     plt.close(fig)
-    #fig1.close()
+    ##fig1.close()
     del fig
     
     return plot_conmat_file

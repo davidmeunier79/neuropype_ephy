@@ -111,7 +111,9 @@ def create_pipeline_brain_vision_ascii_to_spectral_connectivity(main_path,pipeli
                 pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
                 
         else:
-                
+            print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Multiple windows $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+            print n_windows
+            
             ### win_ts
             ##### 
             win_ts = pe.Node(interface = SplitWindows(), name = "win_ts")
