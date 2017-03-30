@@ -190,7 +190,6 @@ class NoiseCovariance(BaseInterface):
     Compute the noise covariance matrix
 
     Parameters
-
         raw_filename : str
             filename of the raw data
         cov_fname_in : str
