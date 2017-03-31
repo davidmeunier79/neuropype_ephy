@@ -20,10 +20,65 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
     pipeline = pe.Workflow(name= pipeline_name)
     pipeline.base_dir = main_path
     
-    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length','is_sensor_space']), name='inputnode')
+    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length','is_sensor_space','index']), name='inputnode')
     
-    if multicon == False:
+    if multicon == True:
+        
+        #### spectral
+        spectral = pe.MapNode(interface = SpectralConn(), name = "spectral",iterfield = ['ts_file','index'])
+        
+        spectral.inputs.con_method = con_method  
+        spectral.inputs.export_to_matlab = export_to_matlab
+        
+        pipeline.connect(inputnode, 'sfreq', spectral, 'sfreq')
+        pipeline.connect(inputnode, 'ts_file', spectral, 'ts_file')
+        pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
+        pipeline.connect(inputnode, 'index', spectral, 'index')
+        pipeline.connect(inputnode, 'epoch_window_length', spectral, 'epoch_window_length')
+
+        #### plot spectral
+        plot_spectral = pe.MapNode(interface = PlotSpectralConn(), name = "plot_spectral",iterfield = ['conmat_file'])
+        
+        pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
+        pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')
+        
+        pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
+        
+        #if filter_spectral == True:
+                
+            #### filter spectral
+            #filter_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","sep_label_name","k_neigh"], 
+                                                        #output_names = "filtered_conmat_file", 
+                                                        #function = filter_adj_plot_mat), name = "filter_spectral_" + str(k_neigh))
+            #filter_spectral.inputs.sep_label_name = sep_label_name
+            #filter_spectral.inputs.k_neigh = k_neigh
             
+            #pipeline.connect(split_ascii,  'elec_names_file',filter_spectral,'labels_file')
+            #pipeline.connect(spectral, "conmat_file",    filter_spectral, 'conmat_file')
+            
+            
+            
+            ##### plot filter_spectral
+            #plot_filter_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
+                                                        #output_names = "plot_conmat_file",
+                                                        #function = plot_circular_connectivity), name = "plot_filter_spectral_" + str(k_neigh))
+            
+            ## plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
+            #plot_filter_spectral.inputs.nb_lines = 50
+            
+            #plot_filter_spectral.inputs.vmin = 0.3
+            #plot_filter_spectral.inputs.vmax = 1.0
+        
+        
+            #pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
+            #pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
+        
+            
+    elif len(temporal_windows) != 0:
+      print "Not done yet...."
+      
+    else:
+       
         #### spectral
         spectral = pe.Node(interface = SpectralConn(), name = "spectral")
         
@@ -72,11 +127,6 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
             #pipeline.connect(split_ascii,  'elec_names_file',plot_filter_spectral,'labels_file')
             #pipeline.connect(filter_spectral, "filtered_conmat_file",    plot_filter_spectral, 'conmat_file')
         
-    elif len(temporal_windows) != 0:
-      print "Not done yet...."
-      
-    #else:
-       
         
         
         ##### spectral
