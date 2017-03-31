@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
-import os
+from setuptools import setup, find_packages
 
-install_requires = ['numpy>=1.3.0',]
 
 setup(
-    name = "neuropype_ephy",
-    version = '0.0.1dev',
-    packages = ['neuropype_ephy'],
-    install_requires=install_requires,
-    author = "David Meunier",
-    description = "Definition of function used as Node for electrophy ( EEG/MEG) pipelines within nipype framework"
+    name='neuropype_ephy',
+    version='0.0.1dev',
+    packages=find_packages(),
+    author=['David Meunier',
+            'Annalisa Pascarella',
+            'Dmitrii Altukhov'],
+    description='Definition of functions used\
+                 as Node for electrophy (EEG/MEG)\
+                 pipelines within nipype framework',
+    lisence='MIT',
+    install_requires=[ 'mne',
+                      'nipype',
+                      'configparser']
 )
-

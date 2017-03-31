@@ -3,40 +3,42 @@
 import os
 import mne
 
-from mne import filter
-#from mne.io import RawFIF
+# from mne.io import RawFIF
 
-#mne.set_log_level('WARNING')
+# mne.set_log_level('WARNING')
 
 import numpy as np
 
-#from params import main_path
+# from params import main_path
 
-##################### nodes (Function)
 
+# -------------------- nodes (Function)
 def convert_ds_to_raw_fif(ds_file):
+    """Convert from CTF .ds to .fif and save
+    result in pipeline folder structure
+
+    """
     import os
     import os.path as op
-    
+
     from nipype.utils.filemanip import split_filename as split_f
     from mne.io import read_raw_ctf
-    
-    
-    subj_path,basename,ext = split_f(ds_file)
-    print subj_path,basename,ext
-    raw = read_raw_ctf(ds_file)
-    #raw_fif_file = os.path.abspath(basename + "_raw.fif")
-    
-    #raw.save(raw_fif_file)
-    #return raw_fif_file
 
-    
-    raw_fif_file = os.path.join(subj_path,basename + "_raw.fif")
+    _, basename, ext = split_f(ds_file)
+    # print(subj_path, basename, ext)
+    raw = read_raw_ctf(ds_file)
+    # raw_fif_file = os.path.abspath(basename + "_raw.fif")
+
+    # raw.save(raw_fif_file)
+    # return raw_fif_file
+
+    raw_fif_file = os.path.abspath(basename + "_raw.fif")
+
     if not op.isfile(raw_fif_file):
         raw = read_raw_ctf(ds_file)
         raw.save(raw_fif_file)
     else:
-        print '*** RAW FIF file %s exists!!!' % raw_fif_file
+        print('*** RAW FIF file %s exists!!!' % raw_fif_file)
         
     return raw_fif_file
 
@@ -73,7 +75,7 @@ def compute_ROI_coordinates():
     
     coord_vertices_victor =  np.array(np.loadtxt(coord_vertices_victor_file, dtype = 'float'))
     
-    print coord_vertices_victor
+    print(coord_vertices_victor)
     
     ROI_names = []
     
@@ -135,22 +137,22 @@ def compute_ROI_coordinates():
         np.savetxt(parv.MEG_ROI_names_file,np.array(ROI_names,dtype = str), fmt = "%s")
 
         
-######################testing 
+# --------------------- testing 
 def test_convert_data():
 	
 	subj_path = os.path.join(main_path ,'balai')
 
-	print subj_path
+	print(subj_path)
 
 	ds_files = [f for f in os.listdir(subj_path) if f.endswith("ds")]
 
-	print ds_files
+	print(ds_files)
 
 	for ds_f in ds_files:
 
 		basename = os.path.splitext(ds_f)[0]
 
-		print basename
+		print(basename)
 
 		os.system("$MNE_ROOT/bin/mne_ctf2fiff --ds " + os.path.join(subj_path,ds_f) + " --fif " + os.path.join(subj_path,basename + "_raw.fif"))
 
@@ -160,22 +162,22 @@ def test_import_data():
 	
 	subj_path = os.path.join(main_path ,'balai')
 
-	print subj_path
+	print(subj_path)
 
 	fif_files = [f for f in os.listdir(subj_path) if f.endswith("fif")]
 
-	print fif_files
+	print(fif_files)
 
 	for fif_f in fif_files:
 
 		raw = mne.io.Raw(os.path.join(subj_path,fif_f))
 
-		print raw
+		print(raw)
 
-		#print raw.ch_names
+		#print(raw.ch_names)
 		#0/0
 
-		print len(raw.ch_names)
+		print(len(raw.ch_names))
 
 		select_electrodes = np.array([ch_name[0] == 'M' for ch_name in raw.ch_names],dtype = 'bool')
 
@@ -185,14 +187,14 @@ def test_import_data():
 		#data,times = raw[:,start:stop]
 
 		data,times = raw[:,:]
-		print data.shape
+		print(data.shape)
 
 		#0/0
 		electrode_data = data[select_electrodes,]
 
 		#electrode_data = data[np.where(select_electrodes == True),]
 
-		print electrode_data.shape
+		print(electrode_data.shape)
 
 		basename = os.path.splitext(fif_f)[0]
 
