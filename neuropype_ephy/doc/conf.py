@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'neurodaddy'
+project = u'neuropype_ephy'
 copyright = u'2017, Dmitrii Altukhov, David Meunier, Annalisa Pascarella'
 author = u'Dmitrii Altukhov, David Meunier, Annalisa Pascarella'
 
