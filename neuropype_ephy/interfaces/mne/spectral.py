@@ -38,7 +38,7 @@ class SpectralConnOutputSpec(TraitedSpec):
     
     conmat_file = File(exists=True, desc="mean spectral connectivty matrix in .npy format")
     
-    conmat_files = traits.List(File(exists=False), desc="all spectral connectivty matrices in .npy format"))
+    conmat_files = traits.List(File(exists=False), desc="all spectral connectivty matrices in .npy format")
     
 class SpectralConn(BaseInterface):
     
