@@ -20,7 +20,10 @@ def split_txt(sample_size,txt_file,sep_label_name, repair = True, sep = ";"):
             for line in lines:
                 
                 #print line
-                
+                if line.startswith('"') and line.strip().endswith('"'):
+                    line = line.strip()[1:-1]               
+                print line
+                 
                 splitted_line = line.strip().split(sep,1)
                 
                 #print splitted_line
