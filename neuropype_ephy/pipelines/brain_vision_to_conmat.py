@@ -192,31 +192,16 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
         if len(n_windows) == 0:
                 
             #### spectral
-            
             spectral = pe.Node(interface = SpectralConn(), name = "spectral")
-            
-            #spectral = pe.Node(interface = Function(input_names = ["ts_file","sfreq","freq_band","con_method"],
-            #                                        output_names = "conmat_file",
-            #                                        function = spectral_proc),name = "spectral")
             
             spectral.inputs.con_method = con_method    
             spectral.inputs.sfreq = sfreq
             
             pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
-            
             pipeline.connect(split_vhdr, 'splitted_ts_file', spectral, 'ts_file')
 
             #### plot spectral
             plot_spectral = pe.Node(interface = PlotSpectralConn(), name = "plot_spectral")
-            
-            #plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
-                                                        #output_names = "plot_conmat_file",
-                                                        #function = plot_circular_connectivity), name = "plot_spectral")
-            
-            # plot_spectral.inputs.labels_file = MEG_elec_names_file AP 021015
-            plot_spectral.inputs.nb_lines = 200
-            plot_spectral.inputs.vmin = 0.3
-            plot_spectral.inputs.vmax = 1.0
             
             pipeline.connect(split_vhdr,  'channel_names',plot_spectral,'labels_file')
             pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
@@ -257,22 +242,14 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
             print n_windows
             
             ### win_ts
-            ##### 
             win_ts = pe.Node(interface = SplitWindows(), name = "win_ts")
             
             win_ts.inputs.n_windows = n_windows
             
             pipeline.connect(split_vhdr, 'splitted_ts_file', win_ts, 'ts_file')
 
-            #win_ts = pe.Node(interface = Function(input_names = ["splitted_ts_file","n_windows"],output_names = ["win_splitted_ts_files"],function = split_win_ts), name = "win_ts")
-            
-            #win_ts.inputs.n_windows = n_windows
-            
-            #pipeline.connect(split_ascii,'splitted_ts_file',win_ts,'splitted_ts_file')
-                    
-                    
+            #### spectral
             spectral = pe.MapNode(interface = SpectralConn(), iterfield = ['ts_file'], name = "spectral")
-            
             
             spectral.inputs.con_method = con_method    
             spectral.inputs.sfreq = sfreq
@@ -282,7 +259,7 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
             pipeline.connect(inputnode,'freq_band', spectral, 'freq_band')
             
             
-            ##### plot spectral
+            #### plot spectral
             #plot_spectral = pe.MapNode(interface = PlotSpectralConn(), name = "plot_spectral")
             
             ##plot_spectral = pe.Node(interface = Function(input_names = ["conmat_file","labels_file","nb_lines","vmin","vmax"],
