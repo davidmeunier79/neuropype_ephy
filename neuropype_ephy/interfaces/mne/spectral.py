@@ -32,9 +32,13 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     index = traits.String("0",desc = "What to add to the name of the file" ,usedefault = True)
     
+    multi_con = traits.Bool(False, desc='If multiple connectivity matrices are exported',usedefault = True)
+    
 class SpectralConnOutputSpec(TraitedSpec):
     
-    conmat_file = File(exists=True, desc="spectral connectivty matrix in .npy format")
+    conmat_file = File(exists=True, desc="mean spectral connectivty matrix in .npy format")
+    
+    conmat_files = traits.List(File(exists=False), desc="all spectral connectivty matrices in .npy format"))
     
 class SpectralConn(BaseInterface):
     
@@ -99,7 +103,15 @@ class SpectralConn(BaseInterface):
             print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
             data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
         
-        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
+        res = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, multi_con = self.multi_con)
+        
+        if self.multi_con:
+            self.conmat_file, self.conmat_files = res
+            
+        else:
+            self.conmat_file = res
+            
+            #self.conmat_files = [] ### A voir
         
         return runtime
         
@@ -108,6 +120,11 @@ class SpectralConn(BaseInterface):
         outputs = self._outputs().get()
         
         outputs["conmat_file"] = self.conmat_file
+        
+        
+        outputs["conmat_files"] = self.conmat_files
+        
+        
         
         return outputs
         

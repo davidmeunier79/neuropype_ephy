@@ -5,7 +5,7 @@ import numpy as np
 
 ################################################### compute spectral connectivity #############################################################################"
 
-def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0,mode = 'multitaper',export_to_matlab = False):
+def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0,mode = 'multitaper',export_to_matlab = False, multi_con = False):
 
     import sys,os
     from mne.connectivity import spectral_connectivity
@@ -36,7 +36,15 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
 
         con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, sfreq=sfreq, faverage=True, tmin=None, mode='cwt_morlet',   cwt_frequencies= frequencies, cwt_n_cycles= n_cycles, n_jobs=1)
         
-        con_matrix = np.mean(np.array(con_matrix[:,:,0,:]),axis = 2)
+        if multi_con:
+            con_matrices = np.array(con_matrix[:,:,0,:])
+            print con_matrices
+            
+            mean_con_matrix = np.mean(con_matrices,axis = 2)            
+            print mean_con_matrix
+            
+        else:
+            con_matrix = np.mean(np.array(con_matrix[:,:,0,:]),axis = 2)
     
     else:
         
@@ -47,17 +55,57 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
     print con_matrix.shape
     print np.min(con_matrix),np.max(con_matrix)
 
-    conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
+    if multi_con:
     
-    np.save(conmat_file,con_matrix)
+        ### mean_conmat
+        mean_conmat_file = os.path.abspath("mean_conmat_" + con_method + ".npy")
+        
+        np.save(mean_conmat_file,mean_con_matrix)
 
-    if export_to_matlab == True:
+        if export_to_matlab:
+            
+            mean_conmat_matfile = os.path.abspath("mean_conmat_" + con_method + ".mat")
+            
+            savemat(mean_conmat_matfile,{"mean_conmat":mean_con_matrix + np.transpose(mean_con_matrix)})
+            
+                
+        ### all files
+        conmat_files = []
+            
+        nb_matrices = con_matrices.shape[2]
         
-        conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
+        for index in range(nb_matrices):
         
-        savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
+            con_matrix = con_matrices[:,:,i]
         
-    return conmat_file
+            conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
+            
+            np.save(conmat_file,con_matrix)
+
+            if export_to_matlab:
+                
+                conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
+                
+                savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
+                  
+            conmat_files.append(conmat_file)
+            
+        return mean_conmat_file,conmat_files
+        
+    else:
+        
+        conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
+        
+        np.save(conmat_file,con_matrix)
+
+        if export_to_matlab:
+            
+            conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
+            
+            savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
+            
+                
+        return conmat_file
 
 ########################################################### plot spectral connectivity #################################################################
 
