@@ -5,16 +5,11 @@ import numpy as np
 
 ################################################### compute spectral connectivity #############################################################################"
 
-def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0,mode = 'multitaper',export_to_matlab = False, multi_con = False):
-
-    import sys,os
-    from mne.connectivity import spectral_connectivity
+def compute_spectral_connectivity(data,con_method,sfreq,fmin,fmax,mode = 'cwt_morlet'):
 
     import numpy as np
-    from scipy.io import savemat
+    from mne.connectivity import spectral_connectivity
     
-    print data.shape
-
     if len(data.shape) < 3:
         if con_method in ['coh','cohy','imcoh']:
             data = data.reshape(1,data.shape[0],data.shape[1])
@@ -23,90 +18,100 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
             print "warning, only work with epoched time series"
             sys.exit()
         
+        
     if mode == 'multitaper':
         
         con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, sfreq=sfreq, fmin= fmin, fmax=fmax, faverage=True, tmin=None, mode = 'multitaper',   mt_adaptive=False, n_jobs=1)
+        print con_matrix.shape
         
         con_matrix = np.array(con_matrix[:,:,0])
-
+        
     elif mode == 'cwt_morlet':
         
         frequencies = np.arange(fmin, fmax, 1)
         n_cycles = frequencies / 7.
-
+        
+        print data
+        
         con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, sfreq=sfreq, faverage=True, tmin=None, mode='cwt_morlet',   cwt_frequencies= frequencies, cwt_n_cycles= n_cycles, n_jobs=1)
         
-        if multi_con:
-            con_matrices = np.array(con_matrix[:,:,0,:])
-            print con_matrices
-            
-            mean_con_matrix = np.mean(con_matrices,axis = 2)            
-            print mean_con_matrix
-            
-        else:
-            con_matrix = np.mean(np.array(con_matrix[:,:,0,:]),axis = 2)
-    
-    else:
+        con_matrix = np.mean(np.array(con_matrix[:,:,0,:]),axis = 2)
         
-        print "Error, mode = %s not implemented"%(mode)
-        
-        return []
-
     print con_matrix.shape
     print np.min(con_matrix),np.max(con_matrix)
+        
+    return con_matrix
+        
+def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = 0,mode = 'cwt_morlet',export_to_matlab = False):
 
-    if multi_con:
+    import sys,os
+
+    import numpy as np
+    from scipy.io import savemat
     
-        ### mean_conmat
-        mean_conmat_file = os.path.abspath("mean_conmat_" + con_method + ".npy")
-        
-        np.save(mean_conmat_file,mean_con_matrix)
+    print data.shape
 
-        if export_to_matlab:
-            
-            mean_conmat_matfile = os.path.abspath("mean_conmat_" + con_method + ".mat")
-            
-            savemat(mean_conmat_matfile,{"mean_conmat":mean_con_matrix + np.transpose(mean_con_matrix)})
-            
-                
-        ### all files
-        conmat_files = []
-            
-        nb_matrices = con_matrices.shape[2]
-        
-        for index in range(nb_matrices):
-        
-            con_matrix = con_matrices[:,:,i]
-        
-            conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
-            
-            np.save(conmat_file,con_matrix)
+    from neuropype_ephy.spectral import compute_spectral_connectivity
 
-            if export_to_matlab:
-                
-                conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
-                
-                savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
-                  
-            conmat_files.append(conmat_file)
-            
-        return mean_conmat_file,conmat_files
-        
-    else:
-        
-        conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
-        
-        np.save(conmat_file,con_matrix)
 
-        if export_to_matlab:
-            
-            conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
-            
-            savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
-            
-                
-        return conmat_file
+    con_matrix = compute_spectral_connectivity(data,con_method,sfreq,fmin,fmax,mode)
+        
 
+    conmat_file = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".npy")
+    
+    np.save(conmat_file,con_matrix)
+
+    if export_to_matlab:
+        
+        conmat_matfile = os.path.abspath("conmat_" + str(index) + "_" + con_method + ".mat")
+        
+        savemat(conmat_matfile,{"conmat":con_matrix + np.transpose(con_matrix)})
+          
+    return conmat_file
+
+def compute_and_save_multi_spectral_connectivity(all_data,con_method,sfreq,fmin,fmax,index = 0,mode = 'cwt_morlet',export_to_matlab = False):
+    
+    import numpy
+    from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+    
+    print all_data.shape
+          
+    if len(all_data.shape) != 3:
+        
+        print "Warning, all_data should have several samples"
+        
+        return []
+    
+    conmat_files = []
+    
+    for i in range(all_data.shape[0]):
+
+        cur_data = all_data[i,:,:]
+
+        print cur_data.shape
+        
+        data = cur_data.reshape(1,cur_data.shape[0],cur_data.shape[1])
+
+        print data.shape
+        
+        conmat_file = compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index = i,mode = mode,export_to_matlab = export_to_matlab)
+            
+        #print data.shape
+        
+        #con_matrix, freqs, times, n_epochs, n_tapers  = spectral_connectivity(data, method=con_method, mode='multitaper', sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1], faverage=True, tmin=None,    mt_adaptive=False, n_jobs=1)
+
+        #con_matrix = np.array(con_matrix[:,:,0])
+
+        #print con_matrix.shape
+        #print np.min(con_matrix),np.max(con_matrix)
+        
+        #conmat_file = os.path.abspath("conmat_"+ con_method + "_" + str(i) + ".npy")
+
+        #np.save(conmat_file,con_matrix)
+
+        conmat_files.append(conmat_file)
+            
+    return conmat_files
 ########################################################### plot spectral connectivity #################################################################
 
 def plot_circular_connectivity(conmat, label_names, node_colors, node_order, vmin = 0.3, vmax = 1.0, nb_lines = 200, fname = "_def"):
