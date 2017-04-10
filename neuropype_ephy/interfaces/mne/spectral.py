@@ -14,7 +14,7 @@ from nipype.utils.filemanip import split_filename as split_f
     
 ############################################################################################### SpectralConn #####################################################################################################
 
-from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
+from neuropype_ephy.spectral import compute_and_save_spectral_connectivity,compute_and_save_multi_spectral_connectivity
 
 class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
@@ -24,6 +24,8 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     freq_band = traits.List(traits.Float(exists=True), desc='frequency bands', mandatory=True)
     
+    mode = traits.Enum("multitaper","cwt_morlet",desc='Mode for computing frequency bands')
+    
     con_method = traits.Enum("coh","imcoh","plv","pli","wpli","pli2_unbiased","ppc","cohy","wpli2_debiased",desc='metric computed on time series for connectivity')
     
     epoch_window_length = traits.Float(desc='epoched data', mandatory=False)
@@ -32,9 +34,13 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     index = traits.String("0",desc = "What to add to the name of the file" ,usedefault = True)
     
+    multi_con = traits.Bool(False, desc='If multiple connectivity matrices are exported',usedefault = True)
+    
 class SpectralConnOutputSpec(TraitedSpec):
     
-    conmat_file = File(exists=True, desc="spectral connectivty matrix in .npy format")
+    conmat_file = File(exists=False, desc="mean spectral connectivty matrix in .npy format")
+    
+    conmat_files = traits.List(File(exists=False), desc="all spectral connectivty matrices in .npy format")
     
 class SpectralConn(BaseInterface):
     
@@ -87,6 +93,10 @@ class SpectralConn(BaseInterface):
         epoch_window_length = self.inputs.epoch_window_length
         export_to_matlab = self.inputs.export_to_matlab
         index = self.inputs.index
+        mode = self.inputs.mode
+        multi_con = self.inputs.multi_con 
+        
+        print mode
         
         if epoch_window_length == traits.Undefined:
             print '*** NO epoch_window_length ***'
@@ -100,7 +110,13 @@ class SpectralConn(BaseInterface):
             print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
             data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
         
-        self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab)
+        
+        if multi_con:
+            self.conmat_files = compute_and_save_multi_spectral_connectivity(all_data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
+            
+        else:
+            self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
+        
         
         return runtime
         
@@ -108,7 +124,12 @@ class SpectralConn(BaseInterface):
         
         outputs = self._outputs().get()
         
-        outputs["conmat_file"] = self.conmat_file
+        
+        if self.inputs.multi_con:
+            outputs["conmat_files"] = self.conmat_files
+        
+        else:
+            outputs["conmat_file"] = self.conmat_file
         
         return outputs
         
@@ -201,6 +222,9 @@ class PlotSpectralConn(BaseInterface):
                 label_names = [line.strip() for line in open(labels_file)]
                 node_order  = label_names
                 node_colors = None
+                
+                
+                print label_names
             
             else:
                 labels = []
@@ -260,7 +284,7 @@ class PlotSpectralConn(BaseInterface):
         print len(label_names)
         print len(node_order)
         print '\n ********************** \n'   
-#        0/0
+        
         self.plot_conmat_file = plot_circular_connectivity(conmat,label_names,node_colors,node_order, vmin,vmax ,nb_lines, fname)
 
         return runtime
