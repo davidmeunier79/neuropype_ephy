@@ -103,14 +103,31 @@ class SpectralConn(BaseInterface):
             data = np.load(ts_file)
         else:
             raw_data = np.load(ts_file)
+            
+            print raw_data.shape
+            print int(epoch_window_length * sfreq)
+            
+            if len(raw_data.shape) == 3:
+                
+                if raw_data.shape[0] == 1:
+                    
+                    raw_data = raw_data[0,:,:]
+                    
+            print raw_data.shape
+                  
             nb_splits = raw_data.shape[1] // (epoch_window_length * sfreq)
             reste = raw_data.shape[1] % int(epoch_window_length * sfreq)
+            
+            
+            
             if reste != 0:
                 raw_data = raw_data[:,:-reste]
+                
             print "epoching data with {}s by window, resulting in {} epochs (rest = {})".format(epoch_window_length,nb_splits,reste)
             data = np.array(np.array_split(raw_data,nb_splits,axis = 1))
-        
-        
+          
+            print data.shape
+            
         if multi_con:
             self.conmat_files = compute_and_save_multi_spectral_connectivity(all_data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
             

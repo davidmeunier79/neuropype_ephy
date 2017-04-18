@@ -15,7 +15,7 @@ from neuropype_ephy.nodes.ts_tools import SplitWindows
 ### to modify and add in "Nodes"
 #from neuropype_ephy.spectral import  filter_adj_plot_mat
 
-def create_pipeline_time_series_to_spectral_connectivity( main_path,sfreq, pipeline_name = "ts_to_conmat",con_method = "coh", multi_con = False, export_to_matlab = False, n_windows = [], mode = 'multitaper'):
+def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multi_con = False, export_to_matlab = False, n_windows = [], mode = 'multitaper'):
     
     if multi_con:
         pipeline_name = pipeline_name + '_multicon'
@@ -23,7 +23,7 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path,sfreq, pipel
     pipeline = pe.Workflow(name= pipeline_name)
     pipeline.base_dir = main_path
         
-    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','labels_file','epoch_window_length','is_sensor_space','index']), name='inputnode')
+    inputnode = pe.Node(IdentityInterface(fields=['ts_file','freq_band','sfreq','labels_file','epoch_window_length','is_sensor_space','index']), name='inputnode')
 
     if len(n_windows) == 0:
             
@@ -34,10 +34,11 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path,sfreq, pipel
         
         spectral.inputs.con_method = con_method  
         spectral.inputs.export_to_matlab = export_to_matlab
-        spectral.inputs.sfreq = sfreq
+        #spectral.inputs.sfreq = sfreq
         spectral.inputs.multi_con = multi_con
         spectral.inputs.mode = mode
         
+        pipeline.connect(inputnode, 'sfreq', spectral, 'sfreq')
         pipeline.connect(inputnode, 'ts_file', spectral, 'ts_file')
         pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
         pipeline.connect(inputnode, 'index', spectral, 'index')
@@ -69,10 +70,11 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path,sfreq, pipel
         
         spectral.inputs.con_method = con_method  
         spectral.inputs.export_to_matlab = export_to_matlab            
-        spectral.inputs.sfreq = sfreq
+        #spectral.inputs.sfreq = sfreq
         spectral.inputs.multi_con = multi_con
         spectral.inputs.mode = mode
         
+        pipeline.connect(inputnode, 'sfreq', spectral, 'sfreq')
         pipeline.connect(win_ts, 'win_ts_files', spectral, 'ts_file')
         pipeline.connect(inputnode, 'freq_band', spectral, 'freq_band')
         pipeline.connect(inputnode, 'index', spectral, 'index')

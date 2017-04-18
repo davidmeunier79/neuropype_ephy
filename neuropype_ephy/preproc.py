@@ -275,6 +275,13 @@ def get_raw_sfreq(raw_fname):
     return raw.info['sfreq']
 
 
+def get_epochs_info(raw_fname):
+    from mne.io import Raw
+    
+    raw = Raw(raw_fname, preload=True)
+    return raw.info['epochs']
+
+ 
 def create_reject_dict(raw_info):
     from mne import pick_types
 
