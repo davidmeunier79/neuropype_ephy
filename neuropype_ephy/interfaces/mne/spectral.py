@@ -69,8 +69,11 @@ class SpectralConn(BaseInterface):
     export_to_matlab 
         type = Bool, default = False, desc='If conmat is exported to .mat format as well',usedefault = True
    
-    index
+    index:
         type = String, default = "0", desc='What to add to the name of the file',usedefault = True
+        
+    multi_con:
+        type Bool, default = False, desc='If multiple connectivity matrices are exported',usedefault = True
         
     Outputs:
     
