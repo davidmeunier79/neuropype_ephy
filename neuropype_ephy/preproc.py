@@ -5,13 +5,13 @@ def preprocess_fif(fif_file, l_freq=None, h_freq=None, down_sfreq=None):
     """Filter and downsample data"""
 
     import os
-    from mne.io import Raw
+    from mne.io import read_raw_fif
     from mne import pick_types
     from nipype.utils.filemanip import split_filename as split_f
 
     _, basename, ext = split_f(fif_file)
 
-    raw = Raw(fif_file, preload=True)
+    raw = read_raw_fif(fif_file, preload=True)
 
     filt_str, down_str = '', ''
 
@@ -36,7 +36,7 @@ def compute_ica(fif_file, ecg_ch_name, eog_ch_name, n_components):
     import os
 
     import mne
-    from mne.io import Raw
+    from mne.io import read_raw_fif
     from mne.preprocessing import ICA
     from mne.preprocessing import create_ecg_epochs, create_eog_epochs
 
@@ -45,7 +45,7 @@ def compute_ica(fif_file, ecg_ch_name, eog_ch_name, n_components):
 
     subj_path, basename, ext = split_f(fif_file)
 
-    raw = Raw(fif_file, preload=True)
+    raw = read_raw_fif(fif_file, preload=True)
 
     # select sensors
     select_sensors = mne.pick_types(raw.info, meg=True,
@@ -94,6 +94,7 @@ def compute_ica(fif_file, ecg_ch_name, eog_ch_name, n_components):
     ecg_inds = ecg_inds[:n_max_ecg]
     ica.exclude += ecg_inds
 
+    eog_ch_name = eog_ch_name.replace(' ', '')
     if set(eog_ch_name.split(',')).issubset(set(raw.info['ch_names'])):
         eog_inds, eog_scores = ica.find_bads_eog(raw, ch_name=eog_ch_name)
         eog_inds = eog_inds[:n_max_eog]
@@ -425,7 +426,7 @@ def generate_report(raw, ica, subj_name, basename,
     captions_psd = []
     ica_src = ica.get_sources(raw)
     for i_ic in ic_nums:
-        fig = ica_src.plot_psd(tmax=None, picks=[i_ic], fmax=140, show=False)
+        fig = ica_src.plot_psd(tmax=60, picks=[i_ic], fmax=140, show=False)
         fig.set_figheight(3)
         fig.set_figwidth(5)
         psds.append(fig)
