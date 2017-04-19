@@ -77,9 +77,11 @@ def create_pipeline_preproc_meeg(main_path,
         n_comp_exclude: dict
             if is_set_ICA_components=True, it has to be a dict containing for
             each subject and for each session the components to be excluded
+            
     Outouts:
 
         pipeline : instance of Workflow
+
     """
     
     from neuropype_ephy.interfaces.mne.preproc import PreprocFif

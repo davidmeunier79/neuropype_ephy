@@ -8,7 +8,7 @@ from nipype.interfaces.utility import IdentityInterface
 
 from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralConn
 
-from neuropype_ephy.spectral import  multiple_spectral_proc
+# from neuropype_ephy.spectral import  multiple_spectral_proc
 
 from neuropype_ephy.nodes.import_data import ImportBrainVisionAscii
 
