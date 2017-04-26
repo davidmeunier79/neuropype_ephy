@@ -32,7 +32,7 @@ class SpectralConnInputSpec(BaseInterfaceInputSpec):
     
     export_to_matlab = traits.Bool(False, desc='If conmat is exported to .mat format as well',usedefault = True)
     
-    index = traits.String("0",desc = "What to add to the name of the file" ,usedefault = True)
+    index = traits.Int(0,desc = "What to add to the name of the file" ,usedefault = True)
     
     multi_con = traits.Bool(False, desc='If multiple connectivity matrices are exported',usedefault = True)
     
@@ -70,7 +70,7 @@ class SpectralConn(BaseInterface):
         type = Bool, default = False, desc='If conmat is exported to .mat format as well',usedefault = True
    
     index:
-        type = String, default = "0", desc='What to add to the name of the file',usedefault = True
+        type = Int, default = 0, desc='What to add to the name of the file',usedefault = True
         
     multi_con:
         type Bool, default = False, desc='If multiple connectivity matrices are exported',usedefault = True
@@ -132,10 +132,10 @@ class SpectralConn(BaseInterface):
             print data.shape
             
         if multi_con:
-            self.conmat_files = compute_and_save_multi_spectral_connectivity(all_data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
+            self.conmat_files = compute_and_save_multi_spectral_connectivity(all_data = data,con_method = con_method, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
             
         else:
-            self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method,index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
+            self.conmat_file = compute_and_save_spectral_connectivity(data = data,con_method = con_method, index = index, sfreq=sfreq, fmin= freq_band[0], fmax=freq_band[1],export_to_matlab = export_to_matlab, mode = mode)
         
         
         return runtime

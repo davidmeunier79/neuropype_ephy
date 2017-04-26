@@ -70,7 +70,7 @@ def compute_and_save_spectral_connectivity(data,con_method,sfreq,fmin,fmax,index
           
     return conmat_file
 
-def compute_and_save_multi_spectral_connectivity(all_data,con_method,sfreq,fmin,fmax,index = 0,mode = 'cwt_morlet',export_to_matlab = False):
+def compute_and_save_multi_spectral_connectivity(all_data,con_method,sfreq,fmin,fmax,mode = 'cwt_morlet',export_to_matlab = False):
     
     import numpy
     from neuropype_ephy.spectral import compute_and_save_spectral_connectivity
