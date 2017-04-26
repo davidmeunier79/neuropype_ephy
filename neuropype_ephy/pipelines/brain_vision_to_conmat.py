@@ -10,11 +10,10 @@ from neuropype_ephy.interfaces.mne.spectral import  SpectralConn,PlotSpectralCon
 
 # from neuropype_ephy.spectral import  multiple_spectral_proc
 
-from neuropype_ephy.nodes.import_data import ImportBrainVisionAscii
+from neuropype_ephy.nodes.import_data import ImportBrainVisionAscii, ImportBrainVisionVhdr
 
-from neuropype_ephy.nodes.ts_tools import SplitWindows
+#from neuropype_ephy.nodes.ts_tools import SplitWindows
 
-from neuropype_ephy.import_txt import read_brainvision_vhdr
 
 #from neuropype_ephy.spectral import split_win_ts
 
@@ -82,7 +81,7 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
     inputnode = pe.Node(interface = IdentityInterface(fields=['vhdr_file','freq_band']), name='inputnode')
     
     #### convert
-    split_vhdr = pe.Node(interface = Function(input_names = ["vhdr_file","sample_size"],output_names = ["splitted_ts_file","channel_names"],function = read_brainvision_vhdr),name = 'split_vhdr')
+    split_vhdr = pe.Node(interface =  ,name = 'split_vhdr')
 
     split_vhdr.inputs.sample_size = sample_size
     pipeline.connect(inputnode, 'vhdr_file',split_vhdr,'vhdr_file')
@@ -91,7 +90,7 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
     ts_pipe = create_pipeline_time_series_to_spectral_connectivity(main_path,sfreq, con_method = con_method, multi_con = multi_con, export_to_matlab = export_to_matlab, n_windows = n_windows)
     
     pipeline.connect(split_vhdr,'splitted_ts_file',ts_pipe, 'inputnode.ts_file')
-    pipeline.connect(split_vhdr,'channel_names',ts_pipe, 'inputnode.labels_file')
+    pipeline.connect(split_vhdr,'elec_names_file',ts_pipe, 'inputnode.labels_file')
     pipeline.connect(inputnode, 'freq_band', ts_pipe, 'inputnode.freq_band')
      
     return pipeline

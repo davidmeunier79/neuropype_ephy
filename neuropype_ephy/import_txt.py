@@ -122,9 +122,6 @@ def read_brainvision_vhdr(vhdr_file,sample_size):
     import numpy as np
     
     data_raw = mne.io.read_raw_brainvision(vhdr_file, verbose = True)
-    ch_names_file = os.path.abspath("channel_names.txt")
-    
-    np.savetxt(ch_names_file,data_raw.ch_names,fmt = "%s")
     
     print data_raw.ch_names
     
@@ -148,9 +145,4 @@ def read_brainvision_vhdr(vhdr_file,sample_size):
 
     print np_splitted_ts.shape
     
-    splitted_ts_file = os.path.abspath("splitted_ts.npy")
-
-    np.save(splitted_ts_file,np_splitted_ts)
-    
-    return splitted_ts_file,ch_names_file
-    
+    return np_splitted_ts,data_raw.ch_names

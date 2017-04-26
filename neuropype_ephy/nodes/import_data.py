@@ -93,7 +93,8 @@ class ImportMat(BaseInterface):
         return outputs
 
 
-# ------------ ImportBrainVisionAscii --------------------- #
+######################################################################################## ImportBrainVisionAscii #####################################################################################################
+
 class ImportBrainVisionAsciiInputSpec(BaseInterfaceInputSpec):
 
     txt_file = File(exists=True,
@@ -191,6 +192,89 @@ class ImportBrainVisionAscii(BaseInterface):
         outputs['splitted_ts_file'] = os.path.abspath('uplitted_ts.npy')
 
         return outputs
+
+######################################################################################## ImportBrainVisionVhdr #####################################################################################################
+
+class ImportBrainVisionVhdrInputSpec(BaseInterfaceInputSpec):
+
+    vhdr_file = File(exists=True,
+                    desc='Vhdr file exported from BrainVision',
+                    mandatory=True)
+
+    sample_size = traits.Float(desc='Size (number of time points) of all samples',
+                               mandatory=True)
+
+class ImportBrainVisionVhdrOutputSpec(TraitedSpec):
+    """Output specification for ImportBrainVisionVhdr"""
+
+    splitted_ts_file = traits.File(exists=True, desc='splitted time series in .npy format')
+
+    elec_names_file = traits.File(exists=True, desc='electrode names in txt format')
+
+
+class ImportBrainVisionVhdr(BaseInterface):
+
+    """
+    Description:
+
+    Import IntraEEG Brain Vision (unsplitted) vhdr time series txt file and
+    return splitted time series in .npy format, as well as electrode names in txt format
+
+    Inputs:
+
+    vhdr_file
+        type = File, exists=True, desc='Ascii text file exported from BrainVision', mandatory=True
+
+    sample_size
+        type = Int, desc = "Size (number of time points) of all samples", mandatory = True
+
+    Outputs:
+
+    splitted_ts_file
+        type  = File, exists=True, desc="splitted time series in .npy format"
+
+    elec_names_file
+        type = File, exists=True, desc="electrode names in txt format"
+
+
+    """
+    input_spec = ImportBrainVisionAsciiInputSpec
+    output_spec = ImportBrainVisionAsciiOutputSpec
+
+    def _run_interface(self, runtime):
+
+        from neuropype_ephy.import_txt import split_vhdr
+
+        vhdr_file = self.inputs.vhdr_file
+
+        sample_size = self.inputs.sample_size
+
+        np_splitted_ts,ch_names = split_vhdr(vhdr_file=vhdr_file, sample_size=sample_size)
+
+        ### saving
+        ch_names_file = os.path.abspath("correct_channel_names.txt")
+        
+        np.savetxt(ch_names_file,ch_names,fmt = "%s")
+        
+        splitted_ts_file = os.path.abspath("splitted_ts.npy")
+
+        np.save(splitted_ts_file,np_splitted_ts)
+        
+    return splitted_ts_file,ch_names_file
+    
+        return runtime
+
+    def _list_outputs(self):
+
+        outputs = self._outputs().get()
+
+        outputs['elec_names_file'] = os.path.abspath('correct_channel_names.txt')
+
+        outputs['splitted_ts_file'] = os.path.abspath('splitted_ts.npy')
+
+        return outputs
+
+######################################################################################## Ep2ts #####################################################################################################
 
 
 class Ep2tsInputSpec(BaseInterfaceInputSpec):
