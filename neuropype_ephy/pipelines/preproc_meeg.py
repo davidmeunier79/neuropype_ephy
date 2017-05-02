@@ -36,7 +36,8 @@ def create_pipeline_preproc_meeg(main_path,
                                  ECG_ch_name='', EoG_ch_name='',
                                  reject=None,
                                  is_set_ICA_components=False,
-                                 n_comp_exclude=[]):
+                                 n_comp_exclude=[],
+                                 is_sensor_space=True):
 
     """
     Description:
@@ -60,10 +61,11 @@ def create_pipeline_preproc_meeg(main_path,
         is_ICA : boolean (default True)
             if True apply ICA to automatically remove ECG and EoG artifacts
         variance: float (default 0.95)
-            the cumulative percentage of explained variance
-        ECG_ch_name: str
+            float between 0 and 1: the ICA components will be selected by the 
+            cumulative percentage of explained variance
+        ECG_ch_name: str (default '')
             the name of ECG channels
-        EoG_ch_name:
+        EoG_ch_name: str (default '')
             the name of EoG channels
         reject: dict | None
             rejection parameters based on peak-to-peak amplitude. Valid keys
@@ -77,6 +79,9 @@ def create_pipeline_preproc_meeg(main_path,
         n_comp_exclude: dict
             if is_set_ICA_components=True, it has to be a dict containing for
             each subject and for each session the components to be excluded
+	is_sensor_space: boolean (default True)
+            True if we perform the analysis in sensor space and we use the
+            pipeline as lego with the connectivity or inverse pipeline
             
     Outouts:
 
@@ -105,42 +110,41 @@ def create_pipeline_preproc_meeg(main_path,
                         name='inputnode')
 
     if data_type is 'ds':
-        
         ds2fif_node = pe.Node(interface=ConvertDs2Fif(), name='ds2fif')
         pipeline.connect(inputnode, 'raw_file', ds2fif_node, 'ds_file')        
 
     # preprocess
-    preproc_node = pe.Node(interface=PreprocFif(), name='preproc')
+    if not is_set_ICA_components:
+      preproc_node = pe.Node(interface=PreprocFif(), name='preproc')
 
-    preproc_node.inputs.l_freq = l_freq
-    preproc_node.inputs.h_freq = h_freq
-    preproc_node.inputs.down_sfreq = down_sfreq
+      preproc_node.inputs.l_freq = l_freq
+      preproc_node.inputs.h_freq = h_freq
+      preproc_node.inputs.down_sfreq = down_sfreq
     
     
-    if data_type is 'ds':
-        pipeline.connect(ds2fif_node, 'fif_file', preproc_node, 'fif_file')
-    elif data_type is 'fif':
-        pipeline.connect(inputnode, 'raw_file', preproc_node, 'fif_file')
+      if data_type is 'ds':
+	  pipeline.connect(ds2fif_node, 'fif_file', preproc_node, 'fif_file')
+      elif data_type is 'fif':
+	  pipeline.connect(inputnode, 'raw_file', preproc_node, 'fif_file')
     
 
     if is_ICA:
         if is_set_ICA_components:
-            preproc = pe.Node(interface=Function(input_names=['fif_file',
-                                                              'subject_id',
-                                                              'n_comp_exclude',
-                                                              'l_freq',
-                                                              'h_freq',
-                                                              'down_sfreq',
-                                                              'is_sensor_space'],
-                                                 output_names=['out_file',
-                                                               'channel_coords_file',
-                                                               'channel_names_file',
-                                                               'sfreq'],
-                                                 function=preprocess_set_ICA_comp_fif_to_ts),
-                              name='preproc')
-            preproc.inputs.n_comp_exclude = n_comp_exclude
+            ica_node = pe.Node(interface=Function(input_names=['fif_file',
+                                                               'subject_id',
+                                                               'n_comp_exclude',
+                                                               'is_sensor_space'],
+                                                  output_names=['out_file',
+                                                                'channel_coords_file',
+                                                                'channel_names_file',
+                                                                'sfreq'],
+                                                  function=preprocess_set_ICA_comp_fif_to_ts),
+                              name='ica_set_comp')
+            ica_node.inputs.n_comp_exclude = n_comp_exclude
+            ica_node.inputs.is_sensor_space = is_sensor_space
             
-            pipeline.connect(inputnode, 'subject_id', preproc, 'subject_id')
+            pipeline.connect(inputnode, 'raw_file', ica_node, 'fif_file')
+            pipeline.connect(inputnode, 'subject_id', ica_node, 'subject_id')
             
         else:
             
