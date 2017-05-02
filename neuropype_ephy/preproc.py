@@ -128,16 +128,14 @@ def compute_ica(fif_file, ecg_ch_name, eog_ch_name, n_components):
 def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
                                       is_sensor_space):
     import os
-    import numpy as np
     import sys
 
     import mne
     from mne.preprocessing import read_ica
-    from mne.report import Report
 
     from nipype.utils.filemanip import split_filename as split_f
     from neuropype_ephy.preproc import create_ts
-    
+
     subj_path, basename, ext = split_f(fif_file)
     (data_path,  sbj_name) = os.path.split(subj_path)
 
@@ -146,22 +144,22 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     # Read raw
     current_dir = os.getcwd()
     if os.path.exists(os.path.join(current_dir, '../ica', basename + '_ica' + ext)):
-      raw_ica_file = os.path.join(current_dir, '../ica', basename + '_ica' + ext)
+        raw_ica_file = os.path.join(current_dir, '../ica', basename + '_ica' + ext)
     elif os.path.exists(os.path.join(current_dir, '../ica', basename + '_filt_ica' + ext)):
-      raw_ica_file = os.path.join(current_dir, '../ica', basename + '_filt_ica' + ext)
+        raw_ica_file = os.path.join(current_dir, '../ica', basename + '_filt_ica' + ext)
     elif os.path.exists(os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica' + ext)):  
-      raw_ica_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica' + ext)
+        raw_ica_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica' + ext)
       
     print '*** raw_ica_file %s' % raw_ica_file + '***'
     raw = mne.io.read_raw_fif(raw_ica_file, preload=True)
 
     # load ICA
     if os.path.exists(os.path.join(current_dir, '../ica', basename + '_ica_solution.fif')):
-      ica_sol_file = os.path.join(current_dir, '../ica', basename + '_ica_solution.fif')
+        ica_sol_file = os.path.join(current_dir, '../ica', basename + '_ica_solution.fif')
     elif os.path.exists(os.path.join(current_dir, '../ica', basename + '_filt_ica_solution.fif')):
-      ica_sol_file = os.path.join(current_dir, '../ica', basename + '_filt_ica_solution.fif')
+        ica_sol_file = os.path.join(current_dir, '../ica', basename + '_filt_ica_solution.fif')
     elif os.path.exists(os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica_solution.fif')):  
-      ica_sol_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica_solution.fif')
+        ica_sol_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica_solution.fif')
       
     if os.path.exists(ica_sol_file) is False:
         print '$$$ Warning, no %s found' % ica_sol_file
@@ -273,11 +271,7 @@ def create_ts(raw_fname):
 
     select_sensors = mne.pick_types(raw.info, meg=True, ref_meg=False,
                                     exclude='bads')
-def get_epochs_info(raw_fname):
-    from mne.io import Raw
-    
-    raw = Raw(raw_fname, preload=True)
-    return raw.info['epochs']
+
     # save electrode locations
     sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
     sens_loc = np.array(sens_loc)
