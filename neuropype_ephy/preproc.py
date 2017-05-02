@@ -1,4 +1,6 @@
 """Preprocessing functions"""
+# Authors: Dmitrii Altukhov <dm-altukhov@ya.ru>
+#          Annalisa Pascarella <a.pascarella@iac.cnr.it>
 
 
 def preprocess_fif(fif_file, l_freq=None, h_freq=None, down_sfreq=None):
@@ -230,13 +232,13 @@ def get_raw_sfreq(raw_fname):
     return raw.info['sfreq']
 
 
-def get_epochs_info(raw_fname):
-    from mne.io import Raw
-    
-    raw = Raw(raw_fname, preload=True)
-    return raw.info['epochs']
+# def get_epochs_info(raw_fname):
+#    from mne.io import Raw
+#
+#    raw = Raw(raw_fname, preload=True)
+#    return raw.info['epochs']
 
- 
+
 def create_reject_dict(raw_info):
     from mne import pick_types
 
@@ -271,7 +273,11 @@ def create_ts(raw_fname):
 
     select_sensors = mne.pick_types(raw.info, meg=True, ref_meg=False,
                                     exclude='bads')
-
+def get_epochs_info(raw_fname):
+    from mne.io import Raw
+    
+    raw = Raw(raw_fname, preload=True)
+    return raw.info['epochs']
     # save electrode locations
     sens_loc = [raw.info['chs'][i]['loc'][:3] for i in select_sensors]
     sens_loc = np.array(sens_loc)
