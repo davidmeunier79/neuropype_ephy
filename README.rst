@@ -1,5 +1,10 @@
+.. _readme:
+
+README
+******
+
 Description
-***********
+===========
 
 Neuropype package of functions for electrophysiology analysis, can be used from
 neuropype_graph and nipype
@@ -8,7 +13,7 @@ neuropype_graph and nipype
 Documentation
 =============
 
-https://annapasca.github.io/neuropyconn_doc/ephypype/neuropype_ephy.html
+https://annapasca.github.io/neuropype/ephypype/neuropype_ephy.html
 
 
 Installation
