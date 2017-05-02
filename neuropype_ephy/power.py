@@ -1,5 +1,6 @@
 def compute_and_save_psd(epochs_fname, fmin=0, fmax=120,
-                         method='welch', n_fft=256, n_overlap=0, 
+                         method='welch', is_epoched=False, 
+                         n_fft=256, n_overlap=0, 
                          picks=None, proj=False, n_jobs=1, verbose=None):
     """
     Load epochs from file,
@@ -8,8 +9,15 @@ def compute_and_save_psd(epochs_fname, fmin=0, fmax=120,
     import numpy as np
     import os
     from mne import read_epochs
-    epochs = read_epochs(epochs_fname)
+    from mne.io import read_raw_fif
+    
+    if is_epoched:
+        epochs = read_epochs(epochs_fname)
+    else:
+        epochs = read_raw_fif(epochs_fname, preload=True)
+
     epochs_meg = epochs.pick_types(meg=True, eeg=False, eog=False, ecg=False)
+    
     if method == 'welch':
         from mne.time_frequency import psd_welch
         psds, freqs = psd_welch(epochs_meg)
