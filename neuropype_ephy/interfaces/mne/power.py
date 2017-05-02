@@ -1,36 +1,33 @@
 """
 Power computation module
 """
+# Author: Dmitrii Altukhov <dm-altukhov@ya.ru>
 
 from nipype.interfaces.base import BaseInterface, \
     BaseInterfaceInputSpec, traits, File, TraitedSpec
-from nipype.utils.filemanip import split_filename
-
-import nibabel as nbconvert
-import numpy as np
-import os
-
 from neuropype_ephy.power import compute_and_save_psd
 
+
 class PowerInputSpec(BaseInterfaceInputSpec):
-#    epochs_file = traits.File(exists=True, desc='File with mne.Epochs', mandatory=True)
-    epochs_file = traits.File(exists=True, 
-                           desc='File with mne.Epochs or mne.io.Raw', 
-                           mandatory=True)
+    epochs_file = traits.File(exists=True,
+                              desc='File with mne.Epochs or mne.io.Raw',
+                              mandatory=True)
     fmin = traits.Float(desc='lower psd frequency', mandatory=False)
     fmax = traits.Float(desc='higher psd frequency', mandatory=False)
-    method = traits.Enum('welch', 'multitaper', 
+    method = traits.Enum('welch', 'multitaper',
                          desc='power spectral density computation method')
     is_epoched = traits.Bool(desc='if true input data are mne.Epochs',
                              mandatory=False)
 
 
 class PowerOutputSpec(TraitedSpec):
-    psds_file = File(exists=True, desc='psd tensor and frequencies in .npz format')
+    psds_file = File(exists=True,
+                     desc='psd tensor and frequencies in .npz format')
+
 
 class Power(BaseInterface):
     """
-    Compute power spectral density on epochs
+    Compute power spectral density on epochs or raw data
     """
     input_spec = PowerInputSpec
     output_spec = PowerOutputSpec
