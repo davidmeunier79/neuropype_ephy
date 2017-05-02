@@ -1,4 +1,6 @@
 """Interfaces for preprocessing nodes"""
+# Authors: Dmitrii Altukhov <dm-altukhov@ya.ru>
+
 
 from nipype.interfaces.base import BaseInterface,\
     BaseInterfaceInputSpec, traits, TraitedSpec

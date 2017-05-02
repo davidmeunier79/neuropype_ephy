@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Description: 
+Description:
 
-Wraps spectral connectivity function of MNE, as well as plot_circular_connectivity
+Wraps spectral connectivity function of MNE, as well as
+plot_circular_connectivity
 
 """
+# Author: David Meunier <david_meunier_79@hotmail.fr>
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces.utility import IdentityInterface
 #,Function

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Author: David Meunier <david_meunier_79@hotmail.fr>
 
 import nipype.pipeline.engine as pe
 

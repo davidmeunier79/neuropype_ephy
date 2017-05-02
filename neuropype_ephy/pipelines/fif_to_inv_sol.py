@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+"""
+Inverse Solution Pipeline
+"""
+# Author: Annalisa Pascarella <a.pascarella@iac.cnr.it>
 
 import nipype.pipeline.engine as pe
 
