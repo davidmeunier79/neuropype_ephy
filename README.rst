@@ -30,6 +30,10 @@ Up to now neuropype_ephy works only with python2; python3 compatibility is plann
 * nipype
 * neuropype_graph
 
+Some of these dependencies (numpy, scikit-learn) you should install manually, others (mne, nipype) 
+are installed automatically during neuropype_ephy installation (see "Install neuropype_ephy").
+To install neuropype_graph see "Install neuropype_graph"
+
 Install package
 ---------------
 
