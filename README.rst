@@ -58,6 +58,11 @@ Install neuropype_graph
     pip install .
     cd ..
 
+see |README_graph| for more information.
+
+.. |README_graph| raw:: html
+
+   <a href="http://davidmeunier79.github.io/neuropype_graph/includeme.html" target="_blank">README</a>
 
 Software
 --------
