@@ -243,7 +243,7 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
         epochs = read_epochs(raw_filename)
         info = epochs.info
     else:
-        raw = read_raw_fif(raw_filename, add_eeg_ref=False)
+        raw = read_raw_fif(raw_filename)
         raw.set_eeg_reference()
         info = raw.info
 
