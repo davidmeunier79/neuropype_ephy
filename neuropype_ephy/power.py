@@ -2,7 +2,7 @@
 # Author: Dmitrii Altukhov <dm-altukhov@ya.ru>
 
 
-def compute_and_save_psd(epochs_fname, fmin=0, fmax=120,
+def compute_and_save_psd(data_fname, fmin=0, fmax=120,
                          method='welch', is_epoched=False,
                          n_fft=256, n_overlap=0,
                          picks=None, proj=False, n_jobs=1, verbose=None):
@@ -18,9 +18,9 @@ def compute_and_save_psd(epochs_fname, fmin=0, fmax=120,
     from mne.io import read_raw_fif
 
     if is_epoched:
-        epochs = read_epochs(epochs_fname)
+        epochs = read_epochs(data_fname)
     else:
-        epochs = read_raw_fif(epochs_fname, preload=True)
+        epochs = read_raw_fif(data_fname, preload=True)
 
     epochs_meg = epochs.pick_types(meg=True, eeg=False, eog=False, ecg=False)
 
@@ -32,7 +32,7 @@ def compute_and_save_psd(epochs_fname, fmin=0, fmax=120,
         psds, freqs = psd_multitaper(epochs_meg, fmin=fmin, fmax=fmax)
     else:
         raise Exception('nonexistent method for psd computation')
-    path, name = os.path.split(epochs_fname)
+    path, name = os.path.split(data_fname)
     base, ext = os.path.splitext(name)
     psds_fname = base + '-psds.npz'
     # freqs_fname = base + '-freqs.npy'
