@@ -35,6 +35,15 @@ def create_pipeline_power(main_path, pipeline_name='power',
         is_epoched : bool (default False)
             True if the input data are in epoch format (-epo.fif); False
             if the input data are raw data (-raw.fif)
+
+    Inputs (inputnode):
+
+        * fif_file : raw or epoched meg data in fif format
+
+    Outputs:
+
+        pipeline : instance of Workflow
+
     """
 
     pipeline = pe.Workflow(name=pipeline_name)
@@ -52,6 +61,6 @@ def create_pipeline_power(main_path, pipeline_name='power',
     power_node.inputs.method = method
     power_node.inputs.is_epoched = is_epoched
 
-    pipeline.connect(inputnode, 'fif_file', power_node, 'epochs_file')
+    pipeline.connect(inputnode, 'fif_file', power_node, 'data_file')
 
     return pipeline

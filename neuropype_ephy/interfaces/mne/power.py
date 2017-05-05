@@ -9,7 +9,7 @@ from neuropype_ephy.power import compute_and_save_psd
 
 
 class PowerInputSpec(BaseInterfaceInputSpec):
-    epochs_file = traits.File(exists=True,
+    data_file = traits.File(exists=True,
                               desc='File with mne.Epochs or mne.io.Raw',
                               mandatory=True)
     fmin = traits.Float(desc='lower psd frequency', mandatory=False)
@@ -34,12 +34,12 @@ class Power(BaseInterface):
 
     def _run_interface(self, runtime):
         print 'in Power'
-        epochs_file = self.inputs.epochs_file
+        data_file = self.inputs.data_file
         fmin = self.inputs.fmin
         fmax = self.inputs.fmax
         method = self.inputs.method
         is_epoched = self.inputs.is_epoched
-        self.psds_file = compute_and_save_psd(epochs_file, fmin, fmax, method,
+        self.psds_file = compute_and_save_psd(data_file, fmin, fmax, method,
                                               is_epoched)
         return runtime
 
