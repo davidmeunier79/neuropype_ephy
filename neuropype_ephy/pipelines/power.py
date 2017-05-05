@@ -15,9 +15,27 @@ def create_pipeline_power(main_path, pipeline_name='power',
                           is_epoched=False):
     """
     Description:
-    
+
         Wraps functions of MNE to compute PSD of epoch or raw data
-    """    
+
+    Inputs:
+
+        main_path : str
+            the main path of the pipeline
+        pipeline_name : str (default 'power')
+            name of the pipeline
+        fmin : float (default 0)
+            min frequency of interest
+        fmax : float (default 300)
+            max frequency of interest
+        method : str (default 'welch')
+            if 'welch' the power spectral density (PSD) is computed by Welch's
+            method; otherwise, if 'multitaper' the PSD is computed by
+            multitapers
+        is_epoched : bool (default False)
+            True if the input data are in epoch format (-epo.fif); False
+            if the input data are raw data (-raw.fif)
+    """
 
     pipeline = pe.Workflow(name=pipeline_name)
     pipeline.base_dir = main_path
