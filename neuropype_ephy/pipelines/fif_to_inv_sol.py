@@ -68,6 +68,11 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         save_stc: bool (defualt False)
             if True the stc will be saved
 
+    Inputs (inputnode):
+
+        * raw : filename of the raw data (fif format)
+        * sbj_id : subject id
+
     Outouts:
 
         pipeline : instance of Workflow
