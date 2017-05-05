@@ -81,9 +81,14 @@ def create_pipeline_preproc_meeg(main_path,
         n_comp_exclude: dict
             if is_set_ICA_components=True, it has to be a dict containing for
             each subject and for each session the components to be excluded
-	is_sensor_space: boolean (default True)
+        is_sensor_space: boolean (default True)
             True if we perform the analysis in sensor space and we use the
             pipeline as lego with the connectivity or inverse pipeline
+
+    Inputs (inputnode):
+
+        * raw_file : raw meg data in fif format
+        * subject_id : subject id
 
     Outputs:
 
