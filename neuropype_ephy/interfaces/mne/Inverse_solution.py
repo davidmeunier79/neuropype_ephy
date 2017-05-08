@@ -45,8 +45,9 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     is_evoked = traits.Bool(desc='if true if we want to analyze evoked data',
                             mandatory=False)
 
-    inv_method = traits.String(desc='possible inverse methods are \
-                               sLORETA, MNE, dSPM', mandatory=True)
+    inv_method = traits.String('MNE', desc='possible inverse methods are \
+                               sLORETA, MNE, dSPM', usedefault=True,
+                               mandatory=True)
 
     snr = traits.Float(1.0, usedefault=True, desc='use smaller SNR for \
                        raw data', mandatory=False)
@@ -61,7 +62,8 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     aseg_labels = traits.List(desc='list of substructures in the src space',
                               mandatory=False)
 
-    save_stc = traits.Bool(desc='if true save stc', mandatory=False)
+    save_stc = traits.Bool(desc='if true save stc', usedefault=True,
+			   mandatory=False)
 
 
 class InverseSolutionConnOutputSpec(TraitedSpec):
