@@ -83,7 +83,7 @@ def read_noise_cov(cov_fname, raw_info):
 
     return noise_cov
 
-
+# TODO remove it!!! not used
 def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
     import os.path as op
     import numpy as np
@@ -155,13 +155,13 @@ def compute_ts_inv_sol(raw, fwd_filename, cov_fname, snr, inv_method, aseg):
 +---------------------+-----------+-----------+-----------+-----------------+--------------+       
 '''
 
-
+# TODO too long function -> put lines code about labels in a new little function
 def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
                          cov_fname, is_epoched=False, events_id=[],
                          t_min=None, t_max=None, is_evoked=False,
                          snr=1.0, inv_method='MNE',
                          parc='aparc', aseg=False, aseg_labels=[],
-                         save_stc=False):
+                         save_stc=True):
     """
     Compute the inverse solution on raw/epoched data and return the average
     time series computed in the N_r regions of the source space defined by
@@ -332,17 +332,16 @@ def compute_ROIs_inv_sol(raw_filename, sbj_id, sbj_dir, fwd_filename,
         print '***'
 
     if save_stc:
-        if aseg:
-            for i in range(len(stc)):
-                try:
-                    os.mkdir(op.join(subj_path, 'TS'))
-                except OSError:
-                    pass
-                stc_file = op.join(subj_path, 'TS', basename + '_' +
-                                   inv_method + '_stc_' + str(i) + '.npy')
+	for i in range(len(stc)):
+	    try:
+		os.mkdir(op.join(subj_path, 'TS'))
+	    except OSError:
+		pass
+	    stc_file = op.join(subj_path, 'TS', basename + '_' +
+				inv_method + '_stc_' + str(i) + '.npy')
 
-                if not op.isfile(stc_file):
-                    np.save(stc_file, stc[i].data)
+	    if not op.isfile(stc_file):
+		np.save(stc_file, stc[i].data)
 
     labels_cortex = mne.read_labels_from_annot(sbj_id, parc=parc,
                                                subjects_dir=sbj_dir)
