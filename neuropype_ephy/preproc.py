@@ -257,6 +257,33 @@ def create_reject_dict(raw_info):
 
 def create_ts(raw_fname):
 
+    """
+    Description:
+
+        Read a raw data in **.fif** format
+
+    Inputs:
+
+	raw_fname : str
+	    pathname of the raw data to read 
+
+    Outputs:
+
+        ts_file : str
+	    pathname of the numpy file (.npy) containing the data read from raw_fname
+	  
+        channel_coords_file : str
+	    pathname of .txt file containing the channels coordinates
+	  
+        channel_names_file : str
+	    pathname of .txt file containing the channels labels
+	  
+        sfreq : float
+	    sampling frequency
+
+    """
+
+    
     import os
     import numpy as np
 

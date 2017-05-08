@@ -16,7 +16,7 @@ def create_pipeline_power(main_path, pipeline_name='power',
     """
     Description:
 
-        Wraps functions of MNE to compute PSD of epoch or raw data
+        Power pipeline: wraps functions of MNE to compute PSD of epoch or raw data
 
     Inputs:
 
@@ -38,7 +38,8 @@ def create_pipeline_power(main_path, pipeline_name='power',
 
     Inputs (inputnode):
 
-        * fif_file : raw or epoched meg data in fif format
+        fif_file : str
+	    path to raw or epoched meg data in fif format
 
     Outputs:
 

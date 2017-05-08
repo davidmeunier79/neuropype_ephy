@@ -70,8 +70,10 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
 
     Inputs (inputnode):
 
-        * raw : filename of the raw data (fif format)
-        * sbj_id : subject id
+        raw : str
+	    path to raw data in fif format
+        sbj_id : str
+	    subject id
 
     Outouts:
 

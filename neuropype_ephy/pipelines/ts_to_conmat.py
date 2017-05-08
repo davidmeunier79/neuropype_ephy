@@ -19,6 +19,54 @@ from neuropype_ephy.nodes.ts_tools import SplitWindows
 
 def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multi_con = False, export_to_matlab = False, n_windows = [], mode = 'multitaper'):
     
+    """
+    Description:
+    
+	Connectivity pipeline: compute spectral connectivity in a given frequency bands
+    
+    Inputs:
+    
+	main_path : str
+            the main path of the pipeline
+	pipeline_name: str (default 'ts_to_conmat')
+            name of the pipeline
+        con_method : str
+	    metric computed on time series for connectivity; possible choice: "coh","imcoh","plv","pli","wpli","pli2_unbiased","ppc","cohy","wpli2_debiased"     
+	multi_con : bool (default False)
+	    True if multiple connectivity matrices are exported
+	export_to_matlab : bool (default False)
+	    True if conmat is exported to .mat format as well
+	n_windows : list
+	    list of start and stop points (tuple of two integers) of temporal windows
+	mode : str (default 'multipaper')
+	    mode for computing frequency bands; possible choice: "multitaper","cwt_morlet"
+	
+    Inputs (inputnode):
+    
+	ts_file : str
+	    path to the time series file in .npy format
+	freq_band : float
+	    frequency bands
+	sfreq : float
+	    sampling frequency
+	labels_file : str
+	  path to the file containing a list of labels associated with nodes
+	epoch_window_length : float
+	    epoched data
+	is_sensor_space : bool (default True)
+	  True if we compute connectivity on sensor space
+	index : str
+	    what to add to the name of the file
+	    
+	    
+    Outputs:
+
+        pipeline : instance of Workflow
+    
+    """
+
+    
+    
     if multi_con:
         pipeline_name = pipeline_name + '_multicon'
         

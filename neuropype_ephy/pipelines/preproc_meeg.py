@@ -87,8 +87,10 @@ def create_pipeline_preproc_meeg(main_path,
 
     Inputs (inputnode):
 
-        * raw_file : raw meg data in fif format
-        * subject_id : subject id
+        raw_file : str 
+	    path to raw meg data in fif format
+        subject_id : str
+	    subject id
 
     Outputs:
 
