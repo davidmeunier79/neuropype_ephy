@@ -15,7 +15,7 @@ setup(
                  as Node for electrophy (EEG/MEG)\
                  pipelines within nipype framework',
     lisence='MIT',
-    install_requires=[ 'mne>=0.15',
+    install_requires=[ 'mne>=0.14',
                       'nipype',
                       'configparser']
 )
