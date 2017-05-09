@@ -57,7 +57,7 @@ def compute_and_save_psd(data_fname, fmin=0, fmax=120,
     ax.set(title='{} PSD'.format(method), xlabel='Frequency',
            ylabel='Power Spectral Density (dB)')
 
-    psds_img_fname = base + '-psds.jpg'
+    psds_img_fname = base + '-psds.png'
     psds_img_fname = os.path.abspath(psds_img_fname)
     plt.savefig(psds_img_fname)
 
