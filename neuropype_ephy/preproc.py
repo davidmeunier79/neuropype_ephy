@@ -98,12 +98,15 @@ def compute_ica(fif_file, ecg_ch_name, eog_ch_name, n_components):
 
     eog_ch_name = eog_ch_name.replace(' ', '')
     if set(eog_ch_name.split(',')).issubset(set(raw.info['ch_names'])):
+        print('*** EOG CHANNELS FOUND ***')
         eog_inds, eog_scores = ica.find_bads_eog(raw, ch_name=eog_ch_name)
         eog_inds = eog_inds[:n_max_eog]
+        ica.exclude += eog_inds
         eog_evoked = create_eog_epochs(raw, tmin=-0.5, tmax=0.5,
                                        picks=select_sensors,
                                        ch_name=eog_ch_name).average()
     else:
+        print('*** NO EOG CHANNELS FOUND!!! ***')
         eog_inds = eog_scores = eog_evoked = None
 
     report_file = generate_report(raw=raw, ica=ica, subj_name=fif_file,
