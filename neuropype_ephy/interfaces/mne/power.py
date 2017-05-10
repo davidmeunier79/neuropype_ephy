@@ -10,8 +10,8 @@ from neuropype_ephy.power import compute_and_save_psd
 
 class PowerInputSpec(BaseInterfaceInputSpec):
     data_file = traits.File(exists=True,
-                              desc='File with mne.Epochs or mne.io.Raw',
-                              mandatory=True)
+                            desc='File with mne.Epochs or mne.io.Raw',
+                            mandatory=True)
     fmin = traits.Float(desc='lower psd frequency', mandatory=False)
     fmax = traits.Float(desc='higher psd frequency', mandatory=False)
     method = traits.Enum('welch', 'multitaper',

@@ -195,7 +195,7 @@ class NoiseCovariance(BaseInterface):
         raw_filename : str
             filename of the raw data
         cov_fname_in : str
-            filename of the noise covarianca matrix
+            filename of the noise covariance matrix
         is_epoched : bool
             True if we want to epoch the data
         is_evoked : bool

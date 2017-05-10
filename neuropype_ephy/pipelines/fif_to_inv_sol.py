@@ -64,7 +64,8 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         aseg_labels: list (default [])
             list of substructures we want to include in the mixed source space
         noise_cov_fname: str (default None)
-            filename for the noise covariance matrix
+            template for the path to either the noise covariance matrix file or
+            the empty room data
         save_stc: bool (defualt False)
             if True the stc will be saved
 

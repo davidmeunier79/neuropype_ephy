@@ -43,13 +43,13 @@ def create_pipeline_preproc_meeg(main_path,
 
     """
     Description:
-    
+
         Preprocessing pipeline
 
     Inputs:
 
         main_path : str
-            the main path of the pipeline
+            main path to of the pipeline
         pipeline_name: str (default 'preproc_meeg')
             name of the pipeline
         data_type: str (default 'fif')
@@ -63,7 +63,7 @@ def create_pipeline_preproc_meeg(main_path,
         is_ICA : boolean (default True)
             if True apply ICA to automatically remove ECG and EoG artifacts
         variance: float (default 0.95)
-            float between 0 and 1: the ICA components will be selected by the 
+            float between 0 and 1: the ICA components will be selected by the
             cumulative percentage of explained variance
         ECG_ch_name: str (default '')
             the name of ECG channels
@@ -87,10 +87,10 @@ def create_pipeline_preproc_meeg(main_path,
 
     Inputs (inputnode):
 
-        raw_file : str 
-	    path to raw meg data in fif format
+        raw_file : str
+            path to raw meg data in fif format
         subject_id : str
-	    subject id
+            subject id
 
     Outputs:
 

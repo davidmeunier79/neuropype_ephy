@@ -39,7 +39,7 @@ def create_pipeline_power(main_path, pipeline_name='power',
     Inputs (inputnode):
 
         fif_file : str
-	    path to raw or epoched meg data in fif format
+            path to raw or epoched meg data in fif format
 
     Outputs:
 
