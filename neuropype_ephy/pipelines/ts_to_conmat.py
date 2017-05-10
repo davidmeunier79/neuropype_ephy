@@ -17,7 +17,15 @@ from neuropype_ephy.nodes.ts_tools import SplitWindows
 ### to modify and add in "Nodes"
 #from neuropype_ephy.spectral import  filter_adj_plot_mat
 
-def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_name = "ts_to_conmat",con_method = "coh", multi_con = False, export_to_matlab = False, n_windows = [], mode = 'multitaper'):
+def create_pipeline_time_series_to_spectral_connectivity(main_path, 
+                                                         pipeline_name="ts_to_conmat",
+                                                         con_method="coh",
+                                                         multi_con=False,
+                                                         export_to_matlab=False,
+                                                         n_windows=[],
+                                                         mode='multitaper',
+                                                         is_sensor_space=True,
+                                                         epoch_window_length=None):
     
     """
     Description:
@@ -39,7 +47,11 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
 	n_windows : list
 	    list of start and stop points (tuple of two integers) of temporal windows
 	mode : str (default 'multipaper')
-	    mode for computing frequency bands; possible choice: "multitaper","cwt_morlet"
+         mode for computing frequency bands; possible choice: "multitaper","cwt_morlet"
+     epoch_window_length : float
+         epoched data
+	is_sensor_space : bool (default True)
+         True if we compute connectivity on sensor space
 	
     Inputs (inputnode):
     
@@ -50,13 +62,9 @@ def create_pipeline_time_series_to_spectral_connectivity( main_path, pipeline_na
 	sfreq : float
 	    sampling frequency
 	labels_file : str
-	  path to the file containing a list of labels associated with nodes
-	epoch_window_length : float
-	    epoched data
-	is_sensor_space : bool (default True)
-	  True if we compute connectivity on sensor space
+         path to the file containing a list of labels associated with nodes
 	index : str
-	    what to add to the name of the file
+         what to add to the name of the file
 	    
 	    
     Outputs:
