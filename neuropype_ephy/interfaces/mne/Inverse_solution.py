@@ -14,7 +14,7 @@ from neuropype_ephy.compute_inv_problem import compute_ROIs_inv_sol
 from neuropype_ephy.preproc import create_reject_dict
 from mne import find_events, compute_raw_covariance, compute_covariance
 from mne import pick_types, write_cov, Epochs
-from mne.io import read_raw_fif
+from mne.io import read_raw_fif, read_raw_ctf
 
 
 class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
@@ -45,8 +45,9 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     is_evoked = traits.Bool(desc='if true if we want to analyze evoked data',
                             mandatory=False)
 
-    inv_method = traits.String(desc='possible inverse methods are \
-                               sLORETA, MNE, dSPM', mandatory=True)
+    inv_method = traits.String('MNE', desc='possible inverse methods are \
+                               sLORETA, MNE, dSPM', usedefault=True,
+                               mandatory=True)
 
     snr = traits.Float(1.0, usedefault=True, desc='use smaller SNR for \
                        raw data', mandatory=False)
@@ -61,7 +62,8 @@ class InverseSolutionConnInputSpec(BaseInterfaceInputSpec):
     aseg_labels = traits.List(desc='list of substructures in the src space',
                               mandatory=False)
 
-    save_stc = traits.Bool(desc='if true save stc', mandatory=False)
+    save_stc = traits.Bool(desc='if true save stc', usedefault=True,
+			   mandatory=False)
 
 
 class InverseSolutionConnOutputSpec(TraitedSpec):
@@ -193,7 +195,7 @@ class NoiseCovariance(BaseInterface):
         raw_filename : str
             filename of the raw data
         cov_fname_in : str
-            filename of the noise covarianca matrix
+            filename of the noise covariance matrix
         is_epoched : bool
             True if we want to epoch the data
         is_evoked : bool
@@ -248,7 +250,6 @@ class NoiseCovariance(BaseInterface):
                         % self.cov_fname_out
             else:
                 '\n *** RAW DATA \n'
-                # TODO creare una matrice diagonale?
                 for er_fname in glob.glob(op.join(data_path, cov_fname_in)):
                     print '\n found file name %s  \n' % er_fname
 
@@ -257,7 +258,15 @@ class NoiseCovariance(BaseInterface):
                         print '\n *** NOISE cov file %s exists!! \n' % er_fname
                         self.cov_fname_out = er_fname
                     else:
-                        er_raw = read_raw_fif(er_fname)
+                        if er_fname.rfind('.fif') > -1:
+                            er_raw = read_raw_fif(er_fname)
+                            er_fname = er_fname.replace('.fif', '-raw-cov.fif')
+                        elif er_fname.rfind('.ds') > -1:
+                            er_raw = read_raw_ctf(er_fname)
+                            er_fname = er_fname.replace('.ds', '-raw-cov.fif')
+
+                        self.cov_fname_out = op.join(data_path, er_fname)
+                        
                         if not op.isfile(self.cov_fname_out):
                             reject = create_reject_dict(er_raw.info)
                             picks = pick_types(er_raw.info, meg=True,
@@ -272,6 +281,7 @@ class NoiseCovariance(BaseInterface):
                                 % self.cov_fname_out
                 except NameError:
                     sys.exit("No covariance matrix as input!")
+                                    # TODO creare una matrice diagonale?
 
         else:
             print '\n *** NOISE cov file %s exists!!! \n' % cov_fname_in

@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
 Definition of nodes for computing and plotting spectral connectivity
 """
+# Author: David Meunier <david_meunier_79@hotmail.fr>
+
+
 import numpy as np
 import os
 import pickle

@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+"""
+Inverse Solution Pipeline
+"""
+# Author: Annalisa Pascarella <a.pascarella@iac.cnr.it>
 
 import nipype.pipeline.engine as pe
 
@@ -61,9 +64,17 @@ def create_pipeline_source_reconstruction(main_path, sbj_dir,
         aseg_labels: list (default [])
             list of substructures we want to include in the mixed source space
         noise_cov_fname: str (default None)
-            filename for the noise covariance matrix
+            template for the path to either the noise covariance matrix file or
+            the empty room data
         save_stc: bool (defualt False)
             if True the stc will be saved
+
+    Inputs (inputnode):
+
+        raw : str
+	    path to raw data in fif format
+        sbj_id : str
+	    subject id
 
     Outouts:
 

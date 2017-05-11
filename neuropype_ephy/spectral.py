@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Author: David Meunier <david_meunier_79@hotmail.fr>
 
 import numpy as np
 
@@ -147,8 +147,8 @@ def plot_circular_connectivity(conmat, label_names, node_colors, node_order, vmi
     #print fig
     ##plot_conmat_file = os.path.abspath('circle.png')
     plot_conmat_file = os.path.abspath('circle_' + fname + '.eps')
-    #fig.savefig(plot_conmat_file, facecolor='black')
-    fig.savefig(plot_conmat_file)
+    fig.savefig(plot_conmat_file, facecolor='black')
+    # fig.savefig(plot_conmat_file)
     
     
     plt.close(fig)

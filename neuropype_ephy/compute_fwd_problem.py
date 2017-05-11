@@ -1,8 +1,8 @@
-# 2015.10.09 12:03:07 EDT
-# Embedded file name: /home/karim/Documents/pasca/packages/neuropype_ephy/neuropype_ephy/compute_fwd_problem.py
+"""
+Lead Field computation functions
+"""
+# Author: Annalisa Pascarella <a.pascarella@iac.cnr.it>
 
-# Created on Mon Oct  5 17:36:56 2015
-# @author: pasca
 
 
 def create_bem_sol(sbj_dir, sbj_id):
@@ -72,10 +72,11 @@ def create_src_space(sbj_dir, sbj_id, spacing):
     src_fname = op.join(bem_dir, '%s-%s-src.fif' % (sbj_id, spacing))
     if not op.isfile(src_fname):
         src = mne.setup_source_space(sbj_id, subjects_dir=sbj_dir,
-                                     fname=True,
                                      spacing=spacing.replace('-', ''),
-                                     add_dist=False, overwrite=True,
+                                     add_dist=False,
                                      n_jobs=2)
+
+        mne.write_source_spaces(src_fname, src, overwrite=True)
         print '\n*** source space file %s written ***\n' % src_fname
     else:
         print '\n*** source space file %s exists!!!\n' % src_fname
@@ -125,16 +126,20 @@ def is_trans(raw_fname):
 
     from nipype.utils.filemanip import split_filename as split_f
 
-#    data_path, raw_fname, ext = split_f(raw_info['filename'])
     data_path, raw_fname, ext = split_f(raw_fname)
 
     # check if the co-registration file was created
     # if not raise an runtime error
-    i_ica = raw_fname.find('-cleaned')
-    if i_ica != -1:
-        raw_fname = raw_fname[:i_ica]
+#    i_ica = raw_fname.find('ica')
+#    if i_ica != -1:
+#        raw_fname = raw_fname[:i_ica]
 
-    trans_fname = op.join(data_path, '%s*trans.fif' % raw_fname)
+    raw_fname_4trans = raw_fname
+    raw_fname_4trans = raw_fname_4trans.replace('_filt', '')
+    raw_fname_4trans = raw_fname_4trans.replace('_dsamp', '')
+    raw_fname_4trans = raw_fname_4trans.replace('_ica', '')
+
+    trans_fname = op.join(data_path, '%s*trans.fif' % raw_fname_4trans)
     for trans_fname in glob.glob(trans_fname):
         print '\n*** coregistration file %s found!!!\n' % trans_fname
 
@@ -151,11 +156,10 @@ def compute_fwd_sol(raw_info, trans_fname, src, bem, fwd_filename):
     """
     import mne
 
-    mne.make_forward_solution(raw_info, trans_fname, src, bem,
-                              fwd_filename,
-                              mindist=5.0, # ignore sources <= 0mm from inner skull
-                              meg=True, eeg=False,
-                              n_jobs=2,
-                              overwrite=True)
+    fwd = mne.make_forward_solution(raw_info, trans_fname, src, bem,
+                                    mindist=5.0, # ignore sources <= 0mm from inner skull
+                                    meg=True, eeg=False,
+                                    n_jobs=2)
 
+    mne.write_forward_solution(fwd_filename, fwd, overwrite=True)
     print '\n*** FWD file %s written!!!\n' % fwd_filename
