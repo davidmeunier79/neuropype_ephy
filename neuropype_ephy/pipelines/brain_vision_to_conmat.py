@@ -81,7 +81,7 @@ def create_pipeline_brain_vision_vhdr_to_spectral_connectivity(main_path,pipelin
     inputnode = pe.Node(interface = IdentityInterface(fields=['vhdr_file','freq_band']), name='inputnode')
     
     #### convert
-    split_vhdr = pe.Node(interface =  ,name = 'split_vhdr')
+    split_vhdr = pe.Node(interface = ImportBrainVisionVhdr() ,name = 'split_vhdr')
 
     split_vhdr.inputs.sample_size = sample_size
     pipeline.connect(inputnode, 'vhdr_file',split_vhdr,'vhdr_file')
