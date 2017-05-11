@@ -105,12 +105,23 @@ def create_pipeline_time_series_to_spectral_connectivity(main_path,
 #        pipeline.connect(inputnode, 'epoch_window_length', spectral, 'epoch_window_length')
 
         #### plot spectral
-        plot_spectral = pe.MapNode(interface = PlotSpectralConn(), name = "plot_spectral",iterfield = ['conmat_file'])
+        if multi_con:
+            plot_spectral = pe.MapNode(interface = PlotSpectralConn(), name = "plot_spectral",iterfield = ['conmat_file'])
+            
+            plot_spectral.inputs.is_sensor_space = is_sensor_space        
+            pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
+    #        pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')        
+            pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
+            
+        else:
+            
+            plot_spectral = pe.Node(interface = PlotSpectralConn(), name = "plot_spectral")
+            
+            plot_spectral.inputs.is_sensor_space = is_sensor_space        
+            pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
+    #        pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')        
+            pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
         
-        plot_spectral.inputs.is_sensor_space = is_sensor_space        
-        pipeline.connect(inputnode,  'labels_file',plot_spectral,'labels_file')
-#        pipeline.connect(inputnode,  'is_sensor_space',plot_spectral,'is_sensor_space')        
-        pipeline.connect(spectral, "conmat_file",    plot_spectral, 'conmat_file')
         
     else:
         
