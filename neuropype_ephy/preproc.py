@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Preprocessing functions"""
 # Authors: Dmitrii Altukhov <dm-altukhov@ya.ru>
 #          Annalisa Pascarella <a.pascarella@iac.cnr.it>
@@ -142,7 +143,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     subj_path, basename, ext = split_f(fif_file)
     (data_path,  sbj_name) = os.path.split(subj_path)
 
-    print '*** SBJ %s' % subject_id + '***'
+    print('*** SBJ %s' % subject_id + '***')
 
     # Read raw
     current_dir = os.getcwd()
@@ -153,7 +154,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     elif os.path.exists(os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica' + ext)):  
         raw_ica_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica' + ext)
       
-    print '*** raw_ica_file %s' % raw_ica_file + '***'
+    print('*** raw_ica_file %s' % raw_ica_file + '***')
     raw = mne.io.read_raw_fif(raw_ica_file, preload=True)
 
     # load ICA
@@ -165,17 +166,17 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
         ica_sol_file = os.path.join(current_dir, '../ica', basename + '_filt_dsamp_ica_solution.fif')
       
     if os.path.exists(ica_sol_file) is False:
-        print '$$$ Warning, no %s found' % ica_sol_file
+        print('$$$ Warning, no %s found' % ica_sol_file)
         sys.exit()
     else:
         ica = read_ica(ica_sol_file)
 
-    print '\n *** ica.exclude before set components= ', ica.exclude
-    if n_comp_exclude.has_key(subject_id):
-        print '*** ICA to be excluded for sbj %s ' % subject_id
-        print ' ' + str(n_comp_exclude[subject_id]) + '***'
+    print('\n *** ica.exclude before set components= ', ica.exclude)
+    if subject_id in n_comp_exclude:
+        print('*** ICA to be excluded for sbj %s ' % subject_id)
+        print(' ' + str(n_comp_exclude[subject_id]) + '***')
         session_dict = n_comp_exclude[subject_id]
-        session_names = session_dict.keys()
+        session_names = list(session_dict.keys())
 
         componentes = []
         for s in session_names:
@@ -184,14 +185,14 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
             #    break
 
         if len(componentes) == 0:
-            print '\n no ICA to be excluded \n'
+            print('\n no ICA to be excluded \n')
         else:
-            print '\n *** ICA to be excluded for session %s ' % s + \
-                    ' ' + str(componentes) + ' *** \n'
+            print('\n *** ICA to be excluded for session %s ' % s + \
+                    ' ' + str(componentes) + ' *** \n')
 
     ica.exclude = componentes
 
-    print '\n *** ica.exclude after set components = ', ica.exclude
+    print('\n *** ica.exclude after set components = ', ica.exclude)
 
 
     # apply ICA to raw data 
@@ -201,7 +202,7 @@ def preprocess_set_ICA_comp_fif_to_ts(fif_file, subject_id, n_comp_exclude,
     raw_ica.save(new_raw_ica_file, overwrite=True)
 
     # save ICA solution
-    print ica_sol_file
+    print(ica_sol_file)
     ica.save(ica_sol_file)
 
     ts_file, channel_coords_file, channel_names_file, raw.info['sfreq'] = create_ts(new_raw_ica_file)
@@ -307,23 +308,24 @@ def create_ts(raw_fname):
     sens_loc = np.array(sens_loc)
 
     channel_coords_file = os.path.abspath('correct_channel_coords.txt')
-    np.savetxt(channel_coords_file, sens_loc, fmt='%s')
+    np.savetxt(channel_coords_file, sens_loc, fmt=str("%s"))
+    #np.savetxt(ROI_coords_file,np.array(ROI_coords,dtype = int),fmt = "%d")
 
     # save electrode names
     sens_names = np.array([raw.ch_names[pos] for pos in select_sensors],
                           dtype='str')
 
     channel_names_file = os.path.abspath('correct_channel_names.txt')
-    np.savetxt(channel_names_file, sens_names, fmt='%s')
+    np.savetxt(channel_names_file, sens_names, fmt=str('%s'))
 
     data, times = raw[select_sensors, :]
 
-    print data.shape
+    print(data.shape)
     
     ts_file = os.path.abspath(basename + '.npy')
     np.save(ts_file, data)
-    print '\n *** TS FILE ' + ts_file + '*** \n'
-    print '*** raw.info[sfreq] = ' + str(raw.info['sfreq'])
+    print('\n *** TS FILE ' + ts_file + '*** \n')
+    print('*** raw.info[sfreq] = ' + str(raw.info['sfreq']))
         
     return ts_file, channel_coords_file, channel_names_file, raw.info['sfreq']
 
@@ -413,7 +415,7 @@ def generate_report(raw, ica, subj_name, basename,
         report.add_figs_to_section(fig, captions=['Time-locked EOG sources'],
                                    section='ICA - EOG')
     # ----------------- end generate report for EoG ---------- #
-    ic_nums = range(ica.n_components_)
+    ic_nums = list(range(ica.n_components_))
     fig = ica.plot_components(picks=ic_nums, show=False)
     report.add_figs_to_section(fig, captions=['All IC topographies'],
                                section='ICA - muscles')
@@ -436,7 +438,7 @@ def generate_report(raw, ica, subj_name, basename,
                                section='ICA - muscles')
 
     report_filename = os.path.join(basename + "-report.html")
-    print '******* ' + report_filename
+    print('******* ' + report_filename)
     report.save(report_filename, open_browser=False, overwrite=True)
     return report_filename
 
