@@ -260,7 +260,7 @@ class ImportBrainVisionVhdr(BaseInterface):
 
         np.save(splitted_ts_file,np_splitted_ts)
         
-    return splitted_ts_file,ch_names_file
+        #return splitted_ts_file,ch_names_file
     
         return runtime
 
