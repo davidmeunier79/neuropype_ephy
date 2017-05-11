@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Definition of nodes for computing and plotting spectral connectivity
 """
