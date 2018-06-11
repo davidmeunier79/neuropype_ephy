@@ -64,7 +64,7 @@ def import_mat_to_conmat(mat_file,orig_channel_names_file,orig_channel_coords_fi
 
     return conmat_file,channel_coords_file,channel_names_file
 
-def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_name = 'ChannelFlag'):
+def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_name = 'ChannelFlag', hdf5_mat = False):
     #,orig_channel_names_file,orig_channel_coords_file):
 
     import os
@@ -75,7 +75,11 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     from mne.io import RawArray	
     from nipype.utils.filemanip import split_filename as split_f
 
-    from scipy.io import loadmat
+	if hdf5_mat:
+		from hdf5storage import loadmat
+	else:
+		from scipy.io import loadmat
+		
     print tsmat_file
         
     subj_path,basename,ext = split_f(tsmat_file)

@@ -27,6 +27,8 @@ class ImportMatInputSpec(BaseInterfaceInputSpec):
     
     good_channels_field_name = traits.String('ChannelFlag', desc='Boolean structure for choosing nodes, name of structure in matlab file')
     
+    hdf5_mat = traits.Bool(False, desc='mat file is in hdf5 mormat (> 7.3)', usedefault  = True)
+    
 class ImportMatOutputSpec(TraitedSpec):
     
     ts_file = traits.File(exists=True, desc="time series in .npy format")
@@ -49,6 +51,7 @@ class ImportMat(BaseInterface):
     good_channels_field_name
         type = String, default = 'ChannelFlag', desc='Boolean structure for choosing nodes, name of structure in matlab file'
     
+    hdf5_mat
     Outputs:
 
     ts_file 
@@ -66,12 +69,14 @@ class ImportMat(BaseInterface):
         
         data_field_name = self.inputs.data_field_name
         
+        hdf5_mat = self.inputs.hdf5_mat
+        
         good_channels_field_name = self.inputs.good_channels_field_name
 
         if not isdefined(good_channels_field_name):
             good_channels_field_name = None
             
-        self.ts_file = import_tsmat_to_ts(tsmat_file,data_field_name,good_channels_field_name)
+        self.ts_file = import_tsmat_to_ts(tsmat_file,data_field_name,good_channels_field_name, hdf5_mat = hdf5_mat)
         
         return runtime
         
