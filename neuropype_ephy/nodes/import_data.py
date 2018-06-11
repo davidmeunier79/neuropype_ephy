@@ -52,6 +52,8 @@ class ImportMat(BaseInterface):
         type = String, default = 'ChannelFlag', desc='Boolean structure for choosing nodes, name of structure in matlab file'
     
     hdf5_mat
+		type = Bool, default = False, desc='mat file is in hdf5 mormat (> 7.3)', usedefault  = True
+		
     Outputs:
 
     ts_file 
