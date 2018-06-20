@@ -76,22 +76,17 @@ def import_tsmat_to_ts(tsmat_file,data_field_name = 'F', good_channels_field_nam
     from nipype.utils.filemanip import split_filename as split_f
 
     print tsmat_file
-        
     subj_path,basename,ext = split_f(tsmat_file)
 
+    if hdf5_mat:
+        import h5py
+        f = h5py.File(tsmat_file, 'r')
+        raw_data=np.asarray(list(f[data_field_name])).T
+    else:
+        from scipy.io import loadmat
+        mat = loadmat(tsmat_file)
+        raw_data = np.array(mat[data_field_name],dtype = "f")
 
-	if hdf5_mat:
-		import h5py
-		
-		f = h5py.File(tsmat_file, 'r')
-		raw_data=np.asarray(list(f[data_field_name])).T
-
-	else:
-		from scipy.io import loadmat
-		
-		mat = loadmat(tsmat_file)
-		raw_data = np.array(mat[data_field_name],dtype = "f")
-    
     print raw_data.shape
 
     print [key for key in mat.keys()]
